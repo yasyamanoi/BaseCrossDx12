@@ -1,0 +1,2 @@
+# BaseCrossDx12
+DirectX12用のBaseCrossフレームワークです
