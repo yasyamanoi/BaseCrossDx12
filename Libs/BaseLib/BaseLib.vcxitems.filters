@@ -1,0 +1,176 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Basic">
+      <UniqueIdentifier>{7d837a65-3ed5-4a6a-aac2-1a87671325b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Basic\Headers">
+      <UniqueIdentifier>{994467a3-cce7-4c1a-8b51-88070d13513d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Basic\Sources">
+      <UniqueIdentifier>{98cbaba3-5fa1-4ae3-bcbd-b93d7fb642be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Standerd">
+      <UniqueIdentifier>{6641b8ca-77ca-40c7-8d31-2b300d35578b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Standerd\Headers">
+      <UniqueIdentifier>{2c95dcd5-2628-4d0b-8d5f-43292e621482}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Standerd\Sources">
+      <UniqueIdentifier>{662441d8-2782-4dbb-9ddf-0164de674f90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{4e64a8bd-1edc-4fa6-9a6a-2b5061b07dc8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseCommon.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\App.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseDevice.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseHelper.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMath.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMathInc.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMesh.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseScene.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseTexture.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Camera.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\d3dx12.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\DefaultDevice.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\FrameResource.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Light.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\StepTimer.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\GameObject.h">
+      <Filter>Standerd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Component.h">
+      <Filter>Standerd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseStage.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Transform.h">
+      <Filter>Standerd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\RenderComponents.h">
+      <Filter>Standerd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Velocity.h">
+      <Filter>Standerd\Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcPSPNTPL.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTStaticPL.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCCommon.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCLighting.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCParameters.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCShadow.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCStructs.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\INCStructs.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\App.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseDevice.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseHelper.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseScene.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseTexture.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Camera.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\DefaultDevice.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\FrameResource.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Light.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GameObject.cpp">
+      <Filter>Standerd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Component.cpp">
+      <Filter>Standerd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseStage.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Transform.cpp">
+      <Filter>Standerd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\RenderComponents.cpp">
+      <Filter>Standerd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Velocity.cpp">
+      <Filter>Standerd\Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

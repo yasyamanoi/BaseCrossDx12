@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{d9f9ae76-bec9-413f-85d2-a1143e6df799}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseCommon.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\App.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseDevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMath.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMathInc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMesh.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseScene.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseStage.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseTexture.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Camera.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\d3dx12.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\DefaultDevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\FrameResource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Light.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\StepTimer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Component.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\GameObject.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\RenderComponents.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Transform.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Velocity.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcPSPNTPL.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTStaticPL.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCCommon.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCLighting.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCParameters.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCShadow.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCStructs.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\INCStructs.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\App.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseDevice.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseHelper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseScene.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseStage.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseTexture.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Camera.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\DefaultDevice.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\FrameResource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Light.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Component.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GameObject.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\RenderComponents.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Transform.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Velocity.cpp" />
+  </ItemGroup>
+</Project>
