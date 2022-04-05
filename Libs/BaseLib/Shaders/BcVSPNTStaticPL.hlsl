@@ -4,7 +4,7 @@
 @copyright Copyright (c) 2021 WiZ Tamura Hiroki,Yamanoi Yasushi.
 */
 
-#include "BcINCParameters.hlsli"
+#include "BcINCConstant.hlsli"
 #include "BcINCStructs.hlsli"
 #include "BcINCCommon.hlsli"
 #include "BcINCLighting.hlsli"

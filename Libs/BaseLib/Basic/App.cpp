@@ -1,9 +1,8 @@
 /*!
 @file App.cpp
 @brief アプリケーションクラス
-@copyright Copyright (c) 2021 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
 */
-
 #include "stdafx.h"
 
 namespace basecross {
@@ -11,14 +10,13 @@ namespace basecross {
 	HWND App::m_hwnd = nullptr;
 	BaseScene* App::m_pBaseScene = nullptr;
 
-
 	wstring App::m_wstrModulePath;		///< モジュール名フルパス
 	wstring App::m_wstrDir;				///< モジュールがあるディレクトリ
-	wstring App::m_wstrDataPath;			///< 絶対パスのメディアディレクトリ
-	wstring App::m_wstrShadersPath;		///< 絶対パスのシェーダディレクトリ
-	wstring App::m_wstrRelativeDataPath;	///< 相対パスのメディアディレクトリ
-	wstring App::m_wstrRelativeShadersPath;	///< 相対パスのシェーダディレクトリ
-	wstring App::m_wstrRelativeAssetsPath;	///< 相対パスのアセットディレクトリ
+	wstring App::m_wstrMediaDir;			///< 絶対パスのメディアディレクトリ
+	wstring App::m_wstrShadersDir;		///< 絶対パスのシェーダディレクトリ
+	wstring App::m_wstrRelativeMediaDir;	///< 相対パスのメディアディレクトリ
+	wstring App::m_wstrRelativeShadersDir;	///< 相対パスのシェーダディレクトリ
+	wstring App::m_wstrRelativeAssetsDir;	///< 相対パスのアセットディレクトリ
 
 	void App::SetAssetsPath() {
 
@@ -39,7 +37,7 @@ namespace basecross {
 
 		//モジュール名（プログラムファイル名）を得る
 		if (!::GetModuleFileName(nullptr, Modulebuff, sizeof(Modulebuff))) {
-		    throw runtime_error("モジュールが取得できません。");
+			throw runtime_error("モジュールが取得できません。");
 		}
 		m_wstrModulePath = Modulebuff;
 		//モジュール名から、各ブロックに分ける
@@ -54,57 +52,61 @@ namespace basecross {
 		//ディレクトリ名の取得
 		m_wstrDir += Dirbuff;
 		//mediaディレクトリを探す
-		m_wstrDataPath = m_wstrDir;
-		m_wstrDataPath += L"media";
+		m_wstrMediaDir = m_wstrDir;
+		m_wstrMediaDir += L"media";
 		//まず、実行ファイルと同じディレクトリを探す
 		DWORD RetCode;
-		RetCode = GetFileAttributes(m_wstrDataPath.c_str());
+		RetCode = GetFileAttributes(m_wstrMediaDir.c_str());
 		if (RetCode == 0xFFFFFFFF) {
 			//失敗した
-			m_wstrDataPath = m_wstrDir;
-			m_wstrDataPath += L"..\\media";
-			RetCode = GetFileAttributes(m_wstrDataPath.c_str());
+			m_wstrMediaDir = m_wstrDir;
+			m_wstrMediaDir += L"..\\media";
+			RetCode = GetFileAttributes(m_wstrMediaDir.c_str());
 			if (RetCode == 0xFFFFFFFF) {
 				//再び失敗した
 				throw runtime_error("mediaディレクトリを確認できません。");
 			}
 			else {
-				m_wstrDataPath += L"\\";
+				m_wstrMediaDir += L"\\";
 				//相対パスの設定
-				m_wstrRelativeDataPath = L"..\\media\\";
+				m_wstrRelativeMediaDir = L"..\\media\\";
 			}
 		}
 		else {
-			m_wstrDataPath += L"\\";
+			m_wstrMediaDir += L"\\";
 			//相対パスの設定
-			m_wstrRelativeDataPath = L"media\\";
+			m_wstrRelativeMediaDir = L"media\\";
 		}
-		m_wstrShadersPath = m_wstrDataPath + L"Shaders\\";
-		m_wstrRelativeShadersPath = m_wstrRelativeDataPath + L"Shaders\\";
+		m_wstrShadersDir = m_wstrMediaDir + L"Shaders\\";
+		m_wstrRelativeShadersDir = m_wstrRelativeMediaDir + L"Shaders\\";
 		//Assetsディレクトリを探す
-		m_wstrRelativeAssetsPath = m_wstrDir;
-		m_wstrRelativeAssetsPath += L"..\\..\\Assets";
+		m_wstrRelativeAssetsDir = L"..\\..\\Assets";
 		//相対ディレクトリを探す
-		RetCode = GetFileAttributes(m_wstrRelativeAssetsPath.c_str());
+		RetCode = GetFileAttributes(m_wstrRelativeAssetsDir.c_str());
 		if (RetCode == 0xFFFFFFFF) {
 			//失敗した
 			//アセットディレクトリをメディアディレクトリにする
-			m_wstrRelativeAssetsPath = m_wstrRelativeDataPath;
+			m_wstrRelativeAssetsDir = m_wstrRelativeMediaDir;
 		}
 		else {
 			//成功した
-			m_wstrRelativeAssetsPath += L"\\";
+			m_wstrRelativeAssetsDir += L"\\";
 		}
 	}
 
-	int App::Run(BaseDevice* pSample, BaseScene* pBaseScene, HINSTANCE hInstance, int nCmdShow)
+	int App::Run(BaseDevice* pBaseDevice, BaseScene* pBaseScene, HINSTANCE hInstance, int nCmdShow)
 	{
+		// デバッグ時、deleteもれのチェック用
+		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+		//ロケールの設定
+		setlocale(LC_ALL, "JPN");
+
 		m_pBaseScene = pBaseScene;
 
 		// Parse the command line parameters
 		int argc;
 		LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-		pSample->ParseCommandLineArgs(argv, argc);
+		pBaseDevice->ParseCommandLineArgs(argv, argc);
 		LocalFree(argv);
 
 
@@ -118,13 +120,13 @@ namespace basecross {
 		windowClass.lpszClassName = L"BaseCrossDx12Class";
 		RegisterClassEx(&windowClass);
 
-		RECT windowRect = { 0, 0, static_cast<LONG>(pSample->GetWidth()), static_cast<LONG>(pSample->GetHeight()) };
+		RECT windowRect = { 0, 0, static_cast<LONG>(pBaseDevice->GetWidth()), static_cast<LONG>(pBaseDevice->GetHeight()) };
 		AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
 
 		//ウィンドウの作成
 		m_hwnd = CreateWindow(
 			windowClass.lpszClassName,
-			pSample->GetTitle(),
+			pBaseDevice->GetTitle().c_str(),
 			WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT,
 			CW_USEDEFAULT,
@@ -133,7 +135,7 @@ namespace basecross {
 			nullptr,
 			nullptr,
 			hInstance,
-			pSample);
+			pBaseDevice);
 
 		//終了コード
 		int retCode = 0;
@@ -149,7 +151,7 @@ namespace basecross {
 				// 初期化失敗
 				throw exception("Com初期化に失敗しました。");
 			}
-			pSample->OnInit();
+			pBaseDevice->OnInit();
 			ShowWindow(m_hwnd, nCmdShow);
 
 			MSG msg = {};
@@ -162,8 +164,30 @@ namespace basecross {
 				}
 			}
 
-			pSample->OnDestroy();
+			pBaseDevice->OnDestroy();
 			retCode = static_cast<char>(msg.wParam);
+		}
+		catch (BaseException& e) {
+			if (GetWindowInfo(m_hwnd, &winInfo)) {
+				//実行失敗した
+				MessageBoxA(m_hwnd, e.what_m().c_str(), "エラー", MB_OK);
+			}
+			else {
+				//実行失敗した
+				MessageBoxA(nullptr, e.what_m().c_str(), "エラー", MB_OK);
+			}
+			retCode = 1;
+		}
+		catch (runtime_error& e) {
+			if (GetWindowInfo(m_hwnd, &winInfo)) {
+				//実行失敗した
+				MessageBoxA(m_hwnd, e.what(), "エラー", MB_OK);
+			}
+			else {
+				//実行失敗した
+				MessageBoxA(nullptr, e.what(), "エラー", MB_OK);
+			}
+			retCode = 1;
 		}
 		catch (exception& e) {
 			//STLエラー
@@ -192,19 +216,18 @@ namespace basecross {
 		return retCode;
 	}
 
-
-    LRESULT CALLBACK App::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-    {
+	LRESULT CALLBACK App::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	{
 		BaseDevice* pDevice = reinterpret_cast<BaseDevice*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
 		switch (message)
 		{
 		case WM_CREATE:
-		{
-			LPCREATESTRUCT pCreateStruct = reinterpret_cast<LPCREATESTRUCT>(lParam);
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
-		}
-		return 0;
+			{
+				LPCREATESTRUCT pCreateStruct = reinterpret_cast<LPCREATESTRUCT>(lParam);
+				SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
+			}
+			return 0;
 		case WM_KEYDOWN:
 			if (pDevice)
 			{
@@ -219,24 +242,26 @@ namespace basecross {
 				pDevice->OnKeyDown(static_cast<UINT8>(wParam));
 			}
 			return 0;
-        case WM_KEYUP:
+		case WM_KEYUP:
 			if (pDevice)
 			{
 				pDevice->OnKeyUp(static_cast<UINT8>(wParam));
 			}
 			return 0;
-        case WM_PAINT:
+		case WM_PAINT:
 			if (pDevice)
 			{
 				pDevice->OnUpdate();
 				pDevice->OnRender();
 			}
 			return 0;
-        case WM_DESTROY:
+		case WM_DESTROY:
 			PostQuitMessage(0);
 			return 0;
 		}
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+
+
 }
 // end namespace basecross

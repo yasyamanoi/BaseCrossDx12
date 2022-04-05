@@ -1,0 +1,475 @@
+/*!
+@file Character.cpp
+@brief キャラクタークラス
+@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+*/
+
+
+#include "stdafx.h"
+#include "Project.h"
+
+namespace basecross {
+
+	//--------------------------------------------------------------------------------------
+	//	class FixedBox : public GameObject;
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	FixedBox::FixedBox(const shared_ptr<Stage>& StagePtr,
+		const Vec3& scale,
+		const Vec3& rotation,
+		const Vec3& position
+	) :
+		GameObject(StagePtr),
+		m_scale(scale),
+		m_rotation(rotation),
+		m_position(position)
+	{
+	}
+
+	//初期化
+	void FixedBox::OnInit() {
+		auto ptrTransform = GetComponent<Transform>();
+		ptrTransform->SetScale(m_scale);
+		ptrTransform->SetRotation(m_rotation);
+		ptrTransform->SetPosition(m_position);
+		auto ptrDraw = AddComponent<BcPNTStaticRender>();
+		ptrDraw->SetBaseMesh(App::GetBaseScene()->GetMesh(L"DEFAULT_CUBE"));
+		ptrDraw->SetBaseTexture(App::GetBaseScene()->GetTexture(L"SKY_TEX"));
+
+	}
+
+
+	void WallObject::OnInit() {
+		auto transPtr = GetComponent<Transform>();
+		transPtr->SetScale(Vec3(1.0f));
+		transPtr->SetPosition(Vec3(0.0f));
+		SetAlphaActive(true);
+
+		auto renderPtr = AddComponent<BcPNTStaticRender>();
+		renderPtr->SetBaseMesh(App::GetBaseScene()->GetMesh(L"DEFAULT_CUBE"));
+		renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(L"TRACE_TEX"));
+	}
+
+	void WallObject::OnUpdate() {
+		auto transPtr = GetComponent<Transform>();
+		float elapsedTime = App::GetElapsedTime();
+		Quat qtspan(Vec3(0, 1, 1), -elapsedTime);
+		auto quat = transPtr->GetQuaternion();
+		quat *= qtspan;
+		quat.normalize();
+		transPtr->SetQuaternion(quat);
+		auto pos = transPtr->GetPosition();
+		pos.x += m_posSpan * elapsedTime;
+		if (abs(pos.x) >= 5.0f) {
+			m_posSpan *= -1.0f;
+		}
+		transPtr->SetPosition(pos);
+
+	}
+
+	//--------------------------------------------------------------------------------------
+	///	壁模様のスプライト
+	//--------------------------------------------------------------------------------------
+	WallSprite::WallSprite(const shared_ptr<Stage>& StagePtr, const wstring& TextureKey, bool Trace,
+		const Vec2& StartScale, const Vec3& StartPos) :
+		GameObject(StagePtr),
+		m_TextureKey(TextureKey),
+		m_Trace(Trace),
+		m_StartScale(StartScale),
+		m_StartPos(StartPos)
+	{}
+
+	WallSprite::~WallSprite() {}
+	void WallSprite::OnInit() {
+		float helfSize = 0.5f;
+		//頂点配列(縦横5個ずつ表示)
+		vector<VertexPositionColorTexture> vertices = {
+			{ VertexPositionColorTexture(Vec3(-helfSize, helfSize, 0),Col4(1.0f,1.0f,1.0f,1.0f), Vec2(0.0f, 0.0f)) },
+			{ VertexPositionColorTexture(Vec3(helfSize, helfSize, 0), Col4(0.0f, 1.0f, 1.0f, 1.0f), Vec2(5.0f, 0.0f)) },
+			{ VertexPositionColorTexture(Vec3(-helfSize, -helfSize, 0), Col4(1.0f, 0.0f, 1.0f, 1.0f), Vec2(0.0f, 5.0f)) },
+			{ VertexPositionColorTexture(Vec3(helfSize, -helfSize, 0), Col4(0.0f, 0.0f, 0, 1.0f), Vec2(5.0f, 5.0f)) },
+		};
+		//インデックス配列
+		vector<uint32_t> indices = { 0, 1, 2, 1, 3, 2 };
+		SetAlphaActive(m_Trace);
+		auto ptrTrans = GetComponent<Transform>();
+		ptrTrans->SetScale(m_StartScale.x, m_StartScale.y, 1.0f);
+		ptrTrans->SetRotation(0, 0, 0);
+		ptrTrans->SetPosition(m_StartPos);
+		//頂点とインデックスを指定してスプライト作成
+		auto renderPtr = AddComponent<SpPCTSpriteRender>(vertices, indices);
+		renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(m_TextureKey));
+		renderPtr->SetSamplerKey(L"LinearWrap");
+	}
+
+
+	//--------------------------------------------------------------------------------------
+	///	スクロールするスプライト
+	//--------------------------------------------------------------------------------------
+	ScrollSprite::ScrollSprite(const shared_ptr<Stage>& StagePtr,
+		const wstring& TextureKey, bool Trace,
+		const Vec2& StartScale, const Vec3& StartPos) :
+		GameObject(StagePtr),
+		m_TextureKey(TextureKey),
+		m_Trace(Trace),
+		m_StartScale(StartScale),
+		m_StartPos(StartPos),
+		m_TotalTime(0)
+	{}
+
+	ScrollSprite::~ScrollSprite() {}
+	void ScrollSprite::OnInit() {
+		float helfSize = 0.5f;
+		//頂点配列
+		m_BackupVertices = {
+			{ VertexPositionTexture(Vec3(-helfSize, helfSize, 0), Vec2(0.0f, 0.0f)) },
+			{ VertexPositionTexture(Vec3(helfSize, helfSize, 0), Vec2(4.0f, 0.0f)) },
+			{ VertexPositionTexture(Vec3(-helfSize, -helfSize, 0), Vec2(0.0f, 1.0f)) },
+			{ VertexPositionTexture(Vec3(helfSize, -helfSize, 0), Vec2(4.0f, 1.0f)) },
+		};
+		//インデックス配列
+		vector<uint32_t> indices = { 0, 1, 2, 1, 3, 2 };
+		SetAlphaActive(m_Trace);
+		auto ptrTrans = GetComponent<Transform>();
+		ptrTrans->SetScale(m_StartScale.x, m_StartScale.y, 1.0f);
+		ptrTrans->SetRotation(0, 0, 0);
+		ptrTrans->SetPosition(m_StartPos);
+		//頂点とインデックスを指定してスプライト作成
+		auto renderPtr = AddComponent<SpPTSpriteRender>(m_BackupVertices, indices);
+		renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(m_TextureKey));
+		renderPtr->SetSamplerKey(L"LinearWrap");
+
+	}
+
+	void ScrollSprite::OnUpdate() {
+		float elapsedTime = App::GetElapsedTime();
+		m_TotalTime += elapsedTime;
+		if (m_TotalTime > 1.0f) {
+			m_TotalTime = 0;
+		}
+		vector<VertexPositionTexture> newVertices;
+		for (size_t i = 0; i < m_BackupVertices.size(); i++) {
+			Vec2 uv = m_BackupVertices[i].textureCoordinate;
+			if (uv.x == 0.0f) {
+				uv.x = m_TotalTime;
+			}
+			else if (uv.x == 4.0f) {
+				uv.x += m_TotalTime;
+			}
+			auto v = VertexPositionTexture(
+				m_BackupVertices[i].position,
+				uv
+			);
+			newVertices.push_back(v);
+		}
+		auto ptrDraw = GetComponent<SpPTSpriteRender>();
+		ptrDraw->UpdateVertices(newVertices);
+	}
+
+	//--------------------------------------------------------------------------------------
+	///	スコア表示のスプライト
+	//--------------------------------------------------------------------------------------
+	ScoreSprite::ScoreSprite(const shared_ptr<Stage>& StagePtr, UINT NumberOfDigits,
+		const wstring& TextureKey, bool Trace,
+		const Vec2& StartScale, const Vec3& StartPos) :
+		GameObject(StagePtr),
+		m_NumberOfDigits(NumberOfDigits),
+		m_TextureKey(TextureKey),
+		m_Trace(Trace),
+		m_StartScale(StartScale),
+		m_StartPos(StartPos),
+		m_Score(0.0f)
+	{}
+
+	void ScoreSprite::OnInit() {
+		float xPiecesize = 1.0f / (float)m_NumberOfDigits;
+		float helfSize = 0.5f;
+
+		//インデックス配列
+		vector<uint32_t> indices;
+		for (UINT i = 0; i < m_NumberOfDigits; i++) {
+			float vertex0 = -helfSize + xPiecesize * (float)i;
+			float vertex1 = vertex0 + xPiecesize;
+			//0
+			m_BackupVertices.push_back(
+				VertexPositionTexture(Vec3(vertex0, helfSize, 0), Vec2(0.0f, 0.0f))
+			);
+			//1
+			m_BackupVertices.push_back(
+				VertexPositionTexture(Vec3(vertex1, helfSize, 0), Vec2(0.1f, 0.0f))
+			);
+			//2
+			m_BackupVertices.push_back(
+				VertexPositionTexture(Vec3(vertex0, -helfSize, 0), Vec2(0.0f, 1.0f))
+			);
+			//3
+			m_BackupVertices.push_back(
+				VertexPositionTexture(Vec3(vertex1, -helfSize, 0), Vec2(0.1f, 1.0f))
+			);
+			indices.push_back(i * 4 + 0);
+			indices.push_back(i * 4 + 1);
+			indices.push_back(i * 4 + 2);
+			indices.push_back(i * 4 + 1);
+			indices.push_back(i * 4 + 3);
+			indices.push_back(i * 4 + 2);
+		}
+
+		SetAlphaActive(m_Trace);
+		auto ptrTrans = GetComponent<Transform>();
+		ptrTrans->SetScale(m_StartScale.x, m_StartScale.y, 1.0f);
+		ptrTrans->SetRotation(0, 0, 0);
+		ptrTrans->SetPosition(m_StartPos.x, m_StartPos.y, 0.0f);
+		//頂点とインデックスを指定してスプライト作成
+		auto renderPtr = AddComponent<SpPTSpriteRender>(m_BackupVertices, indices);
+		renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(m_TextureKey));
+
+
+		GetStage()->SetSharedGameObject(L"ScoreSprite", GetThis<ScoreSprite>());
+	}
+
+	void ScoreSprite::OnUpdate() {
+		vector<VertexPositionTexture> newVertices;
+		UINT num;
+		int verNum = 0;
+		for (UINT i = m_NumberOfDigits; i > 0; i--) {
+			UINT base = (UINT)pow(10, i);
+			num = ((UINT)m_Score) % base;
+			num = num / (base / 10);
+			Vec2 uv0 = m_BackupVertices[verNum].textureCoordinate;
+			uv0.x = (float)num / 10.0f;
+			auto v = VertexPositionTexture(
+				m_BackupVertices[verNum].position,
+				uv0
+			);
+			newVertices.push_back(v);
+
+			Vec2 uv1 = m_BackupVertices[verNum + 1].textureCoordinate;
+			uv1.x = uv0.x + 0.1f;
+			v = VertexPositionTexture(
+				m_BackupVertices[verNum + 1].position,
+				uv1
+			);
+			newVertices.push_back(v);
+
+			Vec2 uv2 = m_BackupVertices[verNum + 2].textureCoordinate;
+			uv2.x = uv0.x;
+
+			v = VertexPositionTexture(
+				m_BackupVertices[verNum + 2].position,
+				uv2
+			);
+			newVertices.push_back(v);
+
+			Vec2 uv3 = m_BackupVertices[verNum + 3].textureCoordinate;
+			uv3.x = uv0.x + 0.1f;
+
+			v = VertexPositionTexture(
+				m_BackupVertices[verNum + 3].position,
+				uv3
+			);
+			newVertices.push_back(v);
+
+			verNum += 4;
+		}
+		auto ptrDraw = GetComponent<SpPTSpriteRender>();
+		ptrDraw->UpdateVertices(newVertices);
+	}
+
+	//--------------------------------------------------------------------------------------
+	///	PC球
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	PcSphere::PcSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos) :
+		GameObject(StagePtr),
+		m_StartPos(StartPos)
+	{
+	}
+	PcSphere::~PcSphere() {}
+
+	//初期化
+	void PcSphere::OnInit() {
+		auto ptrTrans = GetComponent<Transform>();
+		ptrTrans->SetScale(Vec3(1.0f, 1.0f, 1.0f));
+		Quat qt;
+		qt.identity();
+		ptrTrans->SetQuaternion(qt);
+		ptrTrans->SetPosition(m_StartPos);
+
+		vector<VertexPositionNormalTexture> vertices;
+		vector<VertexPositionColor> new_vertices;
+		vector<uint32_t> indices;
+		MeshUtill::CreateSphere(1.0f, 18, vertices, indices);
+		for (size_t i = 0; i < vertices.size(); i++) {
+			VertexPositionColor newV;
+			newV.position = vertices[i].position;
+			newV.color = Col4(
+				newV.position.x * 2.0f,
+				newV.position.y * 2.0f,
+				newV.position.z * 2.0f,
+				1.0f);
+			new_vertices.push_back(newV);
+
+		}
+		//描画コンポーネント
+		auto ptrRender = AddComponent<SpPCStaticRender>(new_vertices, indices);
+
+	}
+
+
+	//--------------------------------------------------------------------------------------
+	///	PT球
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	PtSphere::PtSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos) :
+		GameObject(StagePtr),
+		m_StartPos(StartPos)
+	{
+	}
+	PtSphere::~PtSphere() {}
+
+	//初期化
+	void PtSphere::OnInit() {
+		auto ptrTrans = GetComponent<Transform>();
+		ptrTrans->SetScale(Vec3(1.0f, 1.0f, 1.0f));
+		Quat qt;
+		qt.identity();
+		ptrTrans->SetQuaternion(qt);
+		ptrTrans->SetPosition(m_StartPos);
+
+		//描画コンポーネント
+		auto renderPtr = AddComponent<SpPTStaticRender>();
+		vector<VertexPositionNormalTexture> vertices;
+		vector<VertexPositionTexture> newVertices;
+		vector<uint32_t> indices;
+		MeshUtill::CreateSphere(1.0f, 18, vertices, indices);
+		for (size_t i = 0; i < vertices.size(); i++) {
+			VertexPositionTexture newV;
+			newV.position = vertices[i].position;
+			newV.textureCoordinate = vertices[i].textureCoordinate;
+			newVertices.push_back(newV);
+		}
+		auto pDevice = App::GetBaseDevice();
+		auto commandList = pDevice->GetComandList();
+		auto mesh = BaseMesh::CreateBaseMesh<VertexPositionTexture>(commandList, newVertices, indices);
+		renderPtr->SetBaseMesh(mesh);
+		renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(L"SKY_TEX"));
+	}
+
+	//--------------------------------------------------------------------------------------
+	///	PN球
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	PnSphere::PnSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos) :
+		GameObject(StagePtr),
+		m_StartPos(StartPos)
+	{
+	}
+	PnSphere::~PnSphere() {}
+
+	//初期化
+	void PnSphere::OnInit() {
+		auto ptrTrans = GetComponent<Transform>();
+		ptrTrans->SetScale(Vec3(1.0f, 1.0f, 1.0f));
+		Quat qt;
+		qt.identity();
+		ptrTrans->SetQuaternion(qt);
+		ptrTrans->SetPosition(m_StartPos);
+
+		//描画コンポーネント
+		auto renderPtr = AddComponent<SpPNStaticRender>();
+		vector<VertexPositionNormalTexture> vertices;
+		vector<VertexPositionNormal> newVertices;
+		vector<uint32_t> indices;
+		MeshUtill::CreateSphere(1.0f, 18, vertices, indices);
+		for (size_t i = 0; i < vertices.size(); i++) {
+			VertexPositionNormal newV;
+			newV.position = vertices[i].position;
+			newV.normal = vertices[i].normal;
+			newVertices.push_back(newV);
+
+		}
+		auto pDevice = App::GetBaseDevice();
+		auto commandList = pDevice->GetComandList();
+		auto mesh = BaseMesh::CreateBaseMesh<VertexPositionNormal>(commandList, newVertices, indices);
+		renderPtr->SetBaseMesh(mesh);
+	}
+
+	//--------------------------------------------------------------------------------------
+	///	PCT球
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	PctSphere::PctSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos) :
+		GameObject(StagePtr),
+		m_StartPos(StartPos)
+	{
+	}
+	PctSphere::~PctSphere() {}
+
+	//初期化
+	void PctSphere::OnInit() {
+		auto ptrTrans = GetComponent<Transform>();
+		ptrTrans->SetScale(Vec3(1.0f, 1.0f, 1.0f));
+		Quat qt;
+		qt.identity();
+		ptrTrans->SetQuaternion(qt);
+		ptrTrans->SetPosition(m_StartPos);
+
+		//描画コンポーネント
+		auto renderPtr = AddComponent<SpPCTStaticRender>();
+		vector<VertexPositionNormalTexture> vertices;
+		vector<VertexPositionColorTexture> newVertices;
+		vector<uint32_t> indices;
+		MeshUtill::CreateSphere(1.0f, 18, vertices, indices);
+		for (size_t i = 0; i < vertices.size(); i++) {
+			VertexPositionColorTexture newV;
+			newV.position = vertices[i].position;
+			newV.textureCoordinate = vertices[i].textureCoordinate;
+			newV.color = Col4(
+				newV.position.x * 2.0f,
+				newV.position.y * 2.0f,
+				newV.position.z * 2.0f,
+				1.0f);
+			newVertices.push_back(newV);
+		}
+		auto pDevice = App::GetBaseDevice();
+		auto commandList = pDevice->GetComandList();
+		auto mesh = BaseMesh::CreateBaseMesh<VertexPositionColorTexture>(commandList, newVertices, indices);
+		renderPtr->SetBaseMesh(mesh);
+		renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(L"SKY_TEX"));
+	}
+
+	//--------------------------------------------------------------------------------------
+	///	Pnt球
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	PntSphere::PntSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos, bool TextureUse) :
+		GameObject(StagePtr),
+		m_StartPos(StartPos),
+		m_TextureUse(TextureUse)
+	{
+	}
+	PntSphere::~PntSphere() {}
+
+	//初期化
+	void PntSphere::OnInit() {
+		auto ptrTrans = GetComponent<Transform>();
+		ptrTrans->SetScale(Vec3(1.0f, 1.0f, 1.0f));
+		Quat qt;
+		qt.identity();
+		ptrTrans->SetQuaternion(qt);
+		ptrTrans->SetPosition(m_StartPos);
+
+		//描画コンポーネント
+		auto renderPtr = AddComponent<SpPNTStaticRender>();
+		renderPtr->SetBaseMesh(App::GetBaseScene()->GetMesh(L"DEFAULT_ICOSAHEDRON"));
+		if (m_TextureUse) {
+			renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(L"SKY_TEX"));
+		}
+
+
+	}
+
+
+
+}
+// end basecross

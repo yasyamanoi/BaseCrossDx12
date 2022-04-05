@@ -44,7 +44,6 @@ namespace basecross {
 			Extbuff, _MAX_EXT);
 
 		wstring extStr = Extbuff;
-		PIXBeginEvent(commandList.Get(), 0, L"Create Texture From File");
 
 		shared_ptr<BaseTexture> ptrTexture = shared_ptr<BaseTexture>(new BaseTexture());
 		TexMetadata matadata;
@@ -123,7 +122,6 @@ namespace basecross {
 		//SRV�̍쐬
 		ptrTexture->UpdateSRAndCreateSRV(commandList);
 
-		PIXEndEvent(commandList.Get());
 		return ptrTexture;
 	}
 	void BaseTexture::UpdateSRAndCreateSRV(const ComPtr<ID3D12GraphicsCommandList>& commandList) {

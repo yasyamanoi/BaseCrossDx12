@@ -1,14 +1,13 @@
 /*!
 @file BaseHelper.cpp
-@brief ヘルパークラス
-@copyright Copyright (c) 2021 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@brief ヘルパークラス、関数群
+@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
 */
 
 
 #include "stdafx.h"
 
 namespace basecross {
-
 	namespace Dx12ShaderHelper {
 		//--------------------------------------------------------------------------------------
 		//　void CreateShaderFlomCso(
@@ -81,4 +80,4 @@ namespace basecross {
 	}
 
 }
-// end basecross
+// end namespace basecross

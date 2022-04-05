@@ -6,7 +6,7 @@
 
 
 
-#include "BcINCParameters.hlsli"
+#include "BcINCConstant.hlsli"
 #include "BcINCStructs.hlsli"
 #include "BcINCCommon.hlsli"
 #include "BcINCLighting.hlsli"

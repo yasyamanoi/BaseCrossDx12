@@ -1,7 +1,7 @@
 /*!
 @file VertexHelper.h
 @brief 頂点ヘルパークラス
-@copyright Copyright (c) 2021 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
 */
 
 #pragma once

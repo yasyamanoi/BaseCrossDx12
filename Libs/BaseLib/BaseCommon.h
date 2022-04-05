@@ -1,5 +1,14 @@
+/*!
+@file BaseCommon.h
+@brief ライブラリインクルード
+@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+*/
+
+
 #pragma once
-#include "targetver.h"
+
+#include "Basic/targetver.h"
+
 #define WIN32_LEAN_AND_MEAN             // Windows ヘッダーからほとんど使用されていない部分を除外する
 
 #include <windows.h>
@@ -31,7 +40,6 @@
 #include <mfapi.h>
 #include <mfreadwrite.h>
 #include <msxml6.h>
-#include <pix3.h>
 
 //C
 #include <cassert>
@@ -82,27 +90,29 @@ using namespace std;
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
+
 #include "Basic/BaseMath.h"
 using namespace basecross::bsm;
 #include "Basic/BaseHelper.h"
 #include "Basic/VertexHelper.h"
 #include "Basic/MeshHelper.h"
-#include "Basic/Camera.h"
-#include "Basic/Light.h"
-#include "Basic/StepTimer.h"
+#include "Basic/TransHelper.h"
+#include "Basic/BaseCamera.h"
+#include "Basic/BaseRenderState.h"
+#include "Basic/BaseLight.h"
+#include "Basic/BaseTimer.h"
+#include "Basic/BaseFrame.h"
 #include "Basic/BaseDevice.h"
-#include "Basic/DefaultDevice.h"
-#include "Basic/FrameResource.h"
 #include "Basic/BaseTexture.h"
 #include "Basic/BaseMesh.h"
-#include "Standerd/Component.h"
-#include "Standerd/Transform.h"
-#include "Standerd/Velocity.h"
-#include "Standerd/RenderComponents.h"
-#include "Standerd/GameObject.h"
-#include "Basic/BaseStage.h"
 #include "Basic/BaseScene.h"
 #include "Basic/App.h"
-
-
-
+#include "Standerd/Objects/GameObject.h"
+#include "Standerd/Objects/Stage.h"
+#include "Standerd/Components/Component.h"
+#include "Standerd/Components/Transform.h"
+#include "Standerd/Components/Velocity.h"
+#include "Standerd/Components/Collision.h"
+#include "Standerd/Components/SpSpriteRender.h"
+#include "Standerd/Components/SpStaticRender.h"
+#include "Standerd/Components/BcStaticRender.h"

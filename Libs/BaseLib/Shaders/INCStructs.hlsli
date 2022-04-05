@@ -80,6 +80,7 @@ struct PSPNTInput
 {
 	float4 position : SV_POSITION;
 	float3 norm : NORMAL;
+	float4 color : COLOR;
 	float2 tex : TEXCOORD;
 };
 
@@ -89,6 +90,7 @@ struct PSPNTInputShadow
 	float3 norm   : NORMAL0;
 	float3 lightRay		: NORMAL1;
 	float3 lightView : NORMAL2;
+	float4 color : COLOR;
 	float2 tex : TEXCOORD0;
 	float4 lightSpacePos : POSITION1;
 };
