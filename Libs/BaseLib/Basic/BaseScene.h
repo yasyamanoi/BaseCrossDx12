@@ -12,12 +12,42 @@ namespace basecross {
 
 
 	class Stage;
+
+	//--------------------------------------------------------------------------------------
+	///	シーン特有のイベント構造体
+	//--------------------------------------------------------------------------------------
+	struct SceneEvent {
+		///	遅延時間（SendEventの場合は常に0）
+		float m_dispatchTime;
+		///	メッセージ文字列
+		wstring m_msgStr;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンストラクタ
+		@param[in]	dispatchTime	配送までの時間
+		@param[in]	msgStr	メッセージ文字列
+		*/
+		//--------------------------------------------------------------------------------------
+		SceneEvent(float dispatchTime,const wstring& msgStr) :
+			m_dispatchTime(dispatchTime),
+			m_msgStr(msgStr)
+		{}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	デストラクタ
+		*/
+		//--------------------------------------------------------------------------------------
+		~SceneEvent() {}
+	};
+
+
 	//--------------------------------------------------------------------------------------
 	///	シーン親クラス
 	//--------------------------------------------------------------------------------------
 	class BaseScene {
 		map<wstring, shared_ptr<BaseMesh>> m_meshMap;
 		map<wstring, shared_ptr<BaseTexture>> m_textureMap;
+		vector<shared_ptr<SceneEvent>> m_eventVec;
 		shared_ptr<Stage> m_activeStage;
 		void CreateDefaultMeshes();
 		void ConvertVertex(const vector<VertexPositionNormalTexture>& vertices,
@@ -26,13 +56,27 @@ namespace basecross {
 			vector<VertexPositionTexture>& new_pt_vertices,
 			vector<VertexPositionNormalTangentTexture>& new_pntnt_vertices
 		);
+		void DispatchDelayedEvent();
 	protected:
-		BaseScene():m_activeStage(nullptr){}
+		BaseScene():
+			m_eventVec(),
+			m_activeStage(nullptr)
+		{}
 		virtual ~BaseScene() {}
 		void SetActiveStage(const shared_ptr<Stage>& stage) {
 			m_activeStage = stage;
 		}
-		//アクティブステージの設定
+
+	public:
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	アクティブなステージを設定して初期化する
+		@tparam	T	取得する型（Stageに型変換できるもの）
+		@tparam	Ts	可変長変数の型
+		@param[in]	params	このステージを構築するのに使用するパラメータ。
+		@return	アクティブなステージ
+		*/
+		//--------------------------------------------------------------------------------------
 		template<typename T, typename... Ts>
 		shared_ptr<T> ResetActiveStage(Ts&&... params) {
 			auto ActStagePtr = GetActiveStage(false);
@@ -46,96 +90,118 @@ namespace basecross {
 				throw BaseException(
 					L"以下はStageに型キャストできません。",
 					Util::GetWSTypeName<T>(),
-					L"SceneEx::ResetActiveStage<T>()"
+					L"BaseScene::ResetActiveStage<T>()"
 				);
 			}
 			SetActiveStage(StagePtr);
 			return Ptr;
 		}
-
-	public:
-		shared_ptr<Stage> GetActiveStage(bool ExceptionActive = true) const {
-			if (!m_activeStage) {
-				//アクティブなステージが無効なら
-				if (ExceptionActive) {
-					throw BaseException(
-						L"アクティブなステージがありません",
-						L"if(!m_activeStage)",
-						L"SceneEx::GetActiveStage()"
-					);
-				}
-				else {
-					return nullptr;
-				}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	アクティブなステージを設定して初期化する
+		@tparam	T	取得する型（Stageに型変換できるもの）
+		@tparam	Ts	可変長変数の型
+		@param[in]	params	このステージを構築するのに使用するパラメータ。
+		@return	アクティブなステージ
+		*/
+		//--------------------------------------------------------------------------------------
+		template<typename T, typename... Ts>
+		shared_ptr<T> ResetActiveStageWithParam(Ts&&... params) {
+			auto ActStagePtr = GetActiveStage(false);
+			if (ActStagePtr) {
+				//破棄を伝える
+				ActStagePtr->DestroyStage();
 			}
-			return m_activeStage;
-		}
-
-		void AddMesh(const wstring& key, const shared_ptr<BaseMesh>& mesh, bool keyCheck = false) {
-			if (keyCheck) {
-				auto it = m_meshMap.find(key);
-				if (it != m_meshMap.end()) {
-					throw BaseException(
-						L"指定のキーのメッシュがすでに存在します",
-						key,
-						L"BaseScene::AddMesh()"
-					);
-				}
-			}
-			m_meshMap[key] = mesh;
-		}
-		shared_ptr<BaseMesh> GetMesh(const wstring& key) {
-			auto it = m_meshMap.find(key);
-			if (it != m_meshMap.end()) {
-				return it->second;
-			}
-			else {
+			auto Ptr = ObjectFactory::CreateWithParam<T>(params...);
+			auto StagePtr = dynamic_pointer_cast<Stage>(Ptr);
+			if (!StagePtr) {
 				throw BaseException(
-					L"指定のキーのメッシュが見つかりません",
-					key,
-					L"BaseScene::GetMesh()"
+					L"以下はStageに型キャストできません。",
+					Util::GetWSTypeName<T>(),
+					L"SceneBase::ResetActiveStageWithParam<T>()"
 				);
 			}
-			return nullptr;
+			SetActiveStage(StagePtr);
+			//デバッグ用文字列
+			auto dbgPtr = StagePtr->AddGameObject<DebugString>();
+			StagePtr->SetSharedGameObject(L"DebugString", dbgPtr);
+			return Ptr;
 		}
-		void AddTexture(const wstring& key, const shared_ptr<BaseTexture>& texture, bool keyCheck = false) {
-			if (keyCheck) {
-				auto it = m_textureMap.find(key);
-				if (it != m_textureMap.end()) {
-					throw BaseException(
-						L"指定のキーのテクスチャがすでに存在します",
-						key,
-						L"BaseScene::AddTexture()"
-					);
-				}
-			}
-			m_textureMap[key] = texture;
-		}
-		shared_ptr<BaseTexture> GetTexture(const wstring& key) {
-			auto it = m_textureMap.find(key);
-			if (it != m_textureMap.end()) {
-				return it->second;
-			}
-			else {
-				throw BaseException(
-					L"指定のキーのテクスチャが見つかりません",
-					key,
-					L"BaseScene::GetTexture()"
-				);
-			}
-			return nullptr;
-		}
-		shared_ptr<BaseTexture> CreateTextureFlomFile(const wstring& falsename);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	アクティブなステージを取得する
+		@tparam	Ts	可変長変数の型
+		@param[in]	ExceptionActive	無効を認めるかどうか
+		@return	アクティブなステージ
+		*/
+		//--------------------------------------------------------------------------------------
+		shared_ptr<Stage> GetActiveStage(bool ExceptionActive = true) const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	メッシュをリソース登録する
+		@param[in]	key	リソースのキー
+		@param[in]	mesh	メッシュ
+		@param[in]	keyCheck	キーの重複チェックするかどうか
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void RegisterMesh(const wstring& key, const shared_ptr<BaseMesh>& mesh, bool keyCheck = false);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	登録されているメッシュを取得する
+		@param[in]	key	リソースのキー
+		@return	メッシュ
+		*/
+		//--------------------------------------------------------------------------------------
+		shared_ptr<BaseMesh> GetMesh(const wstring& key);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	テクスチャをリソース登録する
+		@param[in]	key	リソースのキー
+		@param[in]	texture	テクスチャ
+		@param[in]	keyCheck	キーの重複チェックするかどうか
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void RegisterTexture(const wstring& key, const shared_ptr<BaseTexture>& texture, bool keyCheck = false);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	登録されているテクスチャを取得する
+		@param[in]	key	リソースのキー
+		@return	テクスチャ
+		*/
+		//--------------------------------------------------------------------------------------
+		shared_ptr<BaseTexture> GetTexture(const wstring& key);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	シーンへのイベントのPOST（キューに入れる）
+		@param[in]	dispatchTime	遅延時間
+		@param[in]	msgStr	メッセージ
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void PostSceneEvent(float dispatchTime, const wstring& msgStr);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントを受け取る
+		@param[in]	sceneEvent	シーンイベント
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void OnEvent(const shared_ptr<SceneEvent>& sceneEvent) {}
+
 
 		virtual void OnInitScene();
-		virtual void OnInit() {}
+		virtual void OnInit(){}
 		virtual void OnInitFrame(BaseFrame* pBaseFrame);
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame);
 		virtual void OnUpdate();
+		virtual void OnRender() {}
 		virtual void OnDestroy();
 		virtual void OnKeyDown(UINT8 key);
 		virtual void OnKeyUp(UINT8 key);
 
+		virtual void PopulateShadowmapCommandList(BaseFrame* pBaseFrame);
 		virtual void PopulateCommandList(BaseFrame* pBaseFrame);
 
 	};

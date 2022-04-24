@@ -8,7 +8,9 @@
 
 namespace basecross {
 
-	shared_ptr<BaseTexture>  BaseTexture::CreateBaseTextureFromFile(const ComPtr<ID3D12GraphicsCommandList>& commandList, 
+
+
+	shared_ptr<BaseTexture>  BaseTexture::CreateBaseTextureFromFilePrim(const ComPtr<ID3D12GraphicsCommandList>& commandList,
 		const wstring& fileName, const CD3DX12_CPU_DESCRIPTOR_HANDLE& mapHandle) {
 		if (fileName == L"") {
 			throw BaseException(
@@ -124,6 +126,25 @@ namespace basecross {
 
 		return ptrTexture;
 	}
+
+	shared_ptr<BaseTexture> BaseTexture::CreateTextureFlomFile(const wstring& falsename) {
+		auto pDevice = App::GetBaseDevice();
+		auto commandList = pDevice->GetComandList();
+		//テクスチャの作成
+		//シェーダリソースハンドルを作成
+		UINT srvIndex = pDevice->GetSrvNextIndex();
+		CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle(
+			pDevice->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
+			srvIndex,
+			pDevice->GetCbvSrvUavDescriptorHandleIncrementSize()
+		);
+		//画像ファイルをもとにテクスチャを作成(SRV込み)
+		auto texture = BaseTexture::CreateBaseTextureFromFilePrim(commandList, falsename, srvHandle);
+		texture->SetSrvIndex(srvIndex);
+		return texture;
+	}
+
+
 	void BaseTexture::UpdateSRAndCreateSRV(const ComPtr<ID3D12GraphicsCommandList>& commandList) {
 		UpdateSubresources(commandList.Get(),
 			m_texture.Get(), m_textureUploadHeap.Get(),

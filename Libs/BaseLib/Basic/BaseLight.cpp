@@ -8,7 +8,7 @@
 
 namespace basecross {
 
-	const BaseLight& LightSet::GetLight(size_t index)const {
+	BaseLight LightSet::GetLight(size_t index)const {
 		if (index >= m_lights.size()) {
 			throw BaseException(
 				L"ライトのインデックスが範囲外です",

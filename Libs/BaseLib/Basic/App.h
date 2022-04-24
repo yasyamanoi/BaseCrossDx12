@@ -17,6 +17,9 @@ namespace basecross {
 	{
 		static HWND m_hwnd;
 		static BaseScene* m_pBaseScene;
+		static shared_ptr<EventDispatcher> m_eventDispatcher;	///< イベント送信オブジェクト
+		static InputDevice m_inputDevice;
+
 
 		static wstring m_wstrModulePath;		///< モジュール名フルパス
 		static wstring m_wstrDir;				///< モジュールがあるディレクトリ
@@ -26,7 +29,8 @@ namespace basecross {
 		static wstring m_wstrRelativeShadersDir;	///< 相対パスのシェーダディレクトリ
 		static wstring	m_wstrRelativeAssetsDir;	///< 相対パスのアセットディレクトリ
 
-		static void SetAssetsPath();
+		static void SetInitData();
+
 	protected:
 		static LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	public:
@@ -81,6 +85,24 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		static float GetElapsedTime() {
 			return (float)GetBaseDevice()->GetElapsedTime();
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベント配送オブジェクトを得る
+		@return イベント配送オブジェクト
+		*/
+		//--------------------------------------------------------------------------------------
+		static shared_ptr<EventDispatcher> GetEventDispatcher() {
+			return m_eventDispatcher;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	入力デバイスを得る
+		@return 入力デバイス
+		*/
+		//--------------------------------------------------------------------------------------
+		static InputDevice& GetInputDevice() {
+			return m_inputDevice;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!

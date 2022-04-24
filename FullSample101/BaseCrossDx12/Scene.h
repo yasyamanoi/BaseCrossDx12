@@ -1,7 +1,6 @@
 /*!
 @file Scene.h
 @brief シーンクラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
 */
 
 #pragma once
@@ -17,6 +16,7 @@ namespace basecross {
 		Scene() : BaseScene() {}
 		virtual ~Scene() {}
 		virtual void OnInit() override;
+		virtual void OnEvent(const shared_ptr<SceneEvent>& event) override;
 	};
 }
 //end basecross

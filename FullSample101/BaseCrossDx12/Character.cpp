@@ -1,7 +1,6 @@
 /*!
 @file Character.cpp
 @brief キャラクタークラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
 */
 
 
@@ -10,466 +9,376 @@
 
 namespace basecross {
 
+
 	//--------------------------------------------------------------------------------------
 	//	class FixedBox : public GameObject;
 	//--------------------------------------------------------------------------------------
 	//構築と破棄
 	FixedBox::FixedBox(const shared_ptr<Stage>& StagePtr,
-		const Vec3& scale,
-		const Vec3& rotation,
-		const Vec3& position
+		const Vec3& Scale,
+		const Vec3& Rotation,
+		const Vec3& Position
 	) :
 		GameObject(StagePtr),
-		m_scale(scale),
-		m_rotation(rotation),
-		m_position(position)
+		m_Scale(Scale),
+		m_Rotation(Rotation),
+		m_Position(Position)
 	{
 	}
+	FixedBox::~FixedBox() {}
 
 	//初期化
 	void FixedBox::OnInit() {
 		auto ptrTransform = GetComponent<Transform>();
-		ptrTransform->SetScale(m_scale);
-		ptrTransform->SetRotation(m_rotation);
-		ptrTransform->SetPosition(m_position);
-		auto ptrDraw = AddComponent<BcPNTStaticRender>();
-		ptrDraw->SetBaseMesh(App::GetBaseScene()->GetMesh(L"DEFAULT_CUBE"));
-		ptrDraw->SetBaseTexture(App::GetBaseScene()->GetTexture(L"SKY_TEX"));
+		ptrTransform->SetScale(m_Scale);
+		ptrTransform->SetRotation(m_Rotation);
+		ptrTransform->SetPosition(m_Position);
+		//OBB衝突j判定を付ける
+		auto ptrColl = AddComponent<CollisionObb>();
+		ptrColl->SetFixed(true);
+		//タグをつける
+		AddTag(L"FixedBox");
+		//影をつける（シャドウマップを描画する）
+//		auto shadowPtr = AddComponent<Shadowmap>();
+		//影の形（メッシュ）を設定
+//		shadowPtr->SetMeshResource(L"DEFAULT_CUBE");
+		auto ptrDraw = AddComponent<SpPNTStaticRender>();
+		ptrDraw->SetMesh(L"DEFAULT_CUBE");
+		ptrDraw->SetTexture(L"SKY_TX");
+//		ptrDraw->SetFogEnabled(true);
+//		ptrDraw->SetOwnShadowActive(true);
 
 	}
 
+	//--------------------------------------------------------------------------------------
+	//	class FixedSphere : public GameObject;
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	FixedSphere::FixedSphere(const shared_ptr<Stage>& StagePtr,
+		const float Scale,
+		const Vec3& Rotation,
+		const Vec3& Position
+	) :
+		GameObject(StagePtr),
+		m_Scale(Scale),
+		m_Rotation(Rotation),
+		m_Position(Position)
+	{
+	}
+	FixedSphere::~FixedSphere() {}
 
-	void WallObject::OnInit() {
-		auto transPtr = GetComponent<Transform>();
-		transPtr->SetScale(Vec3(1.0f));
-		transPtr->SetPosition(Vec3(0.0f));
+	//初期化
+	void FixedSphere::OnInit() {
+		auto ptrTransform = GetComponent<Transform>();
+		ptrTransform->SetScale(m_Scale);
+		ptrTransform->SetRotation(m_Rotation);
+		ptrTransform->SetPosition(m_Position);
+		//CollisionSphere衝突j判定を付ける
+		auto ptrColl = AddComponent<CollisionSphere>();
+		ptrColl->SetFixed(true);
+		//タグをつける
+		AddTag(L"FixedSphere");
+		//影をつける（シャドウマップを描画する）
+//		auto shadowPtr = AddComponent<Shadowmap>();
+		//影の形（メッシュ）を設定
+//		shadowPtr->SetMesh(L"DEFAULT_SPHERE");
+		auto ptrDraw = AddComponent<SpPNTStaticRender>();
+		ptrDraw->SetMesh(L"DEFAULT_SPHERE");
+		ptrDraw->SetTexture(L"SKY_TX");
+//		ptrDraw->SetFogEnabled(true);
+//		ptrDraw->SetOwnShadowActive(true);
+
+	}
+
+	//--------------------------------------------------------------------------------------
+	//	class FixedCapsule : public GameObject;
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	FixedCapsule::FixedCapsule(const shared_ptr<Stage>& StagePtr,
+		const Vec3& Scale,
+		const Vec3& Rotation,
+		const Vec3& Position
+	) :
+		GameObject(StagePtr),
+		m_Scale(Scale),
+		m_Rotation(Rotation),
+		m_Position(Position)
+	{
+	}
+	FixedCapsule::~FixedCapsule() {}
+
+	//初期化
+	void FixedCapsule::OnInit() {
+		auto ptrTransform = GetComponent<Transform>();
+		ptrTransform->SetScale(m_Scale);
+		ptrTransform->SetRotation(m_Rotation);
+		ptrTransform->SetPosition(m_Position);
+		//CAPSULE衝突j判定を付ける
+		auto ptrColl = AddComponent<CollisionCapsule>();
+		ptrColl->SetFixed(true);
+		//タグをつける
+		AddTag(L"FixedCapsule");
+		//影をつける（シャドウマップを描画する）
+//		auto shadowPtr = AddComponent<Shadowmap>();
+		//影の形（メッシュ）を設定
+//		shadowPtr->SetMeshResource(L"DEFAULT_CAPSULE");
+		auto ptrDraw = AddComponent<SpPNTStaticRender>();
+		ptrDraw->SetMesh(L"DEFAULT_CAPSULE");
+		ptrDraw->SetTexture(L"SKY_TX");
+//		ptrDraw->SetFogEnabled(true);
+//		ptrDraw->SetOwnShadowActive(true);
+
+	}
+
+	//--------------------------------------------------------------------------------------
+	//	追いかける配置オブジェクト
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	SeekObject::SeekObject(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos) :
+		GameObject(StagePtr),
+		m_StartPos(StartPos),
+		m_StateChangeSize(5.0f),
+		m_Force(0),
+		m_Velocity(0)
+	{
+	}
+	SeekObject::~SeekObject() {}
+
+	//初期化
+	void SeekObject::OnInit() {
+		auto ptrTransform = GetComponent<Transform>();
+		ptrTransform->SetPosition(m_StartPos);
+		ptrTransform->SetScale(0.125f, 0.25f, 0.25f);
+		ptrTransform->SetRotation(0.0f, 0.0f, 0.0f);
+
+		//オブジェクトのグループを得る
+		auto group = GetStage()->GetSharedObjectGroup(L"SeekGroup");
+		//グループに自分自身を追加
+		group->IntoGroup(GetThis<SeekObject>());
+		//Obbの衝突判定をつける
+		auto ptrColl = AddComponent<CollisionObb>();
+		//重力をつける
+		auto ptrGra = AddComponent<Gravity>();
+		//分離行動をつける
+		auto PtrSep = GetBehavior<SeparationSteering>();
+		PtrSep->SetGameObjectGroup(group);
+		//影をつける
+		//auto ptrShadow = AddComponent<Shadowmap>();
+		//ptrShadow->SetMesh(L"DEFAULT_CUBE");
+
+		auto ptrDraw = AddComponent<SpPNTStaticRender>();
+//		ptrDraw->SetFogEnabled(true);
+		ptrDraw->SetMesh(L"DEFAULT_CUBE");
+		ptrDraw->SetTexture(L"TRACE_TX");
+		//透明処理をする
 		SetAlphaActive(true);
 
-		auto renderPtr = AddComponent<BcPNTStaticRender>();
-		renderPtr->SetBaseMesh(App::GetBaseScene()->GetMesh(L"DEFAULT_CUBE"));
-		renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(L"TRACE_TEX"));
+		//ステートマシンの構築
+		m_StateMachine.reset(new StateMachine<SeekObject>(GetThis<SeekObject>()));
+		//最初のステートをSeekFarStateに設定
+		m_StateMachine->ChangeState(SeekFarState::Instance());
 	}
 
-	void WallObject::OnUpdate() {
-		auto transPtr = GetComponent<Transform>();
+
+	//操作
+	void SeekObject::OnUpdate() {
+		m_Force = Vec3(0);
+		//ステートマシンのUpdateを行う
+		//この中でステートの切り替えが行われる
+		m_StateMachine->Update();
+		auto ptrUtil = GetBehavior<UtilBehavior>();
+		ptrUtil->RotToHead(1.0f);
+	}
+
+
+	Vec3 SeekObject::GetTargetPos()const {
+		auto ptrTarget = GetStage()->GetSharedGameObject(L"Player");
+		return ptrTarget->GetComponent<Transform>()->GetWorldPosition();
+	}
+
+
+	void SeekObject::ApplyForce() {
 		float elapsedTime = App::GetElapsedTime();
-		Quat qtspan(Vec3(0, 1, 1), -elapsedTime);
-		auto quat = transPtr->GetQuaternion();
-		quat *= qtspan;
-		quat.normalize();
-		transPtr->SetQuaternion(quat);
-		auto pos = transPtr->GetPosition();
-		pos.x += m_posSpan * elapsedTime;
-		if (abs(pos.x) >= 5.0f) {
-			m_posSpan *= -1.0f;
+		m_Velocity += m_Force * elapsedTime;
+		auto ptrTrans = GetComponent<Transform>();
+		auto pos = ptrTrans->GetPosition();
+		pos += m_Velocity * elapsedTime;
+		ptrTrans->SetPosition(pos);
+	}
+
+
+
+	//--------------------------------------------------------------------------------------
+	//	プレイヤーから遠いときの移動
+	//--------------------------------------------------------------------------------------
+	shared_ptr<SeekFarState> SeekFarState::Instance() {
+		static shared_ptr<SeekFarState> instance(new SeekFarState);
+		return instance;
+	}
+	void SeekFarState::Enter(const shared_ptr<SeekObject>& Obj) {
+	}
+	void SeekFarState::Execute(const shared_ptr<SeekObject>& Obj) {
+		auto ptrSeek = Obj->GetBehavior<SeekSteering>();
+		auto ptrSep = Obj->GetBehavior<SeparationSteering>();
+		auto force = Obj->GetForce();
+		force = ptrSeek->Execute(force, Obj->GetVelocity(), Obj->GetTargetPos());
+		force += ptrSep->Execute(force);
+		Obj->SetForce(force);
+		Obj->ApplyForce();
+		float f = bsm::length(Obj->GetComponent<Transform>()->GetPosition() - Obj->GetTargetPos());
+		if (f < Obj->GetStateChangeSize()) {
+			Obj->GetStateMachine()->ChangeState(SeekNearState::Instance());
 		}
-		transPtr->SetPosition(pos);
+	}
 
+	void SeekFarState::Exit(const shared_ptr<SeekObject>& Obj) {
 	}
 
 	//--------------------------------------------------------------------------------------
-	///	壁模様のスプライト
+	//	プレイヤーから近いときの移動
 	//--------------------------------------------------------------------------------------
-	WallSprite::WallSprite(const shared_ptr<Stage>& StagePtr, const wstring& TextureKey, bool Trace,
-		const Vec2& StartScale, const Vec3& StartPos) :
+	shared_ptr<SeekNearState> SeekNearState::Instance() {
+		static shared_ptr<SeekNearState> instance(new SeekNearState);
+		return instance;
+	}
+	void SeekNearState::Enter(const shared_ptr<SeekObject>& Obj) {
+	}
+	void SeekNearState::Execute(const shared_ptr<SeekObject>& Obj) {
+		auto ptrArrive = Obj->GetBehavior<ArriveSteering>();
+		auto ptrSep = Obj->GetBehavior<SeparationSteering>();
+		auto force = Obj->GetForce();
+		force = ptrArrive->Execute(force, Obj->GetVelocity(), Obj->GetTargetPos());
+		force += ptrSep->Execute(force);
+		Obj->SetForce(force);
+		Obj->ApplyForce();
+		float f = bsm::length(Obj->GetComponent<Transform>()->GetPosition() - Obj->GetTargetPos());
+		if (f >= Obj->GetStateChangeSize()) {
+			Obj->GetStateMachine()->ChangeState(SeekFarState::Instance());
+		}
+	}
+	void SeekNearState::Exit(const shared_ptr<SeekObject>& Obj) {
+	}
+
+
+	//--------------------------------------------------------------------------------------
+	//	class MoveBox : public GameObject;
+	//--------------------------------------------------------------------------------------
+	//構築と破棄
+	MoveBox::MoveBox(const shared_ptr<Stage>& StagePtr,
+		const Vec3& Scale,
+		const Vec3& Rotation,
+		const Vec3& Position
+	) :
 		GameObject(StagePtr),
-		m_TextureKey(TextureKey),
-		m_Trace(Trace),
-		m_StartScale(StartScale),
-		m_StartPos(StartPos)
-	{}
+		m_Scale(Scale),
+		m_Rotation(Rotation),
+		m_Position(Position),
+		m_Velocity(0),
+		m_MaxVelocity(5.0f),
+		m_MinVelocity(0.05f),
+		m_Deceleration(0.95f)
+	{
+	}
+	MoveBox::~MoveBox() {}
 
-	WallSprite::~WallSprite() {}
-	void WallSprite::OnInit() {
-		float helfSize = 0.5f;
-		//頂点配列(縦横5個ずつ表示)
-		vector<VertexPositionColorTexture> vertices = {
-			{ VertexPositionColorTexture(Vec3(-helfSize, helfSize, 0),Col4(1.0f,1.0f,1.0f,1.0f), Vec2(0.0f, 0.0f)) },
-			{ VertexPositionColorTexture(Vec3(helfSize, helfSize, 0), Col4(0.0f, 1.0f, 1.0f, 1.0f), Vec2(5.0f, 0.0f)) },
-			{ VertexPositionColorTexture(Vec3(-helfSize, -helfSize, 0), Col4(1.0f, 0.0f, 1.0f, 1.0f), Vec2(0.0f, 5.0f)) },
-			{ VertexPositionColorTexture(Vec3(helfSize, -helfSize, 0), Col4(0.0f, 0.0f, 0, 1.0f), Vec2(5.0f, 5.0f)) },
-		};
-		//インデックス配列
-		vector<uint32_t> indices = { 0, 1, 2, 1, 3, 2 };
-		SetAlphaActive(m_Trace);
-		auto ptrTrans = GetComponent<Transform>();
-		ptrTrans->SetScale(m_StartScale.x, m_StartScale.y, 1.0f);
-		ptrTrans->SetRotation(0, 0, 0);
-		ptrTrans->SetPosition(m_StartPos);
-		//頂点とインデックスを指定してスプライト作成
-		auto renderPtr = AddComponent<SpPCTSpriteRender>(vertices, indices);
-		renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(m_TextureKey));
-		renderPtr->SetSamplerKey(L"LinearWrap");
+	//初期化
+	void MoveBox::OnInit() {
+		auto ptrTransform = GetComponent<Transform>();
+		ptrTransform->SetScale(m_Scale);
+		ptrTransform->SetRotation(m_Rotation);
+		ptrTransform->SetPosition(m_Position);
+		//OBB衝突j判定を付ける
+		auto ptrColl = AddComponent<CollisionObb>();
+		//重力をつける
+		auto ptrGra = AddComponent<Gravity>();
+		//影をつける
+		//auto shadowPtr = AddComponent<Shadowmap>();
+		//shadowPtr->SetMesh(L"DEFAULT_CUBE");
+		//描画処理
+		auto ptrDraw = AddComponent<SpPNTStaticRender>();
+//		ptrDraw->SetFogEnabled(true);
+		ptrDraw->SetMesh(L"DEFAULT_CUBE");
+		ptrDraw->SetTexture(L"WALL_TX");
+//		ptrDraw->SetOwnShadowActive(true);
 	}
 
-
-	//--------------------------------------------------------------------------------------
-	///	スクロールするスプライト
-	//--------------------------------------------------------------------------------------
-	ScrollSprite::ScrollSprite(const shared_ptr<Stage>& StagePtr,
-		const wstring& TextureKey, bool Trace,
-		const Vec2& StartScale, const Vec3& StartPos) :
-		GameObject(StagePtr),
-		m_TextureKey(TextureKey),
-		m_Trace(Trace),
-		m_StartScale(StartScale),
-		m_StartPos(StartPos),
-		m_TotalTime(0)
-	{}
-
-	ScrollSprite::~ScrollSprite() {}
-	void ScrollSprite::OnInit() {
-		float helfSize = 0.5f;
-		//頂点配列
-		m_BackupVertices = {
-			{ VertexPositionTexture(Vec3(-helfSize, helfSize, 0), Vec2(0.0f, 0.0f)) },
-			{ VertexPositionTexture(Vec3(helfSize, helfSize, 0), Vec2(4.0f, 0.0f)) },
-			{ VertexPositionTexture(Vec3(-helfSize, -helfSize, 0), Vec2(0.0f, 1.0f)) },
-			{ VertexPositionTexture(Vec3(helfSize, -helfSize, 0), Vec2(4.0f, 1.0f)) },
-		};
-		//インデックス配列
-		vector<uint32_t> indices = { 0, 1, 2, 1, 3, 2 };
-		SetAlphaActive(m_Trace);
-		auto ptrTrans = GetComponent<Transform>();
-		ptrTrans->SetScale(m_StartScale.x, m_StartScale.y, 1.0f);
-		ptrTrans->SetRotation(0, 0, 0);
-		ptrTrans->SetPosition(m_StartPos);
-		//頂点とインデックスを指定してスプライト作成
-		auto renderPtr = AddComponent<SpPTSpriteRender>(m_BackupVertices, indices);
-		renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(m_TextureKey));
-		renderPtr->SetSamplerKey(L"LinearWrap");
-
-	}
-
-	void ScrollSprite::OnUpdate() {
+	void MoveBox::OnUpdate() {
+		auto ptrTransform = GetComponent<Transform>();
 		float elapsedTime = App::GetElapsedTime();
-		m_TotalTime += elapsedTime;
-		if (m_TotalTime > 1.0f) {
-			m_TotalTime = 0;
-		}
-		vector<VertexPositionTexture> newVertices;
-		for (size_t i = 0; i < m_BackupVertices.size(); i++) {
-			Vec2 uv = m_BackupVertices[i].textureCoordinate;
-			if (uv.x == 0.0f) {
-				uv.x = m_TotalTime;
+		auto Pos = ptrTransform->GetPosition();
+		Pos += m_Velocity * elapsedTime;
+		ptrTransform->SetPosition(Pos);
+
+	}
+
+	void MoveBox::OnCollisionExcute(const CollisionPair& Pair) {
+		auto shDest = Pair.m_Dest.lock();
+		if (shDest->IsFixed()) {
+			//減速
+			m_Velocity *= m_Deceleration;
+			if (m_Velocity.length() < m_MinVelocity) {
+				m_Velocity = Vec3(0);
 			}
-			else if (uv.x == 4.0f) {
-				uv.x += m_TotalTime;
-			}
-			auto v = VertexPositionTexture(
-				m_BackupVertices[i].position,
-				uv
-			);
-			newVertices.push_back(v);
 		}
-		auto ptrDraw = GetComponent<SpPTSpriteRender>();
-		ptrDraw->UpdateVertices(newVertices);
 	}
 
-	//--------------------------------------------------------------------------------------
-	///	スコア表示のスプライト
-	//--------------------------------------------------------------------------------------
-	ScoreSprite::ScoreSprite(const shared_ptr<Stage>& StagePtr, UINT NumberOfDigits,
-		const wstring& TextureKey, bool Trace,
-		const Vec2& StartScale, const Vec3& StartPos) :
-		GameObject(StagePtr),
-		m_NumberOfDigits(NumberOfDigits),
-		m_TextureKey(TextureKey),
-		m_Trace(Trace),
-		m_StartScale(StartScale),
-		m_StartPos(StartPos),
-		m_Score(0.0f)
-	{}
-
-	void ScoreSprite::OnInit() {
-		float xPiecesize = 1.0f / (float)m_NumberOfDigits;
-		float helfSize = 0.5f;
-
-		//インデックス配列
-		vector<uint32_t> indices;
-		for (UINT i = 0; i < m_NumberOfDigits; i++) {
-			float vertex0 = -helfSize + xPiecesize * (float)i;
-			float vertex1 = vertex0 + xPiecesize;
-			//0
-			m_BackupVertices.push_back(
-				VertexPositionTexture(Vec3(vertex0, helfSize, 0), Vec2(0.0f, 0.0f))
-			);
-			//1
-			m_BackupVertices.push_back(
-				VertexPositionTexture(Vec3(vertex1, helfSize, 0), Vec2(0.1f, 0.0f))
-			);
-			//2
-			m_BackupVertices.push_back(
-				VertexPositionTexture(Vec3(vertex0, -helfSize, 0), Vec2(0.0f, 1.0f))
-			);
-			//3
-			m_BackupVertices.push_back(
-				VertexPositionTexture(Vec3(vertex1, -helfSize, 0), Vec2(0.1f, 1.0f))
-			);
-			indices.push_back(i * 4 + 0);
-			indices.push_back(i * 4 + 1);
-			indices.push_back(i * 4 + 2);
-			indices.push_back(i * 4 + 1);
-			indices.push_back(i * 4 + 3);
-			indices.push_back(i * 4 + 2);
-		}
-
-		SetAlphaActive(m_Trace);
+	void MoveBox::OnCollisionExit(const CollisionPair& Pair) {
 		auto ptrTrans = GetComponent<Transform>();
-		ptrTrans->SetScale(m_StartScale.x, m_StartScale.y, 1.0f);
-		ptrTrans->SetRotation(0, 0, 0);
-		ptrTrans->SetPosition(m_StartPos.x, m_StartPos.y, 0.0f);
-		//頂点とインデックスを指定してスプライト作成
-		auto renderPtr = AddComponent<SpPTSpriteRender>(m_BackupVertices, indices);
-		renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(m_TextureKey));
-
-
-		GetStage()->SetSharedGameObject(L"ScoreSprite", GetThis<ScoreSprite>());
-	}
-
-	void ScoreSprite::OnUpdate() {
-		vector<VertexPositionTexture> newVertices;
-		UINT num;
-		int verNum = 0;
-		for (UINT i = m_NumberOfDigits; i > 0; i--) {
-			UINT base = (UINT)pow(10, i);
-			num = ((UINT)m_Score) % base;
-			num = num / (base / 10);
-			Vec2 uv0 = m_BackupVertices[verNum].textureCoordinate;
-			uv0.x = (float)num / 10.0f;
-			auto v = VertexPositionTexture(
-				m_BackupVertices[verNum].position,
-				uv0
-			);
-			newVertices.push_back(v);
-
-			Vec2 uv1 = m_BackupVertices[verNum + 1].textureCoordinate;
-			uv1.x = uv0.x + 0.1f;
-			v = VertexPositionTexture(
-				m_BackupVertices[verNum + 1].position,
-				uv1
-			);
-			newVertices.push_back(v);
-
-			Vec2 uv2 = m_BackupVertices[verNum + 2].textureCoordinate;
-			uv2.x = uv0.x;
-
-			v = VertexPositionTexture(
-				m_BackupVertices[verNum + 2].position,
-				uv2
-			);
-			newVertices.push_back(v);
-
-			Vec2 uv3 = m_BackupVertices[verNum + 3].textureCoordinate;
-			uv3.x = uv0.x + 0.1f;
-
-			v = VertexPositionTexture(
-				m_BackupVertices[verNum + 3].position,
-				uv3
-			);
-			newVertices.push_back(v);
-
-			verNum += 4;
+		auto shDest = Pair.m_Dest.lock();
+		m_Velocity -= shDest->GetVelocity();
+		m_Velocity.reflect(Pair.m_SrcHitNormal);
+		if (m_Velocity.length() > m_MaxVelocity) {
+			m_Velocity.normalize();
+			m_Velocity *= m_MaxVelocity;
 		}
-		auto ptrDraw = GetComponent<SpPTSpriteRender>();
-		ptrDraw->UpdateVertices(newVertices);
+
 	}
 
 	//--------------------------------------------------------------------------------------
-	///	PC球
+	//	class MoveBox : public GameObject;
 	//--------------------------------------------------------------------------------------
 	//構築と破棄
-	PcSphere::PcSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos) :
+	MoveFixedBox::MoveFixedBox(const shared_ptr<Stage>& StagePtr,
+		const Vec3& Scale,
+		const Vec3& Rotation,
+		const Vec3& Position
+	) :
 		GameObject(StagePtr),
-		m_StartPos(StartPos)
+		m_Scale(Scale),
+		m_Rotation(Rotation),
+		m_Position(Position)
 	{
 	}
-	PcSphere::~PcSphere() {}
+	MoveFixedBox::~MoveFixedBox() {}
 
 	//初期化
-	void PcSphere::OnInit() {
-		auto ptrTrans = GetComponent<Transform>();
-		ptrTrans->SetScale(Vec3(1.0f, 1.0f, 1.0f));
-		Quat qt;
-		qt.identity();
-		ptrTrans->SetQuaternion(qt);
-		ptrTrans->SetPosition(m_StartPos);
-
-		vector<VertexPositionNormalTexture> vertices;
-		vector<VertexPositionColor> new_vertices;
-		vector<uint32_t> indices;
-		MeshUtill::CreateSphere(1.0f, 18, vertices, indices);
-		for (size_t i = 0; i < vertices.size(); i++) {
-			VertexPositionColor newV;
-			newV.position = vertices[i].position;
-			newV.color = Col4(
-				newV.position.x * 2.0f,
-				newV.position.y * 2.0f,
-				newV.position.z * 2.0f,
-				1.0f);
-			new_vertices.push_back(newV);
-
-		}
-		//描画コンポーネント
-		auto ptrRender = AddComponent<SpPCStaticRender>(new_vertices, indices);
-
+	void MoveFixedBox::OnInit() {
+		AddTag(L"MoveFixedBox");
+		auto ptrTransform = GetComponent<Transform>();
+		ptrTransform->SetScale(m_Scale);
+		ptrTransform->SetRotation(m_Rotation);
+		ptrTransform->SetPosition(m_Position);
+		//OBB衝突j判定を付ける
+		auto ptrColl = AddComponent<CollisionObb>();
+		ptrColl->SetFixed(true);
+		//アクションの登録
+		auto PtrAction = AddComponent<Action>();
+		PtrAction->AddMoveBy(5.0f, Vec3(5.0f, 5.0f, 0));
+		PtrAction->AddMoveBy(5.0f, Vec3(-5.0f, -5.0f, 0));
+		//ループする
+		PtrAction->SetLooped(true);
+		//アクション開始
+		PtrAction->Run();
+		//影をつける
+		auto shadowPtr = AddComponent<Shadowmap>();
+		shadowPtr->SetMesh(L"DEFAULT_CUBE");
+		//描画処理
+		auto ptrDraw = AddComponent<SpPNTStaticRender>();
+//		ptrDraw->SetFogEnabled(true);
+		ptrDraw->SetMesh(L"DEFAULT_CUBE");
+		ptrDraw->SetTexture(L"WALL_TX");
+		ptrDraw->SetOwnShadowActive(true);
 	}
-
-
-	//--------------------------------------------------------------------------------------
-	///	PT球
-	//--------------------------------------------------------------------------------------
-	//構築と破棄
-	PtSphere::PtSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos) :
-		GameObject(StagePtr),
-		m_StartPos(StartPos)
-	{
-	}
-	PtSphere::~PtSphere() {}
-
-	//初期化
-	void PtSphere::OnInit() {
-		auto ptrTrans = GetComponent<Transform>();
-		ptrTrans->SetScale(Vec3(1.0f, 1.0f, 1.0f));
-		Quat qt;
-		qt.identity();
-		ptrTrans->SetQuaternion(qt);
-		ptrTrans->SetPosition(m_StartPos);
-
-		//描画コンポーネント
-		auto renderPtr = AddComponent<SpPTStaticRender>();
-		vector<VertexPositionNormalTexture> vertices;
-		vector<VertexPositionTexture> newVertices;
-		vector<uint32_t> indices;
-		MeshUtill::CreateSphere(1.0f, 18, vertices, indices);
-		for (size_t i = 0; i < vertices.size(); i++) {
-			VertexPositionTexture newV;
-			newV.position = vertices[i].position;
-			newV.textureCoordinate = vertices[i].textureCoordinate;
-			newVertices.push_back(newV);
-		}
-		auto pDevice = App::GetBaseDevice();
-		auto commandList = pDevice->GetComandList();
-		auto mesh = BaseMesh::CreateBaseMesh<VertexPositionTexture>(commandList, newVertices, indices);
-		renderPtr->SetBaseMesh(mesh);
-		renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(L"SKY_TEX"));
-	}
-
-	//--------------------------------------------------------------------------------------
-	///	PN球
-	//--------------------------------------------------------------------------------------
-	//構築と破棄
-	PnSphere::PnSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos) :
-		GameObject(StagePtr),
-		m_StartPos(StartPos)
-	{
-	}
-	PnSphere::~PnSphere() {}
-
-	//初期化
-	void PnSphere::OnInit() {
-		auto ptrTrans = GetComponent<Transform>();
-		ptrTrans->SetScale(Vec3(1.0f, 1.0f, 1.0f));
-		Quat qt;
-		qt.identity();
-		ptrTrans->SetQuaternion(qt);
-		ptrTrans->SetPosition(m_StartPos);
-
-		//描画コンポーネント
-		auto renderPtr = AddComponent<SpPNStaticRender>();
-		vector<VertexPositionNormalTexture> vertices;
-		vector<VertexPositionNormal> newVertices;
-		vector<uint32_t> indices;
-		MeshUtill::CreateSphere(1.0f, 18, vertices, indices);
-		for (size_t i = 0; i < vertices.size(); i++) {
-			VertexPositionNormal newV;
-			newV.position = vertices[i].position;
-			newV.normal = vertices[i].normal;
-			newVertices.push_back(newV);
-
-		}
-		auto pDevice = App::GetBaseDevice();
-		auto commandList = pDevice->GetComandList();
-		auto mesh = BaseMesh::CreateBaseMesh<VertexPositionNormal>(commandList, newVertices, indices);
-		renderPtr->SetBaseMesh(mesh);
-	}
-
-	//--------------------------------------------------------------------------------------
-	///	PCT球
-	//--------------------------------------------------------------------------------------
-	//構築と破棄
-	PctSphere::PctSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos) :
-		GameObject(StagePtr),
-		m_StartPos(StartPos)
-	{
-	}
-	PctSphere::~PctSphere() {}
-
-	//初期化
-	void PctSphere::OnInit() {
-		auto ptrTrans = GetComponent<Transform>();
-		ptrTrans->SetScale(Vec3(1.0f, 1.0f, 1.0f));
-		Quat qt;
-		qt.identity();
-		ptrTrans->SetQuaternion(qt);
-		ptrTrans->SetPosition(m_StartPos);
-
-		//描画コンポーネント
-		auto renderPtr = AddComponent<SpPCTStaticRender>();
-		vector<VertexPositionNormalTexture> vertices;
-		vector<VertexPositionColorTexture> newVertices;
-		vector<uint32_t> indices;
-		MeshUtill::CreateSphere(1.0f, 18, vertices, indices);
-		for (size_t i = 0; i < vertices.size(); i++) {
-			VertexPositionColorTexture newV;
-			newV.position = vertices[i].position;
-			newV.textureCoordinate = vertices[i].textureCoordinate;
-			newV.color = Col4(
-				newV.position.x * 2.0f,
-				newV.position.y * 2.0f,
-				newV.position.z * 2.0f,
-				1.0f);
-			newVertices.push_back(newV);
-		}
-		auto pDevice = App::GetBaseDevice();
-		auto commandList = pDevice->GetComandList();
-		auto mesh = BaseMesh::CreateBaseMesh<VertexPositionColorTexture>(commandList, newVertices, indices);
-		renderPtr->SetBaseMesh(mesh);
-		renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(L"SKY_TEX"));
-	}
-
-	//--------------------------------------------------------------------------------------
-	///	Pnt球
-	//--------------------------------------------------------------------------------------
-	//構築と破棄
-	PntSphere::PntSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos, bool TextureUse) :
-		GameObject(StagePtr),
-		m_StartPos(StartPos),
-		m_TextureUse(TextureUse)
-	{
-	}
-	PntSphere::~PntSphere() {}
-
-	//初期化
-	void PntSphere::OnInit() {
-		auto ptrTrans = GetComponent<Transform>();
-		ptrTrans->SetScale(Vec3(1.0f, 1.0f, 1.0f));
-		Quat qt;
-		qt.identity();
-		ptrTrans->SetQuaternion(qt);
-		ptrTrans->SetPosition(m_StartPos);
-
-		//描画コンポーネント
-		auto renderPtr = AddComponent<SpPNTStaticRender>();
-		renderPtr->SetBaseMesh(App::GetBaseScene()->GetMesh(L"DEFAULT_ICOSAHEDRON"));
-		if (m_TextureUse) {
-			renderPtr->SetBaseTexture(App::GetBaseScene()->GetTexture(L"SKY_TEX"));
-		}
-
-
-	}
-
-
 
 }
 // end basecross

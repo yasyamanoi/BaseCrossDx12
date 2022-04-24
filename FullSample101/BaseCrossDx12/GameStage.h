@@ -1,7 +1,6 @@
 /*!
 @file GameStage.h
 @brief ゲームステージクラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
 */
 #pragma once
 #include "stdafx.h"
@@ -10,13 +9,23 @@ namespace basecross {
 
 	class GameStage : public Stage {
 		//カメラ
-		shared_ptr<BaseCamera> m_camera;
+		shared_ptr<MyCamera> m_camera;
 		//ライト
 		shared_ptr<LightSet> m_lightSet;
 		//固定のボックスの作成
 		void CreateFixedBox();
-		//トータル時間
-		float m_totalTime;
+		//固定の球体の作成
+		void CreateFixedSphere();
+		//固定のカプセルの作成
+		void CreateFixedCapsule();
+		//行ったり来たりするボックスの作成
+		void CreateMoveFixedBox();
+		//移動するボックスの作成
+		void CreateMoveBox();
+		//追いかけるオブジェクトの作成
+		void CreateSeekObject();
+		//プレイヤーの作成
+		void CreatePlayer();
 	public:
 		GameStage() :Stage() {}
 		virtual ~GameStage() {}
@@ -27,7 +36,11 @@ namespace basecross {
 			return m_lightSet;
 		}
 		virtual void OnInit()override;
-		virtual void OnUpdate()override;
+		virtual void OnUpdateLightCamera() override {
+			m_camera->OnUpdate();
+		}
+
+//		virtual void OnUpdate()override;
 
 	};
 

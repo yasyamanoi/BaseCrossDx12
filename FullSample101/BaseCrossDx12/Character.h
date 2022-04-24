@@ -1,7 +1,6 @@
 /*!
 @file Character.h
 @brief キャラクタークラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
 */
 
 #pragma once
@@ -13,250 +12,190 @@ namespace basecross {
 	//	class FixedBox : public GameObject;
 	//--------------------------------------------------------------------------------------
 	class FixedBox : public GameObject {
-		Vec3 m_scale;
-		Vec3 m_rotation;
-		Vec3 m_position;
+		Vec3 m_Scale;
+		Vec3 m_Rotation;
+		Vec3 m_Position;
 	public:
 		//構築と破棄
-		FixedBox(const shared_ptr<Stage>& stage,
-			const Vec3& scale,
-			const Vec3& rotation,
-			const Vec3& position
+		FixedBox(const shared_ptr<Stage>& StagePtr,
+			const Vec3& Scale,
+			const Vec3& Rotation,
+			const Vec3& Position
 		);
-		virtual ~FixedBox() {}
+		virtual ~FixedBox();
 		//初期化
 		virtual void OnInit() override;
 		//操作
 	};
 
 
-	class WallObject : public GameObject {
-		float m_posSpan;
-	public:
-		WallObject(const shared_ptr<Stage>& stage) :GameObject(stage), m_posSpan(1.0f) {}
-		virtual ~WallObject() {}
-		virtual void OnInit()override;
-		virtual void OnUpdate() override;
-
-	};
-
 	//--------------------------------------------------------------------------------------
-	///	壁模様のスプライト
+	//	class FixedSphere : public GameObject;
 	//--------------------------------------------------------------------------------------
-	class WallSprite : public GameObject {
-		bool m_Trace;
-		Vec2 m_StartScale;
-		Vec3 m_StartPos;
-		wstring m_TextureKey;
+	class FixedSphere : public GameObject {
+		Vec3 m_Scale;
+		Vec3 m_Rotation;
+		Vec3 m_Position;
 	public:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief コンストラクタ
-		@param[in]	StagePtr	ステージ
-		@param[in]	TextureKey	テクスチャキー
-		@param[in]	Trace	透明処理するかどうか
-		@param[in]	StartScale	初期スケール
-		@param[in]	StartPos	初期位置
-		*/
-		//--------------------------------------------------------------------------------------
-		WallSprite(const shared_ptr<Stage>& StagePtr, const wstring& TextureKey, bool Trace,
-			const Vec2& StartScale, const Vec3& StartPos);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief デストラクタ
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual ~WallSprite();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief 初期化
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
+		//構築と破棄
+		FixedSphere(const shared_ptr<Stage>& StagePtr,
+			const float Scale,
+			const Vec3& Rotation,
+			const Vec3& Position
+		);
+		virtual ~FixedSphere();
+		//初期化
 		virtual void OnInit() override;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief 更新
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnUpdate()override {}
+		//操作
 	};
 
 
+
 	//--------------------------------------------------------------------------------------
-	///	スクロールするスプライト
+	//	class FixedCapsule : public GameObject;
 	//--------------------------------------------------------------------------------------
-	class ScrollSprite : public GameObject {
-		bool m_Trace;
-		Vec2 m_StartScale;
-		Vec3 m_StartPos;
-		wstring m_TextureKey;
-		float m_TotalTime;
-		//バックアップ頂点データ
-		vector<VertexPositionTexture> m_BackupVertices;
+	class FixedCapsule : public GameObject {
+		Vec3 m_Scale;
+		Vec3 m_Rotation;
+		Vec3 m_Position;
 	public:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief コンストラクタ
-		@param[in]	StagePtr	ステージ
-		@param[in]	TextureKey	テクスチャキー
-		@param[in]	Trace	透明処理するかどうか
-		@param[in]	StartScale	初期スケール
-		@param[in]	StartPos	初期位置
-		*/
-		//--------------------------------------------------------------------------------------
-		ScrollSprite(const shared_ptr<Stage>& StagePtr, const wstring& TextureKey, bool Trace,
-			const Vec2& StartScale, const Vec3& StartPos);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief デストラクタ
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual ~ScrollSprite();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief 初期化
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
+		//構築と破棄
+		FixedCapsule(const shared_ptr<Stage>& StagePtr,
+			const Vec3& Scale,
+			const Vec3& Rotation,
+			const Vec3& Position
+		);
+		virtual ~FixedCapsule();
+		//初期化
 		virtual void OnInit() override;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief 更新
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnUpdate()override;
+		//操作
 	};
 
+
+
 	//--------------------------------------------------------------------------------------
-	///	スコア表示のスプライト
+	//	追いかける配置オブジェクト
 	//--------------------------------------------------------------------------------------
-	class ScoreSprite : public GameObject {
-		bool m_Trace;
-		Vec2 m_StartScale;
+
+	class SeekObject : public GameObject {
+		//ステートマシーン
+		unique_ptr< StateMachine<SeekObject> >  m_StateMachine;
 		Vec3 m_StartPos;
-		wstring m_TextureKey;
-		float m_Score;
-		//桁数
-		UINT m_NumberOfDigits;
-		//バックアップ頂点データ
-		vector<VertexPositionTexture> m_BackupVertices;
+		float m_StateChangeSize;
+		//フォース
+		Vec3 m_Force;
+		//速度
+		Vec3 m_Velocity;
 	public:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief コンストラクタ
-		@param[in]	StagePtr	ステージ
-		@param[in]	NumberOfDigits	桁数
-		@param[in]	TextureKey	テクスチャキー
-		@param[in]	Trace	透明処理するかどうか
-		@param[in]	StartScale	初期スケール
-		@param[in]	StartPos	初期位置
-		*/
-		//--------------------------------------------------------------------------------------
-		ScoreSprite(const shared_ptr<Stage>& StagePtr, UINT NumberOfDigits,
-			const wstring& TextureKey, bool Trace,
-			const Vec2& StartScale, const Vec3& StartPos);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief デストラクタ
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual ~ScoreSprite() {}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief スコアのセット
-		@param[in]	f	値
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void SetScore(float f) {
-			m_Score = f;
+		//構築と破棄
+		SeekObject(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos);
+		virtual ~SeekObject();
+		//初期化
+		virtual void OnInit() override;
+		//アクセサ
+		const unique_ptr<StateMachine<SeekObject>>& GetStateMachine() {
+			return m_StateMachine;
 		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief 初期化
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnInit() override;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief 更新
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnUpdate()override;
+		float GetStateChangeSize() const {
+			return m_StateChangeSize;
+		}
+		const Vec3& GetForce()const {
+			return m_Force;
+		}
+		void SetForce(const Vec3& f) {
+			m_Force = f;
+		}
+		void AddForce(const Vec3& f) {
+			m_Force += f;
+		}
+		const Vec3& GetVelocity()const {
+			return m_Velocity;
+		}
+		void SetVelocity(const Vec3& v) {
+			m_Velocity = v;
+		}
+		void ApplyForce();
+		Vec3 GetTargetPos()const;
+		//操作
+		virtual void OnUpdate() override;
 	};
 
 	//--------------------------------------------------------------------------------------
-	///	PC球
+	//	class SeekFarState : public ObjState<SeekObject>;
+	//	用途: プレイヤーから遠いときの移動
 	//--------------------------------------------------------------------------------------
-	class PcSphere : public GameObject {
-		Vec3 m_StartPos;
+	class SeekFarState : public ObjState<SeekObject>
+	{
+		SeekFarState() {}
+	public:
+		static shared_ptr<SeekFarState> Instance();
+		virtual void Enter(const shared_ptr<SeekObject>& Obj)override;
+		virtual void Execute(const shared_ptr<SeekObject>& Obj)override;
+		virtual void Exit(const shared_ptr<SeekObject>& Obj)override;
+	};
+
+	//--------------------------------------------------------------------------------------
+	//	class SeekNearState : public ObjState<SeekObject>;
+	//	用途: プレイヤーから近いときの移動
+	//--------------------------------------------------------------------------------------
+	class SeekNearState : public ObjState<SeekObject>
+	{
+		SeekNearState() {}
+	public:
+		static shared_ptr<SeekNearState> Instance();
+		virtual void Enter(const shared_ptr<SeekObject>& Obj)override;
+		virtual void Execute(const shared_ptr<SeekObject>& Obj)override;
+		virtual void Exit(const shared_ptr<SeekObject>& Obj)override;
+	};
+
+
+	//--------------------------------------------------------------------------------------
+	//	class MoveBox : public GameObject;
+	//--------------------------------------------------------------------------------------
+	class MoveBox : public GameObject {
+		Vec3 m_Scale;
+		Vec3 m_Rotation;
+		Vec3 m_Position;
+		Vec3 m_Velocity;
+		float m_MaxVelocity;
+		float m_MinVelocity;
+		float m_Deceleration;
 	public:
 		//構築と破棄
-		PcSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos);
-		virtual ~PcSphere();
+		MoveBox(const shared_ptr<Stage>& StagePtr,
+			const Vec3& Scale,
+			const Vec3& Rotation,
+			const Vec3& Position
+		);
+		virtual ~MoveBox();
 		//初期化
 		virtual void OnInit() override;
-
+		//操作
+		virtual void OnUpdate() override;
+		virtual void OnCollisionExcute(const CollisionPair& Pair) override;
+		virtual void OnCollisionExit(const CollisionPair& Pair)override;
 	};
 
 	//--------------------------------------------------------------------------------------
-	///	PT球
+	//	class MoveFixedBox : public GameObject;
 	//--------------------------------------------------------------------------------------
-	class PtSphere : public GameObject {
-		Vec3 m_StartPos;
+	class MoveFixedBox : public GameObject {
+		Vec3 m_Scale;
+		Vec3 m_Rotation;
+		Vec3 m_Position;
 	public:
 		//構築と破棄
-		PtSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos);
-		virtual ~PtSphere();
+		MoveFixedBox(const shared_ptr<Stage>& StagePtr,
+			const Vec3& Scale,
+			const Vec3& Rotation,
+			const Vec3& Position
+		);
+		virtual ~MoveFixedBox();
 		//初期化
 		virtual void OnInit() override;
+		//操作
 	};
 
-	//--------------------------------------------------------------------------------------
-	///	PN球
-	//--------------------------------------------------------------------------------------
-	class PnSphere : public GameObject {
-		Vec3 m_StartPos;
-	public:
-		//構築と破棄
-		PnSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos);
-		virtual ~PnSphere();
-		//初期化
-		virtual void OnInit() override;
-
-	};
-
-	//--------------------------------------------------------------------------------------
-	///	PCT球
-	//--------------------------------------------------------------------------------------
-	class PctSphere : public GameObject {
-		Vec3 m_StartPos;
-	public:
-		//構築と破棄
-		PctSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos);
-		virtual ~PctSphere();
-		//初期化
-		virtual void OnInit() override;
-	};
-
-	//--------------------------------------------------------------------------------------
-	///	Pnt球
-	//--------------------------------------------------------------------------------------
-	class PntSphere : public GameObject {
-		Vec3 m_StartPos;
-		bool m_TextureUse;
-	public:
-		//構築と破棄
-		PntSphere(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos, bool TextureUse);
-		virtual ~PntSphere();
-		//初期化
-		virtual void OnInit() override;
-	};
 
 }
 //end namespace basecross

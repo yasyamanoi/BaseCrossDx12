@@ -146,18 +146,28 @@ namespace basecross {
 		@return	メッシュ
 		*/
 		//--------------------------------------------------------------------------------------
-		shared_ptr<BaseMesh> GetBaseMesh() const {
+		shared_ptr<BaseMesh> GetMesh() const {
 			return m_baseMesh;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	メッシュの設定
-		@param[in]	baseMesh	メッシュ
+		@param[in]	mesh	メッシュ
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SetBaseMesh(const shared_ptr<BaseMesh>& baseMesh) {
-			m_baseMesh = baseMesh;
+		void SetMesh(const shared_ptr<BaseMesh>& mesh) {
+			m_baseMesh = mesh;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	メッシュの設定
+		@param[in]	key	メッシュのリソースキー
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetMesh(const wstring& key) {
+			SetMesh(App::GetBaseScene()->GetMesh(key));
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -185,7 +195,7 @@ namespace basecross {
 		@return	テクスチャ
 		*/
 		//--------------------------------------------------------------------------------------
-		shared_ptr<BaseTexture> GetBaseTexture() const {
+		shared_ptr<BaseTexture> GetTexture() const {
 			return m_baseTexture;
 		}
 		//--------------------------------------------------------------------------------------
@@ -195,8 +205,18 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SetBaseTexture(const shared_ptr<BaseTexture>& baseTexture) {
+		void SetTexture(const shared_ptr<BaseTexture>& baseTexture) {
 			m_baseTexture = baseTexture;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	テクスチャの設定
+		@param[in]	key	テクスチャのリソースキー
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetTexture(const wstring& key) {
+			SetTexture(App::GetBaseScene()->GetTexture(key));
 		}
 		//--------------------------------------------------------------------------------------
 		/*!

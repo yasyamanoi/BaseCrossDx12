@@ -21,10 +21,12 @@ namespace basecross {
 		m_useWarpDevice(false),
 		m_viewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)),
 		m_scissorRect(0, 0, static_cast<LONG>(width), static_cast<LONG>(height)),
+		m_clearColor(0, 0, 0, 1),
 		m_frameIndex(0),
 		m_fenceEvent(nullptr),
 		m_fenceValue(0),
 		m_isInited(false),
+		m_process(process::init),
 		m_rtvDescriptorIncrementSize(0),
 		m_dsvDescriptorIncrementSize(0),
 		m_samplerSendIndex(0),
@@ -47,6 +49,34 @@ namespace basecross {
 			);
 		}
 		return m_samplerSendIndex++;
+	}
+
+	ComPtr<ID3D12GraphicsCommandList> BaseDevice::GetComandList()const {
+		switch (m_process) {
+		case process::init:
+			return m_initCommandList;
+			break;
+		case process::update:
+			return GetCurrentBaseFrame()->m_updateCommandList;
+			break;
+		case process::begin:
+			return GetCurrentBaseFrame()->m_beginCommandList;
+			break;
+		case process::shadowmap:
+			return GetCurrentBaseFrame()->m_shadowCommandList;
+			break;
+		case process::render:
+			return GetCurrentBaseFrame()->m_sceneCommandList;
+			break;
+		case process::end:
+			return GetCurrentBaseFrame()->m_endCommandList;
+			break;
+		}
+		throw BaseException(
+			L"コマンドリストのプロセスが特定できません。",
+			L"BaseDevice::GetComandList()"
+		);
+		return nullptr;
 	}
 
 	UINT BaseDevice::GetSamplerIndex(const wstring& key) {
@@ -250,6 +280,9 @@ namespace basecross {
 			// そしてシーンが自分自身の描画用に1つ作成する
 			D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
 			dsvHeapDesc.NumDescriptors = 1 + m_frameCount * 1;
+			// 0: 描画用dsv
+			// 1から3: シャドウマップ用dsv
+			// 全部で4つ
 			dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 			dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 			ThrowIfFailed(m_device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_dsvHeap)));
@@ -310,6 +343,7 @@ namespace basecross {
 		m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 		//初期化処理の終了
 		m_isInited = true;
+//		m_process = process::update;
 		//フレームの作成
 		CreateBaseFrame();
 		//同期オブジェクトの作成
@@ -370,7 +404,7 @@ namespace basecross {
 	}
 
 	void BaseDevice::CreateDepthStencilView() {
-		CD3DX12_RESOURCE_DESC shadowTextureDesc(
+		CD3DX12_RESOURCE_DESC dsvTextureDesc(
 			D3D12_RESOURCE_DIMENSION_TEXTURE2D,
 			0,
 			static_cast<UINT>(m_viewport.Width),
@@ -391,7 +425,7 @@ namespace basecross {
 		ThrowIfFailed(m_device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
-			&shadowTextureDesc,
+			&dsvTextureDesc,
 			D3D12_RESOURCE_STATE_DEPTH_WRITE,
 			&clearValue,
 			IID_PPV_ARGS(&m_depthStencil)));
@@ -479,8 +513,37 @@ namespace basecross {
 			index,
 			m_samplerDescriptorIncrementSize
 		);
-		m_device->CreateSampler(&wrapSamplerDesc, handle2);
+		m_device->CreateSampler(&linearClampSamplerDesc, handle2);
 		m_samplerMap[L"LinearClamp"] = index;
+
+
+		//ComparisonLinear
+		//影描画用コンパージョンリニア
+
+		index = (int)GetSamplerNextIndex();
+		D3D12_SAMPLER_DESC ComparisonLinearSamplerDesc = {};
+		ComparisonLinearSamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+		ComparisonLinearSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		ComparisonLinearSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		ComparisonLinearSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		ComparisonLinearSamplerDesc.MinLOD = 0;
+		ComparisonLinearSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+		ComparisonLinearSamplerDesc.MipLODBias = 0.0f;
+		ComparisonLinearSamplerDesc.MaxAnisotropy = 0;
+		ComparisonLinearSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		ComparisonLinearSamplerDesc.BorderColor[0]
+			= ComparisonLinearSamplerDesc.BorderColor[1]
+			= ComparisonLinearSamplerDesc.BorderColor[2]
+			= ComparisonLinearSamplerDesc.BorderColor[3]
+			= 1.0;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE handle3(
+			m_samplerHeap->GetCPUDescriptorHandleForHeapStart(),
+			index,
+			m_samplerDescriptorIncrementSize
+		);
+		m_device->CreateSampler(&ComparisonLinearSamplerDesc, handle3);
+		m_samplerMap[L"ComparisonLinear"] = index;
+
 
 	}
 
@@ -527,7 +590,7 @@ namespace basecross {
 	void BaseDevice::CreateBaseFrame() {
 		for (UINT i = 0; i < m_frameCount; i++)
 		{
-			m_baseFrame[i] = new BaseFrame(m_initPipelineState.Get(), m_pipelineStateShadowMap.Get());
+			m_baseFrame[i] = new BaseFrame(m_initPipelineState.Get(),&m_viewport,i);
 			App::GetBaseScene()->OnInitFrame(m_baseFrame[i]);
 			App::GetBaseScene()->WriteConstantBuffers(m_baseFrame[i]);
 		}
@@ -553,6 +616,41 @@ namespace basecross {
 		}
 	}
 
+	void BaseDevice::OnUpdateRender() {
+		int retCode = 0;
+		try {
+			App::GetInputDevice().ResetControlerState();
+			OnUpdate();
+			OnRender();
+		}
+		catch (BaseException& e) {
+			//デバッグ出力をする。
+			string str = e.what_m() + "\n";
+			OutputDebugStringA(str.c_str());
+			retCode = 1;
+		}
+		catch (runtime_error& e) {
+			//デバッグ出力をする。
+			string str(e.what());
+			str += "\n";
+			OutputDebugStringA(str.c_str());
+			retCode = 1;
+		}
+		catch (exception& e) {
+			//STLエラー
+			string str(e.what());
+			str += "\n";
+			OutputDebugStringA(str.c_str());
+			retCode = 1;
+		}
+		catch (...) {
+			OutputDebugStringA("原因不明のエラー\n");
+			retCode = 1;
+		}
+		if (retCode) {
+			PostQuitMessage(1);
+		}
+	}
 
 
 	void BaseDevice::OnUpdate(){
@@ -574,45 +672,93 @@ namespace basecross {
 			}
 		}
 
-		//コマンドリスト開始。頂点変更などあるため。
-		ThrowIfFailed(GetCurrentBaseFrame()->m_commandAllocator->Reset());
-		ThrowIfFailed(GetComandList()->Reset(GetCurrentBaseFrame()->m_commandAllocator.Get(), GetCurrentBaseFrame()->m_pipelineState.Get()));
-
-		GetComandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+		//コマンドリスト開始。
+		ThrowIfFailed(GetCurrentBaseFrame()->m_updateCommandAllocator->Reset());
+		ThrowIfFailed(GetCurrentBaseFrame()->m_updateCommandList->Reset(GetCurrentBaseFrame()->m_updateCommandAllocator.Get(), GetCurrentBaseFrame()->m_pipelineState.Get()));
+		m_process = process::update;
 
 		//シーンのOnUpdate
 		App::GetBaseScene()->OnUpdate();
 		App::GetBaseScene()->WriteConstantBuffers(GetCurrentBaseFrame());
+		ThrowIfFailed(GetCurrentBaseFrame()->m_updateCommandList->Close());
 
 	}
 
 	void BaseDevice::PopulateCommandList(BaseFrame* pBaseFrame) {
-
+		m_process = process::begin;
+		GetCurrentBaseFrame()->m_beginCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(), m_frameIndex, m_rtvDescriptorIncrementSize);
 		CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
+		Col4 color = m_clearColor;
+		const float clearColor[] = { color.x, color.y, color.z, color.w };
+		GetCurrentBaseFrame()->m_beginCommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+		GetCurrentBaseFrame()->m_beginCommandList->ClearDepthStencilView(m_dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+		// Clear the depth stencil buffer in preparation for rendering the shadow map.
+		GetCurrentBaseFrame()->m_beginCommandList->ClearDepthStencilView(GetCurrentBaseFrame()->m_shadowDepthView, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-		const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-		GetComandList()->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-		GetComandList()->ClearDepthStencilView(m_dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+		ThrowIfFailed(GetCurrentBaseFrame()->m_beginCommandList->Close());
 
-		GetComandList()->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-		GetComandList()->SetGraphicsRootSignature(m_rootSignature.Get());
+		m_process = process::shadowmap;
+		GetCurrentBaseFrame()->m_shadowCommandList->OMSetRenderTargets(0, nullptr, FALSE, 
+			&GetCurrentBaseFrame()->m_shadowDepthView);    // No render target needed for the shadow pa
+		GetCurrentBaseFrame()->m_shadowCommandList->SetGraphicsRootSignature(m_rootSignature.Get());
+		ID3D12DescriptorHeap* ppShadowHeaps[] = { m_cbvSrvUavHeap.Get()};
+		GetCurrentBaseFrame()->m_shadowCommandList->SetDescriptorHeaps(_countof(ppShadowHeaps), ppShadowHeaps);
+
+		GetCurrentBaseFrame()->m_shadowCommandList->RSSetViewports(1, &m_viewport);
+		GetCurrentBaseFrame()->m_shadowCommandList->RSSetScissorRects(1, &m_scissorRect);
+
+		App::GetBaseScene()->PopulateShadowmapCommandList(pBaseFrame);
+
+		ThrowIfFailed(GetCurrentBaseFrame()->m_shadowCommandList->Close());
+
+		m_process = process::render;
+		GetCurrentBaseFrame()->m_sceneCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+		GetCurrentBaseFrame()->m_sceneCommandList->SetGraphicsRootSignature(m_rootSignature.Get());
 		ID3D12DescriptorHeap* ppHeaps[] = { m_cbvSrvUavHeap.Get(), m_samplerHeap.Get() };
-		GetComandList()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		GetCurrentBaseFrame()->m_sceneCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
-		GetComandList()->RSSetViewports(1, &m_viewport);
-		GetComandList()->RSSetScissorRects(1, &m_scissorRect);
+		GetCurrentBaseFrame()->m_sceneCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"t0"), GetCurrentBaseFrame()->m_shadowDepthHandle);        // Set the shadow texture as an SRV.
+
+
+		GetCurrentBaseFrame()->m_sceneCommandList->RSSetViewports(1, &m_viewport);
+		GetCurrentBaseFrame()->m_sceneCommandList->RSSetScissorRects(1, &m_scissorRect);
 
 		App::GetBaseScene()->PopulateCommandList(pBaseFrame);
 
-		GetComandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+		ThrowIfFailed(GetCurrentBaseFrame()->m_sceneCommandList->Close());
 
 	}
 
 	void BaseDevice::OnRender() {
+
+		ThrowIfFailed(GetCurrentBaseFrame()->m_beginCommandAllocator->Reset());
+		ThrowIfFailed(GetCurrentBaseFrame()->m_beginCommandList->Reset(GetCurrentBaseFrame()->m_beginCommandAllocator.Get(), GetCurrentBaseFrame()->m_pipelineState.Get()));
+
+		ThrowIfFailed(GetCurrentBaseFrame()->m_shadowCommandAllocator->Reset());
+		ThrowIfFailed(GetCurrentBaseFrame()->m_shadowCommandList->Reset(GetCurrentBaseFrame()->m_shadowCommandAllocator.Get(), GetCurrentBaseFrame()->m_pipelineState.Get()));
+
+
+		ThrowIfFailed(GetCurrentBaseFrame()->m_sceneCommandAllocator->Reset());
+		ThrowIfFailed(GetCurrentBaseFrame()->m_sceneCommandList->Reset(GetCurrentBaseFrame()->m_sceneCommandAllocator.Get(), GetCurrentBaseFrame()->m_pipelineState.Get()));
+
+		ThrowIfFailed(GetCurrentBaseFrame()->m_endCommandAllocator->Reset());
+		ThrowIfFailed(GetCurrentBaseFrame()->m_endCommandList->Reset(GetCurrentBaseFrame()->m_endCommandAllocator.Get(), GetCurrentBaseFrame()->m_pipelineState.Get()));
+
 		PopulateCommandList(GetCurrentBaseFrame());
-		ThrowIfFailed(GetComandList()->Close());
-		ID3D12CommandList* ppCommandLists[] = { GetComandList().Get() };
+
+		m_process = process::end;
+
+		GetCurrentBaseFrame()->m_endCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+		ThrowIfFailed(GetCurrentBaseFrame()->m_endCommandList->Close());
+
+		ID3D12CommandList* ppCommandLists[] = { 
+			GetCurrentBaseFrame()->m_updateCommandList.Get(),
+			GetCurrentBaseFrame()->m_beginCommandList.Get(),
+			GetCurrentBaseFrame()->m_shadowCommandList.Get(),
+			GetCurrentBaseFrame()->m_sceneCommandList.Get(),
+			GetCurrentBaseFrame()->m_endCommandList.Get(),
+		};
 		m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
 		ThrowIfFailed(m_swapChain->Present(1, 0));

@@ -115,51 +115,47 @@ namespace basecross {
 		}
 	}
 
-	ComPtr<ID3D12PipelineState> SpPCSpriteRender::m_defaultPipelineState(nullptr);
-	ComPtr<ID3D12PipelineState> SpPCSpriteRender::m_alphaPipelineState(nullptr);
 
 	void SpPCSpriteRender::CreatePipelineStates() {
-		if ((!m_defaultPipelineState) || (!m_alphaPipelineState)) {
-			auto pDevice = App::GetBaseDevice();
-			//ブレンド
-			CD3DX12_BLEND_DESC blendDesk(D3D12_DEFAULT);
-			//ラスタライザ
-			CD3DX12_RASTERIZER_DESC rasterizerDesc(D3D12_DEFAULT);
-			//デプスステンシル
-			CD3DX12_DEPTH_STENCIL_DESC depthStencilDesk(D3D12_DEFAULT);
-			depthStencilDesk.DepthEnable = FALSE;
-			depthStencilDesk.StencilEnable = FALSE;
+		auto pDevice = App::GetBaseDevice();
+		//ブレンド
+		CD3DX12_BLEND_DESC blendDesk(D3D12_DEFAULT);
+		//ラスタライザ
+		CD3DX12_RASTERIZER_DESC rasterizerDesc(D3D12_DEFAULT);
+		//デプスステンシル
+		CD3DX12_DEPTH_STENCIL_DESC depthStencilDesk(D3D12_DEFAULT);
+		depthStencilDesk.DepthEnable = FALSE;
+		depthStencilDesk.StencilEnable = FALSE;
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-			ZeroMemory(&psoDesc, sizeof(psoDesc));
-			psoDesc.InputLayout = { VertexPositionColor::GetVertexElement(), VertexPositionColor::GetNumElements() };
-			psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
-			psoDesc.VS =
-			{
-				reinterpret_cast<UINT8*>(SpVSPCSprite::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpVSPCSprite::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.PS =
-			{
-				reinterpret_cast<UINT8*>(SpPSPCSprite::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpPSPCSprite::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.RasterizerState = rasterizerDesc;
-			psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
-			psoDesc.DepthStencilState = depthStencilDesk;
-			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-			psoDesc.SampleMask = UINT_MAX;
-			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-			psoDesc.SampleDesc.Count = 1;
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
-			NAME_D3D12_OBJECT(m_defaultPipelineState);
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		ZeroMemory(&psoDesc, sizeof(psoDesc));
+		psoDesc.InputLayout = { VertexPositionColor::GetVertexElement(), VertexPositionColor::GetNumElements() };
+		psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
+		psoDesc.VS =
+		{
+			reinterpret_cast<UINT8*>(SpVSPCSprite::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpVSPCSprite::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS =
+		{
+			reinterpret_cast<UINT8*>(SpPSPCSprite::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpPSPCSprite::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.RasterizerState = rasterizerDesc;
+		psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
+		psoDesc.DepthStencilState = depthStencilDesk;
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.SampleDesc.Count = 1;
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
+		NAME_D3D12_OBJECT(m_defaultPipelineState);
 
-			psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
-			NAME_D3D12_OBJECT(m_alphaPipelineState);
-		}
+		psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
+		NAME_D3D12_OBJECT(m_alphaPipelineState);
 
 	}
 
@@ -222,51 +218,47 @@ namespace basecross {
 		}
 	}
 
-	ComPtr<ID3D12PipelineState> SpPTSpriteRender::m_defaultPipelineState(nullptr);
-	ComPtr<ID3D12PipelineState> SpPTSpriteRender::m_alphaPipelineState(nullptr);
 
 	void SpPTSpriteRender::CreatePipelineStates() {
-		if ((!m_defaultPipelineState) || (!m_alphaPipelineState)) {
-			auto pDevice = App::GetBaseDevice();
-			//ブレンド
-			CD3DX12_BLEND_DESC blendDesk(D3D12_DEFAULT);
-			//ラスタライザ
-			CD3DX12_RASTERIZER_DESC rasterizerDesc(D3D12_DEFAULT);
-			//デプスステンシル
-			CD3DX12_DEPTH_STENCIL_DESC depthStencilDesk(D3D12_DEFAULT);
-			depthStencilDesk.DepthEnable = FALSE;
-			depthStencilDesk.StencilEnable = FALSE;
+		auto pDevice = App::GetBaseDevice();
+		//ブレンド
+		CD3DX12_BLEND_DESC blendDesk(D3D12_DEFAULT);
+		//ラスタライザ
+		CD3DX12_RASTERIZER_DESC rasterizerDesc(D3D12_DEFAULT);
+		//デプスステンシル
+		CD3DX12_DEPTH_STENCIL_DESC depthStencilDesk(D3D12_DEFAULT);
+		depthStencilDesk.DepthEnable = FALSE;
+		depthStencilDesk.StencilEnable = FALSE;
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-			ZeroMemory(&psoDesc, sizeof(psoDesc));
-			psoDesc.InputLayout = { VertexPositionTexture::GetVertexElement(), VertexPositionTexture::GetNumElements() };
-			psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
-			psoDesc.VS =
-			{
-				reinterpret_cast<UINT8*>(SpVSPTSprite::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpVSPTSprite::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.PS =
-			{
-				reinterpret_cast<UINT8*>(SpPSPTSprite::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpPSPTSprite::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.RasterizerState = rasterizerDesc;
-			psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
-			psoDesc.DepthStencilState = depthStencilDesk;
-			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-			psoDesc.SampleMask = UINT_MAX;
-			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-			psoDesc.SampleDesc.Count = 1;
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
-			NAME_D3D12_OBJECT(m_defaultPipelineState);
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		ZeroMemory(&psoDesc, sizeof(psoDesc));
+		psoDesc.InputLayout = { VertexPositionTexture::GetVertexElement(), VertexPositionTexture::GetNumElements() };
+		psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
+		psoDesc.VS =
+		{
+			reinterpret_cast<UINT8*>(SpVSPTSprite::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpVSPTSprite::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS =
+		{
+			reinterpret_cast<UINT8*>(SpPSPTSprite::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpPSPTSprite::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.RasterizerState = rasterizerDesc;
+		psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
+		psoDesc.DepthStencilState = depthStencilDesk;
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.SampleDesc.Count = 1;
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
+		NAME_D3D12_OBJECT(m_defaultPipelineState);
 
-			psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
-			NAME_D3D12_OBJECT(m_alphaPipelineState);
-		}
+		psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
+		NAME_D3D12_OBJECT(m_alphaPipelineState);
 
 	}
 
@@ -353,51 +345,47 @@ namespace basecross {
 		}
 	}
 
-	ComPtr<ID3D12PipelineState> SpPCTSpriteRender::m_defaultPipelineState(nullptr);
-	ComPtr<ID3D12PipelineState> SpPCTSpriteRender::m_alphaPipelineState(nullptr);
 
 	void SpPCTSpriteRender::CreatePipelineStates() {
-		if ((!m_defaultPipelineState) || (!m_alphaPipelineState)) {
-			auto pDevice = App::GetBaseDevice();
-			//ブレンド
-			CD3DX12_BLEND_DESC blendDesk(D3D12_DEFAULT);
-			//ラスタライザ
-			CD3DX12_RASTERIZER_DESC rasterizerDesc(D3D12_DEFAULT);
-			//デプスステンシル
-			CD3DX12_DEPTH_STENCIL_DESC depthStencilDesk(D3D12_DEFAULT);
-			depthStencilDesk.DepthEnable = FALSE;
-			depthStencilDesk.StencilEnable = FALSE;
+		auto pDevice = App::GetBaseDevice();
+		//ブレンド
+		CD3DX12_BLEND_DESC blendDesk(D3D12_DEFAULT);
+		//ラスタライザ
+		CD3DX12_RASTERIZER_DESC rasterizerDesc(D3D12_DEFAULT);
+		//デプスステンシル
+		CD3DX12_DEPTH_STENCIL_DESC depthStencilDesk(D3D12_DEFAULT);
+		depthStencilDesk.DepthEnable = FALSE;
+		depthStencilDesk.StencilEnable = FALSE;
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-			ZeroMemory(&psoDesc, sizeof(psoDesc));
-			psoDesc.InputLayout = { VertexPositionColorTexture::GetVertexElement(), VertexPositionColorTexture::GetNumElements() };
-			psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
-			psoDesc.VS =
-			{
-				reinterpret_cast<UINT8*>(SpVSPCTSprite::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpVSPCTSprite::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.PS =
-			{
-				reinterpret_cast<UINT8*>(SpPSPCTSprite::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpPSPCTSprite::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.RasterizerState = rasterizerDesc;
-			psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
-			psoDesc.DepthStencilState = depthStencilDesk;
-			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-			psoDesc.SampleMask = UINT_MAX;
-			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-			psoDesc.SampleDesc.Count = 1;
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
-			NAME_D3D12_OBJECT(m_defaultPipelineState);
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		ZeroMemory(&psoDesc, sizeof(psoDesc));
+		psoDesc.InputLayout = { VertexPositionColorTexture::GetVertexElement(), VertexPositionColorTexture::GetNumElements() };
+		psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
+		psoDesc.VS =
+		{
+			reinterpret_cast<UINT8*>(SpVSPCTSprite::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpVSPCTSprite::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS =
+		{
+			reinterpret_cast<UINT8*>(SpPSPCTSprite::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpPSPCTSprite::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.RasterizerState = rasterizerDesc;
+		psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
+		psoDesc.DepthStencilState = depthStencilDesk;
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.SampleDesc.Count = 1;
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
+		NAME_D3D12_OBJECT(m_defaultPipelineState);
 
-			psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
-			NAME_D3D12_OBJECT(m_alphaPipelineState);
-		}
+		psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
+		NAME_D3D12_OBJECT(m_alphaPipelineState);
 
 	}
 
@@ -460,9 +448,6 @@ namespace basecross {
 		pCommandList->IASetIndexBuffer(&m_baseMesh->GetIndexBufferView());
 		pCommandList->DrawIndexedInstanced(m_baseMesh->GetNumIndices(), 1, 0, 0, 0);
 	}
-
-
-
 
 
 }

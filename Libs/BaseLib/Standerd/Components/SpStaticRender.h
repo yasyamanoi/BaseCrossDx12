@@ -13,9 +13,19 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	///	Shadowmap描画コンポーネント
 	//--------------------------------------------------------------------------------------
-	class ShadowmapRender : public Component {
+	DECLARE_DX12SHADER(PNTShadowmap)
+
+	class Shadowmap : public Component {
 		void CreatePipelineStates();
-		static ComPtr<ID3D12PipelineState> m_defaultPipelineState;
+		ComPtr<ID3D12PipelineState> m_PNTPipelineState;
+
+		const float m_lightHeight{ 200.0f };
+		const float m_lightNear{ 1.0f };
+		const float m_lightFar{ 300.0f };
+		const float m_viewWidth{ 32.0f };
+		const float m_viewHeight{ 32.0f };
+		const float m_posAdjustment{ 0.1f };
+
 	protected:
 		//コンスタントバッファの登録
 		void SetConstant(ShadowConstant& constant, const shared_ptr<Transform>& transform);
@@ -23,8 +33,8 @@ namespace basecross {
 	public:
 		virtual void OnInitFrame(BaseFrame* pBaseFrame)override;
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame)override;
-		explicit ShadowmapRender(const shared_ptr<GameObject>& gameObjectPtr);
-		virtual ~ShadowmapRender() {}
+		explicit Shadowmap(const shared_ptr<GameObject>& gameObjectPtr);
+		virtual ~Shadowmap() {}
 		//操作
 		virtual void OnInit()override;
 		virtual void OnUpdate()override {}
@@ -43,12 +53,15 @@ namespace basecross {
 		Col4 m_diffuse;
 		/// スペキュラー
 		Col4 m_specular;
+		//自分自身に影を描画するかどうか
+		bool m_ownShadowActive;
 	protected:
 		explicit SpStaticRender(const shared_ptr<GameObject>& gameObjectPtr) :
 			Component(gameObjectPtr),
 			m_emissive(0.0f),
 			m_diffuse(1.0f),
-			m_specular(0.0f)
+			m_specular(0.0f),
+			m_ownShadowActive(false)
 		{}
 		virtual ~SpStaticRender() {}
 		//コンスタントバッファの登録
@@ -72,6 +85,12 @@ namespace basecross {
 		void SetSpecular(const Col4& col) {
 			m_specular = col;
 		}
+		bool IsOwnShadowActive()const {
+			return m_ownShadowActive;
+		}
+		void SetOwnShadowActive(bool b) {
+			m_ownShadowActive = b;
+		}
 		virtual void OnInitFrame(BaseFrame* pBaseFrame)override;
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame)override;
 	};
@@ -85,8 +104,8 @@ namespace basecross {
 
 	class SpPCStaticRender : public SpStaticRender {
 		void CreatePipelineStates();
-		static ComPtr<ID3D12PipelineState> m_defaultPipelineState;
-		static ComPtr<ID3D12PipelineState> m_alphaPipelineState;
+		ComPtr<ID3D12PipelineState> m_defaultPipelineState;
+		ComPtr<ID3D12PipelineState> m_alphaPipelineState;
 	protected:
 		virtual void PopulateCommandList(BaseFrame* pBaseFrame)override;
 	public:
@@ -109,8 +128,8 @@ namespace basecross {
 
 	class SpPTStaticRender : public SpStaticRender {
 		void CreatePipelineStates();
-		static ComPtr<ID3D12PipelineState> m_defaultPipelineState;
-		static ComPtr<ID3D12PipelineState> m_alphaPipelineState;
+		ComPtr<ID3D12PipelineState> m_defaultPipelineState;
+		ComPtr<ID3D12PipelineState> m_alphaPipelineState;
 	protected:
 		virtual void PopulateCommandList(BaseFrame* pBaseFrame)override;
 	public:
@@ -133,8 +152,8 @@ namespace basecross {
 
 	class SpPNStaticRender : public SpStaticRender {
 		void CreatePipelineStates();
-		static ComPtr<ID3D12PipelineState> m_defaultPipelineState;
-		static ComPtr<ID3D12PipelineState> m_alphaPipelineState;
+		ComPtr<ID3D12PipelineState> m_defaultPipelineState;
+		ComPtr<ID3D12PipelineState> m_alphaPipelineState;
 	protected:
 		virtual void PopulateCommandList(BaseFrame* pBaseFrame)override;
 	public:
@@ -157,8 +176,8 @@ namespace basecross {
 
 	class SpPCTStaticRender : public SpStaticRender {
 		void CreatePipelineStates();
-		static ComPtr<ID3D12PipelineState> m_defaultPipelineState;
-		static ComPtr<ID3D12PipelineState> m_alphaPipelineState;
+		ComPtr<ID3D12PipelineState> m_defaultPipelineState;
+		ComPtr<ID3D12PipelineState> m_alphaPipelineState;
 	protected:
 		virtual void PopulateCommandList(BaseFrame* pBaseFrame)override;
 	public:
@@ -177,12 +196,17 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 
 	DECLARE_DX12SHADER(SpVSPNTStatic)
+	DECLARE_DX12SHADER(SpVSPNTStaticShadow)
+
 	DECLARE_DX12SHADER(SpPSPNTStatic)
+	DECLARE_DX12SHADER(SpPSPNTStaticShadow)
 
 	class SpPNTStaticRender : public SpStaticRender {
 		void CreatePipelineStates();
-		static ComPtr<ID3D12PipelineState> m_defaultPipelineState;
-		static ComPtr<ID3D12PipelineState> m_alphaPipelineState;
+		ComPtr<ID3D12PipelineState> m_defaultPipelineState;
+		ComPtr<ID3D12PipelineState> m_defaultShadowPipelineState;
+		ComPtr<ID3D12PipelineState> m_alphaPipelineState;
+		ComPtr<ID3D12PipelineState> m_alphaShadowPipelineState;
 	protected:
 		virtual void PopulateCommandList(BaseFrame* pBaseFrame)override;
 	public:

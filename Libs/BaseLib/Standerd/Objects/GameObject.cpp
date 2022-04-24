@@ -74,6 +74,11 @@ namespace basecross {
 		}
 	}
 
+	void GameObject::OnShadowmapRender() {
+		ComponentShadowmapRender();
+	}
+
+
 	void GameObject::OnRender() {
 		ComponentRender();
 	}
@@ -91,7 +96,6 @@ namespace basecross {
 
 	void GameObject::ComponentUpdate() {
 		auto transPtr = GetComponent<Transform>();
-		auto veloPtr = GetComponent<Velocity>(false);
 		//		auto RightPtr = GetComponent<Rigidbody>(false);
 				//マップを検証してUpdate
 		list<type_index>::iterator it = m_compOrder.begin();
@@ -102,8 +106,7 @@ namespace basecross {
 				//指定の型のコンポーネントが見つかった
 				if (it2->second->IsUpdateActive()
 					&& (it2->second != transPtr)
-					&& (it2->second != veloPtr)
-					//					&& (it2->second != RightPtr)
+					//	&& (it2->second != RightPtr)
 					) {
 					it2->second->OnUpdate();
 				}
@@ -113,9 +116,6 @@ namespace basecross {
 		//		if (RightPtr && RightPtr->IsUpdateActive()) {
 		//			RightPtr->OnUpdate();
 		//		}
-		if (veloPtr && veloPtr->IsUpdateActive()) {
-			veloPtr->OnUpdate();
-		}
 		//TransformのUpdate
 		if (transPtr->IsUpdateActive()) {
 			transPtr->OnUpdate();
@@ -154,6 +154,18 @@ namespace basecross {
 		}
 
 	*/
+
+	void GameObject::ComponentShadowmapRender() {
+		//Transformがなければ例外
+		auto transptr = GetComponent<Transform>();
+		auto shadowmapPtr = GetComponent<Shadowmap>(false);
+		if (shadowmapPtr) {
+			if (shadowmapPtr->IsRenderActive()) {
+				shadowmapPtr->OnRender();
+			}
+		}
+	}
+
 	void GameObject::ComponentRender() {
 		//Transformがなければ例外
 		auto transptr = GetComponent<Transform>();
@@ -163,7 +175,9 @@ namespace basecross {
 			map<type_index, shared_ptr<Component> >::const_iterator it2;
 			it2 = m_compMap.find(*it);
 			//指定の型のコンポーネントが見つかった
-			if (it2 != m_compMap.end()) {
+			if (it2 != m_compMap.end() && !dynamic_pointer_cast<Shadowmap>(it2->second)) {
+
+//			if (it2 != m_compMap.end()) {
 				if (it2->second->IsRenderActive()) {
 					it2->second->OnRender();
 				}

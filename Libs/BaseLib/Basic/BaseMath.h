@@ -2148,7 +2148,7 @@ namespace bsm {
 		@param[in]	other	値
 		*/
 		//--------------------------------------------------------------------------------------
-		explicit inline Mat4x4(const XMMATRIX& other);
+		inline Mat4x4(const XMMATRIX& other);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	XMMATRIXへのキャスト（thisをキャストして返す）
@@ -2730,6 +2730,22 @@ namespace bsm {
 			float height,
 			float n,
 			float f);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	OrthographicRH射影行列を作成する
+		@param[in]	width　幅
+		@param[in]	height　高さ
+		@param[in]	n	手前
+		@param[in]	f	 奥
+		@return	*thisの参照
+		*/
+		//--------------------------------------------------------------------------------------
+		inline Mat4x4& orthographicRH(
+			float width,
+			float height,
+			float n,
+			float f);
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	str変換(Scele,translation,rotation)を実装する

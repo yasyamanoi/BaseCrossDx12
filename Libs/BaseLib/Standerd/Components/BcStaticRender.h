@@ -33,8 +33,8 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class BcPNTStaticRender : public BcStaticRender {
 		void CreatePipelineStates();
-		static ComPtr<ID3D12PipelineState> m_defaultPipelineState;
-		static ComPtr<ID3D12PipelineState> m_alphaPipelineState;
+		ComPtr<ID3D12PipelineState> m_defaultPipelineState;
+		ComPtr<ID3D12PipelineState> m_alphaPipelineState;
 	protected:
 		virtual void PopulateCommandList(BaseFrame* pBaseFrame)override;
 	public:

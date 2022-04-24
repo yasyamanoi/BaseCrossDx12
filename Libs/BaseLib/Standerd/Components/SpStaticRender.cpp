@@ -12,36 +12,135 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	///	Shadowmap描画コンポーネント
 	//--------------------------------------------------------------------------------------
-	ComPtr<ID3D12PipelineState> ShadowmapRender::m_defaultPipelineState(nullptr);
 
-	void ShadowmapRender::CreatePipelineStates() {
+	IMPLEMENT_DX12SHADER(PNTShadowmap, App::GetShadersDir() + L"VSShadowmap.cso")
+
+	void Shadowmap::CreatePipelineStates() {
+		auto pDevice = App::GetBaseDevice();
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		ZeroMemory(&psoDesc, sizeof(psoDesc));
+		CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
+
+		psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };
+		psoDesc.pRootSignature = pDevice->GetRootSignature().Get();;
+		psoDesc.VS =
+		{
+			reinterpret_cast<UINT8*>(PNTShadowmap::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			PNTShadowmap::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS = CD3DX12_SHADER_BYTECODE(0, 0);
+		psoDesc.RasterizerState = rasterizerStateDesc;
+		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		psoDesc.DepthStencilState.DepthEnable = FALSE;
+		psoDesc.DepthStencilState.StencilEnable = FALSE;
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.NumRenderTargets = 0;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+		psoDesc.SampleDesc.Count = 1;
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_PNTPipelineState)));
+		NAME_D3D12_OBJECT(m_PNTPipelineState);
 
 	}
 
 	//コンスタントバッファの登録
-	void ShadowmapRender::SetConstant(ShadowConstant& constant, const shared_ptr<Transform>& transform) {
+	void Shadowmap::SetConstant(ShadowConstant& constant, const shared_ptr<Transform>& transform) {
+		//すべて0に初期化
+		constant = {};
+		bsm::Mat4x4 world = transform->GetWorldMatrix();
+		auto lights = GetGameObject()->GetActiveLightSet();
+		auto light = lights->GetMainBaseLight();
+		Vec3 lightDir = -1.0 * light.m_directional;
+		auto camera = GetGameObject()->GetActiveCamera();
+		Vec3 lightAt = camera->GetAt();
+		Vec3 lightEye = lightAt + (lightDir * m_lightHeight);
+		auto width = App::GetBaseDevice()->GetViewport().Width;
+		auto height = App::GetBaseDevice()->GetViewport().Height;
+		Mat4x4 lightView = XMMatrixLookAtLH(lightEye, lightAt, Vec3(0, 1.0f, 0));
+//		Mat4x4 lightProj = XMMatrixOrthographicLH(width, height, m_lightNear, m_lightFar);
+		Mat4x4 lightProj = XMMatrixOrthographicLH(m_viewWidth, m_viewHeight, m_lightNear, m_lightFar);
+		constant.world = transpose(world);
+		constant.view = transpose(lightView);
+		constant.projection = transpose(lightProj);
+	}
+
+	void Shadowmap::PopulateCommandList(BaseFrame* pBaseFrame) {
+		auto pDevice = App::GetBaseDevice();
+		auto pCommandList = pDevice->GetComandList().Get();
+		pCommandList->SetPipelineState(m_PNTPipelineState.Get());
+		pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		auto paramIndex = GetFrameParamIndex();
+		//Cbv
+		CD3DX12_GPU_DESCRIPTOR_HANDLE cbvGpuHandle(
+			pDevice->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
+			pBaseFrame->m_frameParamVec[paramIndex].m_constBuffIndex,
+			pDevice->GetCbvSrvUavDescriptorHandleIncrementSize()
+		);
+		pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"b0"), cbvGpuHandle);
+		if (!m_baseMesh) {
+			throw BaseException(
+				L"メッシュが特定できません。",
+				L"ShadowmapRender::PopulateCommandList()"
+			);
+		}
+		pCommandList->IASetVertexBuffers(0, 1, &m_baseMesh->GetVertexBufferView());
+		pCommandList->IASetIndexBuffer(&m_baseMesh->GetIndexBufferView());
+		pCommandList->DrawIndexedInstanced(m_baseMesh->GetNumIndices(), 1, 0, 0, 0);
 
 	}
 
-	void ShadowmapRender::PopulateCommandList(BaseFrame* pBaseFrame) {
+	void Shadowmap::OnInitFrame(BaseFrame* pBaseFrame) {
+		auto pDefaultDev = App::GetBaseDevice();
+		auto pDevice = App::GetID3D12Device();
+
+		// コンスタントバッファのサイズは256バイト境界ごとに作成する
+		UINT constsize = (sizeof(ShadowConstant) + 255) & ~255;
+
+		FrameParam param;
+		// アップロードヒープ
+		ThrowIfFailed(pDevice->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(constsize),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&param.m_cbvUploadHeap)));
+		//マップ
+		CD3DX12_RANGE readRange(0, 0);
+		ThrowIfFailed(param.m_cbvUploadHeap->Map(0, &readRange, reinterpret_cast<void**>(&param.m_pConstantBuffer)));
+		//ハンドルの作成
+		param.m_constBuffIndex = pDefaultDev->GetCbvUavNextIndex();
+		CD3DX12_CPU_DESCRIPTOR_HANDLE handle(
+			pDefaultDev->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
+			param.m_constBuffIndex,
+			pDefaultDev->GetCbvSrvUavDescriptorHandleIncrementSize()
+		);
+		//コンスタントバッファビューの作成
+		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+		cbvDesc.BufferLocation = param.m_cbvUploadHeap->GetGPUVirtualAddress();
+		cbvDesc.SizeInBytes = constsize;
+		pDevice->CreateConstantBufferView(&cbvDesc, handle);
+		m_frameParamIndex = pBaseFrame->m_frameParamVec.size();
+		pBaseFrame->m_frameParamVec.push_back(param);
+
 
 	}
 
-	void ShadowmapRender::OnInitFrame(BaseFrame* pBaseFrame) {
+	void Shadowmap::WriteConstantBuffers(BaseFrame* pBaseFrame) {
+		ShadowConstant constants;
+		SetConstant(constants, GetGameObject()->GetComponent<Transform>());
+		memcpy(pBaseFrame->m_frameParamVec[m_frameParamIndex].m_pConstantBuffer, &constants, sizeof(ShadowConstant));
 
 	}
 
-	void ShadowmapRender::WriteConstantBuffers(BaseFrame* pBaseFrame) {
-
-	}
-
-	ShadowmapRender::ShadowmapRender(const shared_ptr<GameObject>& gameObjectPtr):Component(gameObjectPtr)
+	Shadowmap::Shadowmap(const shared_ptr<GameObject>& gameObjectPtr):
+		Component(gameObjectPtr)
 	{
-
+		SetRenderActive(true);
 	}
 
-	void ShadowmapRender::OnInit() {
-
+	void Shadowmap::OnInit() {
+		CreatePipelineStates();
 	}
 
 
@@ -60,7 +159,7 @@ namespace basecross {
 		Mat4x4 viewMat = cameraPtr->GetViewMatrix();
 		//転置する
 		viewMat.transpose();
-		Mat4x4 projMat = cameraPtr->GetProjectionMatrix();
+		Mat4x4 projMat = cameraPtr->GetProjMatrix();
 		//転置する
 		projMat.transpose();
 		constant.world = world;
@@ -81,7 +180,7 @@ namespace basecross {
 		constant.eyePos = cameraPtr->GetEye();
 		constant.eyePos.w = 1.0f;
 		//テクスチャがあった場合
-		if (GetBaseTexture()) {
+		if (GetTexture()) {
 			constant.activeFlg.x = 1;
 		}
 	}
@@ -158,46 +257,42 @@ namespace basecross {
 	}
 
 
-	ComPtr<ID3D12PipelineState> SpPCStaticRender::m_defaultPipelineState(nullptr);
-	ComPtr<ID3D12PipelineState> SpPCStaticRender::m_alphaPipelineState(nullptr);
 
 	void SpPCStaticRender::CreatePipelineStates() {
-		if ((!m_defaultPipelineState) || (!m_alphaPipelineState)) {
-			auto pDevice = App::GetBaseDevice();
-			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
-			//カリング
-			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
+		auto pDevice = App::GetBaseDevice();
+		CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
+		//カリング
+		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-			ZeroMemory(&psoDesc, sizeof(psoDesc));
-			psoDesc.InputLayout = { VertexPositionColor::GetVertexElement(), VertexPositionColor::GetNumElements() };
-			psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
-			psoDesc.VS =
-			{
-				reinterpret_cast<UINT8*>(SpVSPCStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpVSPCStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.PS =
-			{
-				reinterpret_cast<UINT8*>(SpPSPCStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpPSPCStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.RasterizerState = rasterizerStateDesc;
-			psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
-			psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-			psoDesc.SampleMask = UINT_MAX;
-			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-			psoDesc.SampleDesc.Count = 1;
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
-			NAME_D3D12_OBJECT(m_defaultPipelineState);
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		ZeroMemory(&psoDesc, sizeof(psoDesc));
+		psoDesc.InputLayout = { VertexPositionColor::GetVertexElement(), VertexPositionColor::GetNumElements() };
+		psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
+		psoDesc.VS =
+		{
+			reinterpret_cast<UINT8*>(SpVSPCStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpVSPCStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS =
+		{
+			reinterpret_cast<UINT8*>(SpPSPCStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpPSPCStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.RasterizerState = rasterizerStateDesc;
+		psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
+		psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.SampleDesc.Count = 1;
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
+		NAME_D3D12_OBJECT(m_defaultPipelineState);
 
-			psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
-			NAME_D3D12_OBJECT(m_alphaPipelineState);
-		}
+		psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
+		NAME_D3D12_OBJECT(m_alphaPipelineState);
 	}
 
 
@@ -221,12 +316,12 @@ namespace basecross {
 
 		auto paramIndex = GetFrameParamIndex();
 		//Cbv
-		CD3DX12_GPU_DESCRIPTOR_HANDLE skyCbvHandle(
+		CD3DX12_GPU_DESCRIPTOR_HANDLE cbvGpuHandle(
 			pDevice->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
 			pBaseFrame->m_frameParamVec[paramIndex].m_constBuffIndex,
 			pDevice->GetCbvSrvUavDescriptorHandleIncrementSize()
 		);
-		pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"b0"), skyCbvHandle);
+		pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"b0"), cbvGpuHandle);
 
 		if (!m_baseMesh) {
 			throw BaseException(
@@ -269,46 +364,42 @@ namespace basecross {
 	}
 
 
-	ComPtr<ID3D12PipelineState> SpPTStaticRender::m_defaultPipelineState(nullptr);
-	ComPtr<ID3D12PipelineState> SpPTStaticRender::m_alphaPipelineState(nullptr);
 
 	void SpPTStaticRender::CreatePipelineStates() {
-		if ((!m_defaultPipelineState) || (!m_alphaPipelineState)) {
-			auto pDevice = App::GetBaseDevice();
-			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
-			//カリング
-			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
+		auto pDevice = App::GetBaseDevice();
+		CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
+		//カリング
+		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-			ZeroMemory(&psoDesc, sizeof(psoDesc));
-			psoDesc.InputLayout = { VertexPositionTexture::GetVertexElement(), VertexPositionTexture::GetNumElements() };
-			psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
-			psoDesc.VS =
-			{
-				reinterpret_cast<UINT8*>(SpVSPTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpVSPTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.PS =
-			{
-				reinterpret_cast<UINT8*>(SpPSPTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpPSPTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.RasterizerState = rasterizerStateDesc;
-			psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
-			psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-			psoDesc.SampleMask = UINT_MAX;
-			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-			psoDesc.SampleDesc.Count = 1;
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
-			NAME_D3D12_OBJECT(m_defaultPipelineState);
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		ZeroMemory(&psoDesc, sizeof(psoDesc));
+		psoDesc.InputLayout = { VertexPositionTexture::GetVertexElement(), VertexPositionTexture::GetNumElements() };
+		psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
+		psoDesc.VS =
+		{
+			reinterpret_cast<UINT8*>(SpVSPTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpVSPTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS =
+		{
+			reinterpret_cast<UINT8*>(SpPSPTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpPSPTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.RasterizerState = rasterizerStateDesc;
+		psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
+		psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.SampleDesc.Count = 1;
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
+		NAME_D3D12_OBJECT(m_defaultPipelineState);
 
-			psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
-			NAME_D3D12_OBJECT(m_alphaPipelineState);
-		}
+		psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
+		NAME_D3D12_OBJECT(m_alphaPipelineState);
 	}
 
 
@@ -402,46 +493,42 @@ namespace basecross {
 	}
 
 
-	ComPtr<ID3D12PipelineState> SpPNStaticRender::m_defaultPipelineState(nullptr);
-	ComPtr<ID3D12PipelineState> SpPNStaticRender::m_alphaPipelineState(nullptr);
 
 	void SpPNStaticRender::CreatePipelineStates() {
-		if ((!m_defaultPipelineState) || (!m_alphaPipelineState)) {
-			auto pDevice = App::GetBaseDevice();
-			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
-			//カリング
-			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
+		auto pDevice = App::GetBaseDevice();
+		CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
+		//カリング
+		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-			ZeroMemory(&psoDesc, sizeof(psoDesc));
-			psoDesc.InputLayout = { VertexPositionNormal::GetVertexElement(), VertexPositionNormal::GetNumElements() };
-			psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
-			psoDesc.VS =
-			{
-				reinterpret_cast<UINT8*>(SpVSPNStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpVSPNStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.PS =
-			{
-				reinterpret_cast<UINT8*>(SpPSPNStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpPSPNStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.RasterizerState = rasterizerStateDesc;
-			psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
-			psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-			psoDesc.SampleMask = UINT_MAX;
-			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-			psoDesc.SampleDesc.Count = 1;
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
-			NAME_D3D12_OBJECT(m_defaultPipelineState);
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		ZeroMemory(&psoDesc, sizeof(psoDesc));
+		psoDesc.InputLayout = { VertexPositionNormal::GetVertexElement(), VertexPositionNormal::GetNumElements() };
+		psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
+		psoDesc.VS =
+		{
+			reinterpret_cast<UINT8*>(SpVSPNStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpVSPNStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS =
+		{
+			reinterpret_cast<UINT8*>(SpPSPNStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpPSPNStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.RasterizerState = rasterizerStateDesc;
+		psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
+		psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.SampleDesc.Count = 1;
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
+		NAME_D3D12_OBJECT(m_defaultPipelineState);
 
-			psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
-			NAME_D3D12_OBJECT(m_alphaPipelineState);
-		}
+		psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
+		NAME_D3D12_OBJECT(m_alphaPipelineState);
 	}
 
 
@@ -511,46 +598,42 @@ namespace basecross {
 	}
 
 
-	ComPtr<ID3D12PipelineState> SpPCTStaticRender::m_defaultPipelineState(nullptr);
-	ComPtr<ID3D12PipelineState> SpPCTStaticRender::m_alphaPipelineState(nullptr);
 
 	void SpPCTStaticRender::CreatePipelineStates() {
-		if ((!m_defaultPipelineState) || (!m_alphaPipelineState)) {
-			auto pDevice = App::GetBaseDevice();
-			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
-			//カリング
-			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
+		auto pDevice = App::GetBaseDevice();
+		CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
+		//カリング
+		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-			ZeroMemory(&psoDesc, sizeof(psoDesc));
-			psoDesc.InputLayout = { VertexPositionColorTexture::GetVertexElement(), VertexPositionColorTexture::GetNumElements() };
-			psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
-			psoDesc.VS =
-			{
-				reinterpret_cast<UINT8*>(SpVSPCTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpVSPCTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.PS =
-			{
-				reinterpret_cast<UINT8*>(SpPSPCTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpPSPCTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.RasterizerState = rasterizerStateDesc;
-			psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
-			psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-			psoDesc.SampleMask = UINT_MAX;
-			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-			psoDesc.SampleDesc.Count = 1;
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
-			NAME_D3D12_OBJECT(m_defaultPipelineState);
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		ZeroMemory(&psoDesc, sizeof(psoDesc));
+		psoDesc.InputLayout = { VertexPositionColorTexture::GetVertexElement(), VertexPositionColorTexture::GetNumElements() };
+		psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
+		psoDesc.VS =
+		{
+			reinterpret_cast<UINT8*>(SpVSPCTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpVSPCTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS =
+		{
+			reinterpret_cast<UINT8*>(SpPSPCTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpPSPCTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.RasterizerState = rasterizerStateDesc;
+		psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
+		psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.SampleDesc.Count = 1;
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
+		NAME_D3D12_OBJECT(m_defaultPipelineState);
 
-			psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
-			NAME_D3D12_OBJECT(m_alphaPipelineState);
-		}
+		psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
+		NAME_D3D12_OBJECT(m_alphaPipelineState);
 	}
 
 
@@ -619,7 +702,10 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 
 	IMPLEMENT_DX12SHADER(SpVSPNTStatic, App::GetShadersDir() + L"SpVSPNTStatic.cso")
+	IMPLEMENT_DX12SHADER(SpVSPNTStaticShadow, App::GetShadersDir() + L"SpVSPNTStaticShadow.cso")
+
 	IMPLEMENT_DX12SHADER(SpPSPNTStatic, App::GetShadersDir() + L"SpPSPNTStatic.cso")
+	IMPLEMENT_DX12SHADER(SpPSPNTStaticShadow, App::GetShadersDir() + L"SpPSPNTStaticShadow.cso")
 
 	SpPNTStaticRender::SpPNTStaticRender(const shared_ptr<GameObject>& gameObjectPtr) :
 		SpStaticRender(gameObjectPtr)
@@ -643,46 +729,79 @@ namespace basecross {
 	}
 
 
-	ComPtr<ID3D12PipelineState> SpPNTStaticRender::m_defaultPipelineState(nullptr);
-	ComPtr<ID3D12PipelineState> SpPNTStaticRender::m_alphaPipelineState(nullptr);
 
 	void SpPNTStaticRender::CreatePipelineStates() {
-		if ((!m_defaultPipelineState) || (!m_alphaPipelineState)) {
-			auto pDevice = App::GetBaseDevice();
-			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
-			//カリング
-			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
+		auto pDevice = App::GetBaseDevice();
+		CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
+		//カリング
+		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-			ZeroMemory(&psoDesc, sizeof(psoDesc));
-			psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };
-			psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
-			psoDesc.VS =
-			{
-				reinterpret_cast<UINT8*>(SpVSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpVSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.PS =
-			{
-				reinterpret_cast<UINT8*>(SpPSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				SpPSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.RasterizerState = rasterizerStateDesc;
-			psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
-			psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-			psoDesc.SampleMask = UINT_MAX;
-			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-			psoDesc.SampleDesc.Count = 1;
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
-			NAME_D3D12_OBJECT(m_defaultPipelineState);
-
-			psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
-			NAME_D3D12_OBJECT(m_alphaPipelineState);
-		}
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		ZeroMemory(&psoDesc, sizeof(psoDesc));
+		psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };
+		psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
+		psoDesc.VS =
+		{
+			reinterpret_cast<UINT8*>(SpVSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpVSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS =
+		{
+			reinterpret_cast<UINT8*>(SpPSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpPSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.RasterizerState = rasterizerStateDesc;
+		psoDesc.BlendState = BaseRenderState::GetOpaqueBlend();
+		psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.SampleDesc.Count = 1;
+		//デフォルト影無し
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
+		NAME_D3D12_OBJECT(m_defaultPipelineState);
+		//デフォルト影あり
+		psoDesc.VS =
+		{
+			reinterpret_cast<UINT8*>(SpVSPNTStaticShadow::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpVSPNTStaticShadow::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS =
+		{
+			reinterpret_cast<UINT8*>(SpPSPNTStaticShadow::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpPSPNTStaticShadow::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultShadowPipelineState)));
+		NAME_D3D12_OBJECT(m_defaultShadowPipelineState);
+		//アルファ影無し
+		psoDesc.VS =
+		{
+			reinterpret_cast<UINT8*>(SpVSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpVSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS =
+		{
+			reinterpret_cast<UINT8*>(SpPSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpPSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.BlendState = BaseRenderState::GetAlphaBlend();
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
+		NAME_D3D12_OBJECT(m_alphaPipelineState);
+		//アルファ影あり
+		psoDesc.VS =
+		{
+			reinterpret_cast<UINT8*>(SpVSPNTStaticShadow::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpVSPNTStaticShadow::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS =
+		{
+			reinterpret_cast<UINT8*>(SpPSPNTStaticShadow::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			SpPSPNTStaticShadow::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaShadowPipelineState)));
+		NAME_D3D12_OBJECT(m_alphaShadowPipelineState);
 	}
 
 
@@ -694,15 +813,24 @@ namespace basecross {
 	void SpPNTStaticRender::PopulateCommandList(BaseFrame* pBaseFrame) {
 		auto pDevice = App::GetBaseDevice();
 		auto pCommandList = pDevice->GetComandList().Get();
-
 		if (GetGameObject()->IsAlphaActive()) {
-			pCommandList->SetPipelineState(m_alphaPipelineState.Get());
+			if (IsOwnShadowActive()) {
+				pCommandList->SetPipelineState(m_alphaShadowPipelineState.Get());
+			}
+			else {
+				pCommandList->SetPipelineState(m_alphaPipelineState.Get());
+			}
 		}
 		else {
-			pCommandList->SetPipelineState(m_defaultPipelineState.Get());
+			if (IsOwnShadowActive()) {
+				pCommandList->SetPipelineState(m_defaultShadowPipelineState.Get());
+			}
+			else {
+				pCommandList->SetPipelineState(m_defaultPipelineState.Get());
+			}
+
 		}
 		pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
 		//Srv
 		if (m_baseTexture) {
 			CD3DX12_GPU_DESCRIPTOR_HANDLE srvHandle(
@@ -712,10 +840,10 @@ namespace basecross {
 			);
 			pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"t1"), srvHandle);
 			//Sampler
-			UINT index = pDevice->GetSamplerIndex(GetSamplerKey());
+			UINT index = pDevice->GetSamplerIndex(L"LinearClamp");
 			if (index == UINT_MAX) {
 				throw BaseException(
-					L"サンプラーが特定できません。",
+					L"LinearClampサンプラーが特定できません。",
 					L"SpPNTStaticRender::PopulateCommandList()"
 				);
 			}
@@ -725,6 +853,22 @@ namespace basecross {
 				pDevice->GetSamplerDescriptorHandleIncrementSize()
 			);
 			pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"s0"), samplerHandle);
+			
+			index = pDevice->GetSamplerIndex(L"ComparisonLinear");
+			if (index == UINT_MAX) {
+				throw BaseException(
+					L"ComparisonLinearサンプラーが特定できません。",
+					L"SpPNTStaticRender::PopulateCommandList()"
+				);
+			}
+			CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle2(
+				pDevice->GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
+				index,
+				pDevice->GetSamplerDescriptorHandleIncrementSize()
+			);
+			pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"s1"), samplerHandle2);
+
+
 		}
 		//Cbv
 		auto paramIndex = GetFrameParamIndex();

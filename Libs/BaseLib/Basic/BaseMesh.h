@@ -22,6 +22,7 @@ namespace basecross {
 		D3D12_INDEX_BUFFER_VIEW m_indexBufferView;
 		UINT m_numVertices;
 		UINT m_numIndices;
+	protected:
 		BaseMesh() {}
 	public:
 		~BaseMesh() {}

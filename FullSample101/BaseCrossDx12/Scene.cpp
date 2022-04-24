@@ -1,7 +1,6 @@
 /*!
 @file Scene.cpp
 @brief シーンクラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
 */
 
 
@@ -13,21 +12,28 @@ namespace basecross {
 	void Scene::OnInit() {
 		//テクスチャ
 		auto texFile = App::GetRelativeAssetsDir() + L"wall.jpg";
-		auto texture = CreateTextureFlomFile(texFile);
-		AddTexture(L"WALL_TEX", texture);
+		auto texture = BaseTexture::CreateTextureFlomFile(texFile);
+		RegisterTexture(L"WALL_TX", texture);
 		texFile = App::GetRelativeAssetsDir() + L"sky.jpg";
-		texture = CreateTextureFlomFile(texFile);
-		AddTexture(L"SKY_TEX", texture);
+		texture = BaseTexture::CreateTextureFlomFile(texFile);
+		RegisterTexture(L"SKY_TX", texture);
 
 		texFile = App::GetRelativeAssetsDir() + L"trace.png";
-		texture = CreateTextureFlomFile(texFile);
-		AddTexture(L"TRACE_TEX", texture);
+		texture = BaseTexture::CreateTextureFlomFile(texFile);
+		RegisterTexture(L"TRACE_TX", texture);
 
 		texFile = App::GetRelativeAssetsDir() + L"number.png";
-		texture = CreateTextureFlomFile(texFile);
-		AddTexture(L"NUMBER_TEX", texture);
+		texture = BaseTexture::CreateTextureFlomFile(texFile);
+		RegisterTexture(L"NUMBER_TX", texture);
 
 		ResetActiveStage<GameStage>();
+	}
+
+	void Scene::OnEvent(const shared_ptr<SceneEvent>& event) {
+		if (event->m_msgStr == L"ToGameStage") {
+			//最初のアクティブステージの設定
+			ResetActiveStage<GameStage>();
+		}
 	}
 
 }

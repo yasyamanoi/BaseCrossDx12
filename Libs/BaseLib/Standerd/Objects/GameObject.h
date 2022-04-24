@@ -14,6 +14,7 @@ namespace basecross {
 	class Stage;
 	class Component;
 	class Transform;
+	struct CollisionPair;
 
 	//--------------------------------------------------------------------------------------
 	// 配置されるオブジェクト
@@ -27,6 +28,11 @@ namespace basecross {
 		bool m_renderActive;
 		//透明かどうか
 		bool m_alphaActive;
+
+		int m_drawLayer = 0;	//描画レイヤー
+		set<wstring> m_tagSet;	//タグのセット
+		set<int> m_numTagSet;	//数字タグのセット
+
 		//コンポーネントのマップ
 		map<type_index, shared_ptr<Component> > m_compMap;
 		//コンポーネント実行順番
@@ -44,6 +50,28 @@ namespace basecross {
 			}
 			return nullptr;
 		}
+		//行動のマップ
+		map<type_index, shared_ptr<Behavior>> m_BehaviorMap;
+
+		const map<type_index, shared_ptr<Behavior> >& GetBehaviorMap() const {
+			return m_BehaviorMap;
+		}
+		map<type_index, shared_ptr<Behavior> >& GetBehaviorMap() {
+			return m_BehaviorMap;
+		}
+		shared_ptr<Behavior> SearchBehavior(type_index TypeIndex)const {
+			auto it = m_BehaviorMap.find(TypeIndex);
+			if (it != m_BehaviorMap.end()) {
+				return it->second;
+			}
+			return nullptr;
+
+		}
+		void AddMakedBehavior(type_index TypeIndex, const shared_ptr<Behavior>& Ptr) {
+			//mapに追加もしくは更新
+			m_BehaviorMap[TypeIndex] = Ptr;
+		}
+
 	protected:
 		explicit GameObject(const shared_ptr<Stage>& stage);
 		virtual ~GameObject();
@@ -66,6 +94,119 @@ namespace basecross {
 		void SetAlphaActive(bool b) {
 			m_alphaActive = b;
 		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	タグのセットを得る(const)
+		@return	タグのセット
+		*/
+		//--------------------------------------------------------------------------------------
+		const set<wstring>& GetTagSet() const {
+			return m_tagSet;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	タグのセットを得る
+		@return	タグのセット
+		*/
+		//--------------------------------------------------------------------------------------
+		set<wstring>& GetTagSet() {
+			return m_tagSet;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	指定するタグが存在するかどうかを得る
+		@param[in]	tagstr	検証するタグ
+		@return	存在すればtrue
+		*/
+		//--------------------------------------------------------------------------------------
+		bool FindTag(const wstring& tagstr) const {
+			if (m_tagSet.find(tagstr) == m_tagSet.end()) {
+				return false;
+			}
+			return true;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	指定するタグを追加する
+		@param[in]	tagstr	追加するタグ
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void  AddTag(const wstring& tagstr) {
+			if (tagstr == L"") {
+				//空白なら例外
+				throw BaseException(
+					L"設定するタグが空です",
+					L"if (tagstr == L"")",
+					L"GameObject::AddTag()"
+				);
+			}
+			m_tagSet.insert(tagstr);
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	指定するタグが存在したら削除する（存在しない場合は何もしない）
+		@param[in]	tagstr	削除するタグ
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void  RemoveTag(const wstring& tagstr) {
+			m_tagSet.erase(tagstr);
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	数字タグのセットを得る(const)
+		@return	数字タグのセット
+		*/
+		//--------------------------------------------------------------------------------------
+		const set<int>& GetNumTagSet() const {
+			return m_numTagSet;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	数字タグのセットを得る
+		@return	数字タグのセット
+		*/
+		//--------------------------------------------------------------------------------------
+		set<int>& GetNumTagSet() {
+			return m_numTagSet;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	指定する数字タグが存在するかどうかを得る
+		@param[in]	numtag	検証する数字タグ
+		@return	存在すればtrue
+		*/
+		//--------------------------------------------------------------------------------------
+		bool FindNumTag(int numtag) const {
+			if (m_numTagSet.find(numtag) == m_numTagSet.end()) {
+				return false;
+			}
+			return true;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	指定する数字タグを追加する
+		@param[in]	numtag	追加する数字タグ
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void  AddNumTag(int numtag) {
+			m_numTagSet.insert(numtag);
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	指定する数字タグが存在したら削除する（存在しない場合は何もしない）
+		@param[in]	numtag	削除する数字タグ
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void  RemoveNumTag(int numtag) {
+			m_numTagSet.erase(numtag);
+		}
+
+
+
 		shared_ptr<Stage> GetStage(bool exceptionActive = true) const;
 		template<typename T, typename... Ts>
 		shared_ptr<T> AddComponent(Ts&&... params) {
@@ -137,9 +278,66 @@ namespace basecross {
 			}
 		}
 
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	行動の取得。存在しなければ作成する
+		@tparam	T	取得する型
+		@return	コンポーネント
+		*/
+		//--------------------------------------------------------------------------------------
+		template <typename T>
+		shared_ptr<T> GetBehavior() {
+			auto Ptr = SearchBehavior(type_index(typeid(T)));
+			if (Ptr) {
+				//指定の型の行動が見つかった
+				auto RetPtr = dynamic_pointer_cast<T>(Ptr);
+				if (RetPtr) {
+					return RetPtr;
+				}
+				else {
+					throw BaseException(
+						L"行動がありましたが、型キャストできません",
+						Util::GetWSTypeName<T>(),
+						L"GameObject::GetBehavior<T>()"
+					);
+				}
+			}
+			else {
+				//無ければ新たに制作する
+				shared_ptr<T> newPtr = ObjectFactory::Create<T>(GetThis<GameObject>());
+				AddMakedBehavior(type_index(typeid(T)), newPtr);
+				return newPtr;
+			}
+			return nullptr;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	行動の検索。
+		@tparam	T	取得する型
+		@return	存在すればtrue
+		*/
+		//--------------------------------------------------------------------------------------
+		template <typename T>
+		bool FindBehavior() {
+			auto Ptr = SearchBehavior(type_index(typeid(T)));
+			if (Ptr) {
+				//指定の型の行動が見つかった
+				auto RetPtr = dynamic_pointer_cast<T>(Ptr);
+				if (RetPtr) {
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
+			return false;
+		}
+
+
 
 		void TransformInit();
 		void ComponentUpdate();
+		void ComponentShadowmapRender();
 		void ComponentRender();
 		void ComponentDestroy();
 
@@ -166,13 +364,65 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		virtual shared_ptr<LightSet> GetActiveLightSet() const;
 
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	衝突発生時時のイベント（デフォルトは何もしない）。複数あった場合は複数回呼ばれる
+		@param[in]	Other	新しく衝突した相手
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void OnCollisionEnter(shared_ptr<GameObject>& Other) {}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	衝突発生時時のイベント（デフォルトは何もしない）。複数あった場合は複数回呼ばれる
+		@param[in]	Pair ペア
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void OnCollisionEnter(const CollisionPair& Pair) {}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	衝突し続ける相手があった場合のイベント（デフォルトは何もしない）。複数あった場合は複数回呼ばれる
+		@param[in]	OtherVec	衝突し続けた相手
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void OnCollisionExcute(shared_ptr<GameObject>& Other) {}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	衝突し続ける相手があった場合のイベント（デフォルトは何もしない）。複数あった場合は複数回呼ばれる
+		@param[in]	Pair ペア
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void OnCollisionExcute(const CollisionPair& Pair) {}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	衝突を抜けた相手があった場合のイベント（デフォルトは何もしない）。複数あった場合は複数回呼ばれる
+		@param[in]	OtherVec	衝突を抜けた相手の配列
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void OnCollisionExit(shared_ptr<GameObject>& Other) {}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	衝突を抜けた相手があった場合のイベント（デフォルトは何もしない）。複数あった場合は複数回呼ばれる
+		@param[in]	Pair ペア
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void OnCollisionExit(const CollisionPair& Pair) {}
 
 		virtual void OnPreInit() override;
 		virtual void OnUpdate()override {}
+		virtual void OnUpdate2()override {}
+		virtual void OnShadowmapRender();
 		virtual void OnRender()override;
 		virtual void OnInitFrame(BaseFrame* pBaseFrame);
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame);
 		virtual void OnDestroy()override {}
+
+
 	};
 
 
@@ -237,6 +487,11 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void OnInit()override {}
+
+		virtual void OnUpdate()override {}
+		virtual void OnRender() override {}
+		virtual void OnDestroy() override {}
+
 
 	private:
 		// pImplイディオム

@@ -8,7 +8,13 @@
 namespace basecross {
 
 	HWND App::m_hwnd = nullptr;
+
 	BaseScene* App::m_pBaseScene = nullptr;
+	shared_ptr<EventDispatcher> App::m_eventDispatcher(nullptr);	///< イベント送信オブジェクト
+
+	InputDevice App::m_inputDevice;
+
+
 
 	wstring App::m_wstrModulePath;		///< モジュール名フルパス
 	wstring App::m_wstrDir;				///< モジュールがあるディレクトリ
@@ -18,7 +24,7 @@ namespace basecross {
 	wstring App::m_wstrRelativeShadersDir;	///< 相対パスのシェーダディレクトリ
 	wstring App::m_wstrRelativeAssetsDir;	///< 相対パスのアセットディレクトリ
 
-	void App::SetAssetsPath() {
+	void App::SetInitData() {
 
 		//基準ディレクトリの設定
 		//相対パスにすると、ファイルダイアログでカレントパスが狂うので
@@ -92,6 +98,11 @@ namespace basecross {
 			//成功した
 			m_wstrRelativeAssetsDir += L"\\";
 		}
+		//イベント配送クラス
+		m_eventDispatcher = make_shared<EventDispatcher>();
+		//乱数の初期化
+		srand((unsigned)time(nullptr));
+
 	}
 
 	int App::Run(BaseDevice* pBaseDevice, BaseScene* pBaseScene, HINSTANCE hInstance, int nCmdShow)
@@ -144,7 +155,7 @@ namespace basecross {
 		ZeroMemory(&winInfo, sizeof(winInfo));
 		//例外処理開始
 		try {
-			SetAssetsPath();
+			SetInitData();
 			//COMの初期化
 			//サウンドなどで使用する
 			if (FAILED(::CoInitialize(nullptr))) {
@@ -163,7 +174,6 @@ namespace basecross {
 					DispatchMessage(&msg);
 				}
 			}
-
 			pBaseDevice->OnDestroy();
 			retCode = static_cast<char>(msg.wParam);
 		}
@@ -213,12 +223,17 @@ namespace basecross {
 		//例外処理終了
 		//COMのリリース
 		::CoUninitialize();
+		if (retCode) {
+			PostQuitMessage(0);
+		}
 		return retCode;
 	}
 
 	LRESULT CALLBACK App::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		BaseDevice* pDevice = reinterpret_cast<BaseDevice*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+		WINDOWINFO winInfo;
+		ZeroMemory(&winInfo, sizeof(winInfo));
 
 		switch (message)
 		{
@@ -251,8 +266,8 @@ namespace basecross {
 		case WM_PAINT:
 			if (pDevice)
 			{
-				pDevice->OnUpdate();
-				pDevice->OnRender();
+				//更新描画処理
+				pDevice->OnUpdateRender();
 			}
 			return 0;
 		case WM_DESTROY:

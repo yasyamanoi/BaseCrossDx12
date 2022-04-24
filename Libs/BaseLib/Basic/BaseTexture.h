@@ -20,6 +20,9 @@ namespace basecross {
 		CD3DX12_CPU_DESCRIPTOR_HANDLE m_maphandle;
 		UINT m_srvIndex;
 		BaseTexture() {}
+		//ファイルからテスクチャ作成(SRVも作成する)
+		static shared_ptr<BaseTexture>
+			CreateBaseTextureFromFilePrim(const ComPtr<ID3D12GraphicsCommandList>& commandList, const wstring& fileName, const CD3DX12_CPU_DESCRIPTOR_HANDLE& mapHandle);
 	public:
 		~BaseTexture() {}
 		ComPtr<ID3D12Resource> GetTexture() const {
@@ -39,9 +42,10 @@ namespace basecross {
 		}
 		//サブリソースのアップデートとシェーダリソースビューの作成
 		void UpdateSRAndCreateSRV(const ComPtr<ID3D12GraphicsCommandList>& commandList);
+
 		//ファイルからテスクチャ作成(SRVも作成する)
-		static shared_ptr<BaseTexture>
-			CreateBaseTextureFromFile(const ComPtr<ID3D12GraphicsCommandList>& commandList,const wstring& fileName, const CD3DX12_CPU_DESCRIPTOR_HANDLE& mapHandle);
+		static shared_ptr<BaseTexture> CreateTextureFlomFile(const wstring& falsename);
+
 
 	};
 

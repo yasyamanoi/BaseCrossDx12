@@ -37,8 +37,9 @@ namespace basecross {
 		wstring m_title;
 		//フレーム数
 		static const UINT m_frameCount = 3;
-		//ライトの数
-		static const UINT m_numLights = 3;
+
+		//クリアする色
+		Col4 m_clearColor;
 
 		// Pipeline objects.
 		CD3DX12_VIEWPORT m_viewport;
@@ -91,6 +92,17 @@ namespace basecross {
 
 		//初期化処理が終わったかどうか
 		bool m_isInited;
+
+		//処理のenum
+		enum class process {
+			init,
+			update,
+			begin,
+			shadowmap,
+			render,
+			end
+		};
+		process m_process;
 
 		// フレーム
 		BaseFrame* m_baseFrame[m_frameCount];
@@ -152,6 +164,13 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		void OnInit();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	デバイスの更新描画時に呼ばれるイベント
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void OnUpdateRender();
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	デバイスの更新時に呼ばれるイベント
@@ -222,6 +241,25 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		CD3DX12_RECT GetScissorRect() const { return m_scissorRect; }
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	画面をクリアする色を得る
+		@return	画面をクリアする色
+		*/
+		//--------------------------------------------------------------------------------------
+		Col4 GetClearColor() const{
+			return m_clearColor;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	画面をクリアする色を設定する
+		@param[in]	params	このステージを構築するのに使用するパラメータ。
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetClearColor(const Col4& col) {
+			m_clearColor = col;
+		}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	Escで終了するかどうかの取得
@@ -332,6 +370,24 @@ namespace basecross {
 		UINT GetSamplerNextIndex();
 		//--------------------------------------------------------------------------------------
 		/*!
+		@brief	DSVディスクリプタヒープの取得
+		@return DSVディスクリプタヒープのComPtr
+		*/
+		//--------------------------------------------------------------------------------------
+		ComPtr<ID3D12DescriptorHeap> GetDsvDescriptorHeap() const {
+			return m_dsvHeap;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	DSVディスクリプタヒープのインクリメントサイズの取得
+		@return	DSVディスクリプタヒープのインクリメントサイズ
+		*/
+		//--------------------------------------------------------------------------------------
+		UINT GetDsvDescriptorHandleIncrementSize() const {
+			return m_dsvDescriptorIncrementSize;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
 		@brief	指定したサンプラーのインデックスの取得
 		@param[in]	key	LinearWrapなどのキー
 		@return	指定したサンプラーのインデックス（存在しなかったらしたらUINT_MAXを返す）
@@ -344,14 +400,7 @@ namespace basecross {
 		@return	汎用的コマンドリストのComPtr
 		*/
 		//--------------------------------------------------------------------------------------
-		ComPtr<ID3D12GraphicsCommandList> GetComandList()const {
-			if (!m_isInited) {
-				return m_initCommandList;
-			}
-			else {
-				return GetCurrentBaseFrame()->m_commandList;
-			}
-		}
+		ComPtr<ID3D12GraphicsCommandList> GetComandList()const;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	GPUのスロットIDの設定

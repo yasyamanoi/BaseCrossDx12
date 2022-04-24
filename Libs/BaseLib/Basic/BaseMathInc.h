@@ -2180,6 +2180,14 @@ namespace bsm {
 		return *this;
 	}
 
+	inline Mat4x4& Mat4x4::orthographicRH(
+		float width,
+		float height,
+		float n,
+		float f) {
+		*this = (Mat4x4)XMMatrixOrthographicRH(width, height, n, f);
+		return *this;
+	}
 
 	inline Mat4x4& Mat4x4::strTransformation(
 		const Flt3& scaleVec,

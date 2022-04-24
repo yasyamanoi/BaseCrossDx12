@@ -702,6 +702,7 @@ namespace basecross {
 
 	};
 
+
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief	カスタム版ThrowIfFailed（wstring版）
@@ -781,7 +782,7 @@ namespace basecross {
 		@return	なし（文字列をあわせて保持）
 		*/
 		//--------------------------------------------------------------------------------------
-		BaseException(const wstring& m1, const wstring& m2 = wstring(L""), const wstring& m3 = wstring(L"")):
+		BaseException(const wstring& m1, const wstring& m2 = wstring(L""), const wstring& m3 = wstring(L"")) :
 			runtime_error("") {
 			m_Message = Util::WStoRetMB(m1);
 			if (m2 != L"") {
@@ -818,6 +819,279 @@ namespace basecross {
 			return m_Message;
 		}
 	};
+
+	//--------------------------------------------------------------------------------------
+	///	パフォーマンスカウンター
+	//--------------------------------------------------------------------------------------
+	class PerformanceCounter {
+		bool m_IsActive;
+		bool m_IsStarted;
+		float m_PerformanceTime;
+		LARGE_INTEGER m_Freq;
+		LARGE_INTEGER m_Before;
+		LARGE_INTEGER m_After;
+	public:
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief コンストラクタ
+		*/
+		//--------------------------------------------------------------------------------------
+		PerformanceCounter() :
+			m_IsActive(false),
+			m_PerformanceTime(0.0f),
+			m_IsStarted(false)
+		{
+			m_Freq = {};
+			m_Before = {};
+			m_After = {};
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief デストラクタ
+		*/
+		//--------------------------------------------------------------------------------------
+		~PerformanceCounter() {}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	アクティブかどうか
+		@return	アクティブならtrue
+		*/
+		//--------------------------------------------------------------------------------------
+		bool IsAvtive() const {
+			return m_IsActive;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	アクティブかどうか設定
+		@param[in]	b	アクティブかどうか
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetActive(bool b) {
+			m_IsActive = b;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	検証の開始
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void Start() {
+			if (IsAvtive() && !m_IsStarted) {
+				// m_PerformanceTimeはStart時は初期化しない
+				// m_PerformanceTime = 0.0f;
+				m_Freq = {};
+				m_Before = {};
+				m_After = {};
+				m_IsStarted = true;
+				if (!QueryPerformanceFrequency(&m_Freq))
+				{
+					throw BaseException(
+						L"システム周波数を取得できません。",
+						L"if (!QueryPerformanceFrequency(&m_Freq))",
+						L"PerformanceCounter::Start()"
+					);
+				}
+				if (!QueryPerformanceCounter(&m_Before))
+				{
+					throw BaseException(
+						L"パフォーマンスカウンタ（処理前）を取得できません。",
+						L"if (!QueryPerformanceCounter(&m_Before))",
+						L"PerformanceCounter::Start()"
+					);
+				}
+			}
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	検証の終了
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void End() {
+			if (IsAvtive() && m_IsStarted) {
+				if (!QueryPerformanceCounter(&m_After))
+				{
+					throw BaseException(
+						L"パフォーマンスカウンタ（処理後）を取得できません。",
+						L"if (!QueryPerformanceCounter(&m_After))",
+						L"PerformanceCounter::Start()"
+					);
+				}
+				if (m_Freq.QuadPart != 0) {
+					m_PerformanceTime = ((float)((m_After.QuadPart - m_Before.QuadPart) * 1000.0f) / (float)m_Freq.QuadPart);
+				}
+				m_IsStarted = false;
+			}
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	かかったパフォーマンス時間（ミリ秒）を返す
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		float GetPerformanceTime() const {
+			if (IsAvtive()) {
+				return m_PerformanceTime;
+			}
+			else {
+				return 0.0f;
+			}
+		}
+	};
+
+
+	class ObjectFactory;
+	class ObjectInterface;
+
+	//--------------------------------------------------------------------------------------
+	///	イベント構造体
+	//--------------------------------------------------------------------------------------
+	struct Event {
+		///	遅延時間（SendEventの場合は常に0）
+		float m_DispatchTime;
+		///	このメッセージを送ったオブジェクト
+		weak_ptr<ObjectInterface> m_Sender;
+		///	受け取るオブジェクト（nullptrの場合はアクティブステージ内すべてもしくはキーワードで識別するオブジェクト）
+		weak_ptr<ObjectInterface> m_Receiver;
+		///	メッセージ文字列
+		wstring m_MsgStr;
+		///	追加情報をもつオブジェクトのポインタ
+		shared_ptr<void> m_Info;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンストラクタ
+		@param[in]	DispatchTime	配送までの時間
+		@param[in]	Sender	送り側オブジェクト（nullptr可）
+		@param[in]	Receiver	受け手側オブジェクト
+		@param[in]	MsgStr	メッセージ文字列
+		@param[in]	Info	追加情報をもつユーザーデータ
+		*/
+		//--------------------------------------------------------------------------------------
+		Event(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
+			const wstring& MsgStr, const shared_ptr<void>& Info = shared_ptr<void>()) :
+			m_DispatchTime(DispatchTime),
+			m_Sender(Sender),
+			m_Receiver(Receiver),
+			m_MsgStr(MsgStr),
+			m_Info(Info)
+		{}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	デストラクタ
+		*/
+		//--------------------------------------------------------------------------------------
+		~Event() {}
+	};
+
+	//--------------------------------------------------------------------------------------
+	///	イベント配送クラス
+	//--------------------------------------------------------------------------------------
+	class EventDispatcher {
+	public:
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンストラクタ
+		@param[in]	SceneBasePtr	シーンベースのポインタ
+		*/
+		//--------------------------------------------------------------------------------------
+		explicit EventDispatcher();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	デストラクタ
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual ~EventDispatcher();
+
+
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントを受け取るグループに追加（グループがなければその名前で作成）
+		@param[in]	GroupKey	グループ名
+		@param[in]	Receiver	受け手側オブジェクト
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void AddEventReceiverGroup(const wstring& GroupKey, const shared_ptr<ObjectInterface>& Receiver);
+
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントのPOST（キューに入れる）
+		@param[in]	Delay	配送までの時間
+		@param[in]	Sender	送り側オブジェクト（nullptr可）
+		@param[in]	Receiver	受け手側オブジェクト
+		@param[in]	MsgStr	メッセージ文字列
+		@param[in]	Info	追加情報をもつユーザーデータ
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void PostEvent(float Delay, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
+			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントのPOST（キューに入れる）
+		@param[in]	DispatchTime	POSTする時間（0で次のターン）
+		@param[in]	Sender	イベント送信者（nullptr可）
+		@param[in]	ReceiverKey	受け手側オブジェクトを判別するキー
+		@param[in]	MsgStr	メッセージ
+		@param[in,out]	Info	追加情報
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
+			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントのSEND（キューに入れずにそのまま送る）
+		@param[in]	Sender	送り側オブジェクト（nullptr可）
+		@param[in]	Receiver	受け手側オブジェクト
+		@param[in]	MsgStr	メッセージ文字列
+		@param[in]	Info	追加情報をもつユーザーデータ
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
+			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントのSEND（キューに入れずにそのまま送る）
+		@param[in]	Sender	イベント送信者（nullptr可）
+		@param[in]	Receiver	イベント受信者（nullptr不可）
+		@param[in]	MsgStr	メッセージ
+		@param[in,out]	Info	追加情報
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
+			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	POSTイベントの送信(メインループで呼ばれる)
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void DispatchDelayedEvent();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	キューにたまっているメッセージを削除する
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void ClearEventQ();
+	private:
+		// pImplイディオム
+		struct Impl;
+		unique_ptr<Impl> pImpl;
+		//コピー禁止
+		EventDispatcher(const EventDispatcher&) = delete;
+		EventDispatcher& operator=(const EventDispatcher&) = delete;
+		//ムーブ禁止
+		EventDispatcher(const EventDispatcher&&) = delete;
+		EventDispatcher& operator=(const EventDispatcher&&) = delete;
+	};
+
+
 
 	//--------------------------------------------------------------------------------------
 	///	Objectインターフェイス
@@ -868,14 +1142,129 @@ namespace basecross {
 		bool IsCreated()const {
 			return m_Created;
 		}
+
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントのPOST（キューに入れる）
+		@param[in]	DispatchTime	POSTする時間（0で次のターン）
+		@param[in]	Sender	イベント送信者（nullptr可）
+		@param[in]	Receiver	イベント受信者（nullptr不可）
+		@param[in]	MsgStr	メッセージ
+		@param[in,out]	Info	追加情報
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
+			const wstring& MsgStr, const shared_ptr<void>& Info = shared_ptr<void>());
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントのPOST（キューに入れる）
+		@param[in]	DispatchTime	POSTする時間（0で次のターン）
+		@param[in]	Sender	イベント送信者（nullptr可）
+		@param[in]	ReceiverKey	受け手側オブジェクトを判別するキー
+		@param[in]	MsgStr	メッセージ
+		@param[in,out]	Info	追加情報
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
+			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントのSEND（キューに入れずにそのまま送る）
+		@param[in]	Sender	イベント送信者（nullptr可）
+		@param[in]	ReceiverKey	受け手側オブジェクトを判別するキー
+		@param[in]	MsgStr	メッセージ
+		@param[in,out]	Info	追加情報
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
+			const wstring& MsgStr, const shared_ptr<void>& Info = shared_ptr<void>());
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントのSEND（キューに入れずにそのまま送る）
+		@param[in]	Sender	イベント送信者（nullptr可）
+		@param[in]	Receiver	イベント受信者（nullptr不可）
+		@param[in]	MsgStr	メッセージ
+		@param[in,out]	Info	追加情報
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
+			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
 		//仮想関数群
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	初期化前処理
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		virtual void OnPreInit() {}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	初期化処理
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		virtual void OnInit() = 0;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントを受け取る
+		@param[in]	event	イベント
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void OnEvent(const shared_ptr<Event>& event) {}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	更新処理
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		virtual void OnUpdate() = 0;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	更新処理２
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void OnUpdate2() {}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	描画処理
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		virtual void OnRender() = 0;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	破棄時処理
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		virtual void OnDestroy() = 0;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	キーボード押された処理
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		virtual void OnKeyDown(UINT8 /*key*/) {}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	キーボード離された処理
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		virtual void OnKeyUp(UINT8 /*key*/) {}
+	private:
+		//コピー禁止
+		ObjectInterface(const ObjectInterface&) = delete;
+		ObjectInterface& operator=(const ObjectInterface&) = delete;
+		//ムーブ禁止
+		ObjectInterface(const ObjectInterface&&) = delete;
+		ObjectInterface& operator=(const ObjectInterface&&) = delete;
 	};
 
 

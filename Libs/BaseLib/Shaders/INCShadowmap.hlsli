@@ -16,6 +16,14 @@ struct VS_INPUT
 	float4 position : POSITION;
 };
 
+struct VS_INPUT_PNT
+{
+	float4 position : POSITION;
+	float3 normal   : NORMAL;
+	float2 texcoord : TEXCOORD0;
+};
+
+
 
 struct VS_INPUT_WEIGHTS
 {
