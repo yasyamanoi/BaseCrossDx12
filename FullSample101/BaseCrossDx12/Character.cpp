@@ -48,6 +48,7 @@ namespace basecross {
 //		ptrDraw->SetFogEnabled(true);
 //		ptrDraw->SetOwnShadowActive(true);
 
+
 	}
 
 	//--------------------------------------------------------------------------------------
@@ -177,6 +178,8 @@ namespace basecross {
 		m_StateMachine.reset(new StateMachine<SeekObject>(GetThis<SeekObject>()));
 		//最初のステートをSeekFarStateに設定
 		m_StateMachine->ChangeState(SeekFarState::Instance());
+
+
 	}
 
 

@@ -178,6 +178,10 @@ namespace basecross {
 			retCode = static_cast<char>(msg.wParam);
 		}
 		catch (BaseException& e) {
+			//デバッグ出力をする。
+			string str = e.what_m() + "\n";
+			OutputDebugStringA(str.c_str());
+
 			if (GetWindowInfo(m_hwnd, &winInfo)) {
 				//実行失敗した
 				MessageBoxA(m_hwnd, e.what_m().c_str(), "エラー", MB_OK);
@@ -189,6 +193,11 @@ namespace basecross {
 			retCode = 1;
 		}
 		catch (runtime_error& e) {
+			//デバッグ出力をする。
+			string str(e.what());
+			str += "\n";
+			OutputDebugStringA(str.c_str());
+
 			if (GetWindowInfo(m_hwnd, &winInfo)) {
 				//実行失敗した
 				MessageBoxA(m_hwnd, e.what(), "エラー", MB_OK);
@@ -200,6 +209,10 @@ namespace basecross {
 			retCode = 1;
 		}
 		catch (exception& e) {
+			//デバッグ出力をする。
+			string str(e.what());
+			str += "\n";
+			OutputDebugStringA(str.c_str());
 			//STLエラー
 			//マルチバイトバージョンのメッセージボックスを呼ぶ
 			if (GetWindowInfo(m_hwnd, &winInfo)) {
@@ -211,6 +224,8 @@ namespace basecross {
 			retCode = 1;
 		}
 		catch (...) {
+			//デバッグ出力をする。
+			OutputDebugStringA("原因不明のエラー\n");
 			//原因不明失敗した
 			if (GetWindowInfo(m_hwnd, &winInfo)) {
 				MessageBox(m_hwnd, L"原因不明のエラーです", L"エラー", MB_OK);
