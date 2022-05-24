@@ -143,13 +143,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\BcStaticRender.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\Collision.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\Component.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\ExStaticRender.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\Gravity.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\SpSpriteRender.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\SpStaticRender.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\Transform.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\Velocity.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\Behavior.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\BehaviorSteering.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\SteeringBehavior.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\CollisionManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\GameObject.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\Stage.h" />
@@ -223,13 +224,14 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\BcStaticRender.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\Collision.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\Component.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\ExStaticRender.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\Gravity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\SpSpriteRender.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\SpStaticRender.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\Transform.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\Velocity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\Behavior.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\BehaviorSteering.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\SteeringBehavior.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\CollisionManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\GameObject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\Stage.cpp" />
@@ -241,10 +243,12 @@
     <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCConstant.hlsli" />
     <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCShadow.hlsli" />
     <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCStructs.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\ExINCStructs.hlsli" />
     <None Include="$(MSBuildThisFileDirectory)Shaders\INCShadowmap.hlsli" />
     <None Include="$(MSBuildThisFileDirectory)Shaders\INCStructs.hlsli" />
     <None Include="$(MSBuildThisFileDirectory)Shaders\SpINC2dConstant.hlsli" />
     <None Include="$(MSBuildThisFileDirectory)Shaders\SpINCConstant.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\SpINCPixel.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcPSPNTPL.hlsl">
@@ -254,6 +258,16 @@
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTStaticPL.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\ExPSPNTTn.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\ExVSPNTTn.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCSprite.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

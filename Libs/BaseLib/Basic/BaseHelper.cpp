@@ -9,84 +9,53 @@
 
 namespace basecross {
 
-	//--------------------------------------------------------------------------------------
-	//	struct EventDispatcher::Impl;
-	//	用途: Impl構造体
-	//--------------------------------------------------------------------------------------
-	struct EventDispatcher::Impl {
-		//イベントのキュー
-		list< shared_ptr<Event> > m_PriorityQ;
-		map<wstring, vector<weak_ptr<ObjectInterface>>> m_EventInterfaceGroupMap;
-		//
-		//--------------------------------------------------------------------------------------
-		//	void Discharge(
-		//	const Event& event	//イベント
-		//	);
-		//用途: イベントの送信
-		//戻り値: なし
-		//--------------------------------------------------------------------------------------
-		void Discharge(const shared_ptr<Event>& event);
-		Impl() {}
-		~Impl() {}
-	};
-
-	void EventDispatcher::Impl::Discharge(const shared_ptr<Event>& event) {
-		auto shptr = event->m_Receiver.lock();
-		if (shptr) {
-			//受け手が有効
-			shptr->OnEvent(event);
-		}
-	}
-
-
 
 	//--------------------------------------------------------------------------------------
 	///	イベント配送クラス
 	//--------------------------------------------------------------------------------------
 	//構築と破棄
-	EventDispatcher::EventDispatcher() :
-		pImpl(new Impl())
+	EventDispatcher::EventDispatcher() 
 	{}
 	EventDispatcher::~EventDispatcher() {}
 
-	void EventDispatcher::AddEventReceiverGroup(const wstring& GroupKey, const shared_ptr<ObjectInterface>& Receiver) {
-		auto it = pImpl->m_EventInterfaceGroupMap.find(GroupKey);
-		if (it != pImpl->m_EventInterfaceGroupMap.end()) {
+	void EventDispatcher::AddEventReceiverGroup(const wstring& groupKey, const shared_ptr<ObjectInterface>& receiver) {
+		auto it = m_eventInterfaceGroupMap.find(groupKey);
+		if (it != m_eventInterfaceGroupMap.end()) {
 			//キーがあった
-			it->second.push_back(Receiver);
+			it->second.push_back(receiver);
 		}
 		else {
 			//グループがない
 			vector<weak_ptr<ObjectInterface>> vec;
-			pImpl->m_EventInterfaceGroupMap[GroupKey] = vec;
-			pImpl->m_EventInterfaceGroupMap[GroupKey].push_back(Receiver);
+			m_eventInterfaceGroupMap[groupKey] = vec;
+			m_eventInterfaceGroupMap[groupKey].push_back(receiver);
 		}
 	}
 
 
 	//イベントのPOST（キューに入れる）
-	void EventDispatcher::PostEvent(float Delay, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-		const wstring& MsgStr, const  shared_ptr<void>& Info) {
+	void EventDispatcher::PostEvent(float delay, const shared_ptr<ObjectInterface>& sender, const shared_ptr<ObjectInterface>& receiver,
+		const wstring& msgStr, const  shared_ptr<void>& info) {
 		//イベントの作成 
-		auto Ptr = make_shared<Event>(Delay, Sender, Receiver, MsgStr, Info);
+		auto ptr = make_shared<Event>(delay, sender, receiver, msgStr, info);
 		//キューにためる
-		pImpl->m_PriorityQ.push_back(Ptr);
+		m_priorityQ.push_back(ptr);
 	}
 
-	void EventDispatcher::PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-		const wstring& MsgStr, const  shared_ptr<void>& Info) {
-		//ReceiverKeyによる相手の特定
+	void EventDispatcher::PostEvent(float dispatchTime, const shared_ptr<ObjectInterface>& sender, const wstring& receiverKey,
+		const wstring& msgStr, const  shared_ptr<void>& info) {
+		//receiverKeyによる相手の特定
 		//重複キーの検査
-		auto it = pImpl->m_EventInterfaceGroupMap.find(ReceiverKey);
-		if (it != pImpl->m_EventInterfaceGroupMap.end()) {
+		auto it = m_eventInterfaceGroupMap.find(receiverKey);
+		if (it != m_eventInterfaceGroupMap.end()) {
 			//キーがあった
 			for (auto v : it->second) {
 				auto shptr = v.lock();
 				if (shptr) {
 					//イベントの作成 
-					auto Ptr = make_shared<Event>(0.0f, Sender, shptr, MsgStr, Info);
+					auto ptr = make_shared<Event>(0.0f, sender, shptr, msgStr, info);
 					//キューにためる
-					pImpl->m_PriorityQ.push_back(Ptr);
+					m_priorityQ.push_back(ptr);
 				}
 			}
 		}
@@ -95,28 +64,28 @@ namespace basecross {
 
 
 	//イベントのSEND（キューに入れずにそのまま送る）
-	void EventDispatcher::SendEvent(const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-		const wstring& MsgStr, const  shared_ptr<void>& Info) {
+	void EventDispatcher::SendEvent(const shared_ptr<ObjectInterface>& sender, const shared_ptr<ObjectInterface>& receiver,
+		const wstring& msgStr, const  shared_ptr<void>& info) {
 		//イベントの作成 
-		auto Ptr = make_shared<Event>(0.0f, Sender, Receiver, MsgStr, Info);
+		auto ptr = make_shared<Event>(0.0f, sender, receiver, msgStr, info);
 		//送信
-		pImpl->Discharge(Ptr);
+		Discharge(ptr);
 	}
 
-	void EventDispatcher::SendEvent(const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-		const wstring& MsgStr, const  shared_ptr<void>& Info) {
-		//ReceiverKeyによる相手の特定
+	void EventDispatcher::SendEvent(const shared_ptr<ObjectInterface>& sender, const wstring& receiverKey,
+		const wstring& msgStr, const  shared_ptr<void>& info) {
+		//receiverKeyによる相手の特定
 		//重複キーの検査
-		auto it = pImpl->m_EventInterfaceGroupMap.find(ReceiverKey);
-		if (it != pImpl->m_EventInterfaceGroupMap.end()) {
+		auto it = m_eventInterfaceGroupMap.find(receiverKey);
+		if (it != m_eventInterfaceGroupMap.end()) {
 			//キーがあった
 			for (auto v : it->second) {
 				auto shptr = v.lock();
 				if (shptr) {
 					//イベントの作成 
-					auto Ptr = make_shared<Event>(0.0f, Sender, shptr, MsgStr, Info);
+					auto Ptr = make_shared<Event>(0.0f, sender, shptr, msgStr, info);
 					//イベントの送出
-					pImpl->Discharge(Ptr);
+					Discharge(Ptr);
 				}
 			}
 		}
@@ -126,19 +95,19 @@ namespace basecross {
 
 	void EventDispatcher::DispatchDelayedEvent() {
 		//前回のターンからの時間
-		float ElapsedTime = App::GetElapsedTime();
-		auto it = pImpl->m_PriorityQ.begin();
-		while (it != pImpl->m_PriorityQ.end()) {
-			(*it)->m_DispatchTime -= ElapsedTime;
-			if ((*it)->m_DispatchTime <= 0.0f) {
-				(*it)->m_DispatchTime = 0.0f;
+		float elapsedTime = App::GetElapsedTime();
+		auto it = m_priorityQ.begin();
+		while (it != m_priorityQ.end()) {
+			(*it)->m_dispatchTime -= elapsedTime;
+			if ((*it)->m_dispatchTime <= 0.0f) {
+				(*it)->m_dispatchTime = 0.0f;
 				//メッセージの送信
-				pImpl->Discharge(*it);
+				Discharge(*it);
 				//キューから削除
-				it = pImpl->m_PriorityQ.erase(it);
+				it = m_priorityQ.erase(it);
 				//削除後のイテレータが「最後」の
 				//ときはループを抜ける
-				if (it == pImpl->m_PriorityQ.end()) {
+				if (it == m_priorityQ.end()) {
 					break;
 				}
 			}
@@ -148,32 +117,41 @@ namespace basecross {
 		}
 	}
 
+	void EventDispatcher::Discharge(const shared_ptr<Event>& event) {
+		auto shptr = event->m_receiver.lock();
+		if (shptr) {
+			//受け手が有効
+			shptr->OnEvent(event);
+		}
+	}
+
+
 	void EventDispatcher::ClearEventQ() {
-		pImpl->m_PriorityQ.clear();
+		m_priorityQ.clear();
 	}
 
 
 	//--------------------------------------------------------------------------------------
 	///	Objectインターフェイス
 	//--------------------------------------------------------------------------------------
-	void ObjectInterface::PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-		const wstring& MsgStr, const shared_ptr<void>& Info) {
-		App::GetEventDispatcher()->PostEvent(DispatchTime, Sender, Receiver, MsgStr, Info);
+	void ObjectInterface::PostEvent(float dispatchTime, const shared_ptr<ObjectInterface>& sender, const shared_ptr<ObjectInterface>& receiver,
+		const wstring& msgStr, const shared_ptr<void>& info) {
+		App::GetEventDispatcher()->PostEvent(dispatchTime, sender, receiver, msgStr, info);
 	}
-	void ObjectInterface::PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-		const wstring& MsgStr, const shared_ptr<void>& Info) {
-		App::GetEventDispatcher()->PostEvent(DispatchTime, Sender, ReceiverKey, MsgStr, Info);
+	void ObjectInterface::PostEvent(float dispatchTime, const shared_ptr<ObjectInterface>& sender, const wstring& receiverKey,
+		const wstring& msgStr, const shared_ptr<void>& info) {
+		App::GetEventDispatcher()->PostEvent(dispatchTime, sender, receiverKey, msgStr, info);
 
 	}
 
-	void ObjectInterface::SendEvent(const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-		const wstring& MsgStr, const shared_ptr<void>& Info) {
-		App::GetEventDispatcher()->SendEvent(Sender, Receiver, MsgStr, Info);
+	void ObjectInterface::SendEvent(const shared_ptr<ObjectInterface>& sender, const shared_ptr<ObjectInterface>& receiver,
+		const wstring& msgStr, const shared_ptr<void>& info) {
+		App::GetEventDispatcher()->SendEvent(sender, receiver, msgStr, info);
 	}
 
-	void ObjectInterface::SendEvent(const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-		const wstring& MsgStr, const shared_ptr<void>& Info) {
-		App::GetEventDispatcher()->SendEvent(Sender, ReceiverKey, MsgStr, Info);
+	void ObjectInterface::SendEvent(const shared_ptr<ObjectInterface>& sender, const wstring& receiverKey,
+		const wstring& msgStr, const shared_ptr<void>& info) {
+		App::GetEventDispatcher()->SendEvent(sender, receiverKey, msgStr, info);
 	}
 
 
@@ -230,25 +208,25 @@ namespace basecross {
 
 
 	//シェーダアクセッサ
-	ID3DBlob* Dx12ShaderResource::GetShaderBlob(const wstring& Filename, ComPtr<ID3DBlob>& ShaderComPtr) {
+	ID3DBlob* Dx12ShaderResource::GetShaderBlob(const wstring& fileName, ComPtr<ID3DBlob>& shaderComPtr) {
 		//ミューテックス
 		std::mutex Mutex;
 		//ラムダ式利用
-		return Util::DemandCreate(ShaderComPtr, Mutex, [&](ID3DBlob** pResult)
+		return Util::DemandCreate(shaderComPtr, Mutex, [&](ID3DBlob** pResult)
 			{
-				Dx12ShaderHelper::CreateShaderFlomCso(Filename, pResult);
+				Dx12ShaderHelper::CreateShaderFlomCso(fileName, pResult);
 			});
 	}
 
-	ComPtr<ID3DBlob>& Dx12ShaderResource::GetShaderBlobComPtr(const wstring& Filename, ComPtr<ID3DBlob>& ShaderComPtr) {
+	ComPtr<ID3DBlob>& Dx12ShaderResource::GetShaderBlobComPtr(const wstring& fileName, ComPtr<ID3DBlob>& shaderComPtr) {
 		//ミューテックス
-		std::mutex Mutex;
+		std::mutex mutex;
 		//ラムダ式利用
-		Util::DemandCreate(ShaderComPtr, Mutex, [&](ID3DBlob** pResult)
+		Util::DemandCreate(shaderComPtr, mutex, [&](ID3DBlob** pResult)
 			{
-				Dx12ShaderHelper::CreateShaderFlomCso(Filename, pResult);
+				Dx12ShaderHelper::CreateShaderFlomCso(fileName, pResult);
 			});
-		return ShaderComPtr;
+		return shaderComPtr;
 	}
 
 }

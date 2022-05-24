@@ -15,32 +15,48 @@ namespace basecross {
 
 	IMPLEMENT_DX12SHADER(PNTShadowmap, App::GetShadersDir() + L"VSShadowmap.cso")
 
+		float Shadowmap::m_lightHeight(200.0f);
+		float Shadowmap::m_lightNear(1.0f );
+		float Shadowmap::m_lightFar( 220.0f );
+		float Shadowmap::m_viewWidth( 32.0f );
+		float Shadowmap::m_viewHeight( 32.0f );
+		float Shadowmap::m_posAdjustment( 0.1f );
+
+
 	void Shadowmap::CreatePipelineStates() {
 		auto pDevice = App::GetBaseDevice();
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		ZeroMemory(&psoDesc, sizeof(psoDesc));
-		CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
+		// シャドウマップ用
+		CD3DX12_DEPTH_STENCIL_DESC depthStencilDesc(D3D12_DEFAULT);
+		depthStencilDesc.DepthEnable = TRUE;
+		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+		depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		depthStencilDesc.StencilEnable = FALSE;
 
-		psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };
-		psoDesc.pRootSignature = pDevice->GetRootSignature().Get();;
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };;
+		psoDesc.pRootSignature = pDevice->GetRootSignature().Get();
 		psoDesc.VS =
 		{
 			reinterpret_cast<UINT8*>(PNTShadowmap::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
 			PNTShadowmap::GetPtr()->GetShaderComPtr()->GetBufferSize()
+
 		};
-		psoDesc.PS = CD3DX12_SHADER_BYTECODE(0, 0);
-		psoDesc.RasterizerState = rasterizerStateDesc;
+		psoDesc.PS =
+		{
+			CD3DX12_SHADER_BYTECODE(0, 0)
+		};
+		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		psoDesc.DepthStencilState.DepthEnable = FALSE;
-		psoDesc.DepthStencilState.StencilEnable = FALSE;
+		psoDesc.DepthStencilState = depthStencilDesc;
 		psoDesc.SampleMask = UINT_MAX;
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		psoDesc.NumRenderTargets = 0;
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		psoDesc.SampleDesc.Count = 1;
+
 		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_PNTPipelineState)));
 		NAME_D3D12_OBJECT(m_PNTPipelineState);
-
 	}
 
 	//コンスタントバッファの登録
@@ -139,7 +155,7 @@ namespace basecross {
 		SetRenderActive(true);
 	}
 
-	void Shadowmap::OnInit() {
+	void Shadowmap::OnCreate() {
 		CreatePipelineStates();
 	}
 
@@ -182,6 +198,23 @@ namespace basecross {
 		//テクスチャがあった場合
 		if (GetTexture()) {
 			constant.activeFlg.x = 1;
+		}
+		//影用
+		if (IsOwnShadowActive()) {
+			bsm::Vec3 CalcLightDir = -1.0 * light.m_directional;
+			bsm::Vec3 LightAt = cameraPtr->GetAt();
+			bsm::Vec3 LightEye = CalcLightDir;
+			LightEye *= Shadowmap::GetLightHeight();
+			LightEye = LightAt + LightEye;
+			constant.lightPos = LightEye;
+			constant.lightPos.w = 1.0f;
+			bsm::Mat4x4 lightView, lightProj;
+			//ライトのビューと射影を計算
+			lightView = XMMatrixLookAtLH(LightEye, LightAt, bsm::Vec3(0, 1.0f, 0));
+			lightProj = XMMatrixOrthographicLH(Shadowmap::GetViewWidth(), Shadowmap::GetViewHeight(),
+				Shadowmap::GetLightNear(), Shadowmap::GetLightFar());
+			constant.lightView = bsm::transpose(lightView);
+			constant.lightProjection = bsm::transpose(lightProj);
 		}
 	}
 
@@ -296,7 +329,7 @@ namespace basecross {
 	}
 
 
-	void SpPCStaticRender::OnInit() {
+	void SpPCStaticRender::OnCreate() {
 		CreatePipelineStates();
 	}
 
@@ -403,7 +436,7 @@ namespace basecross {
 	}
 
 
-	void SpPTStaticRender::OnInit() {
+	void SpPTStaticRender::OnCreate() {
 		CreatePipelineStates();
 	}
 
@@ -532,7 +565,7 @@ namespace basecross {
 	}
 
 
-	void SpPNStaticRender::OnInit() {
+	void SpPNStaticRender::OnCreate() {
 		CreatePipelineStates();
 	}
 
@@ -637,7 +670,7 @@ namespace basecross {
 	}
 
 
-	void SpPCTStaticRender::OnInit() {
+	void SpPCTStaticRender::OnCreate() {
 		CreatePipelineStates();
 	}
 
@@ -805,7 +838,7 @@ namespace basecross {
 	}
 
 
-	void SpPNTStaticRender::OnInit() {
+	void SpPNTStaticRender::OnCreate() {
 		CreatePipelineStates();
 	}
 
@@ -816,17 +849,21 @@ namespace basecross {
 		if (GetGameObject()->IsAlphaActive()) {
 			if (IsOwnShadowActive()) {
 				pCommandList->SetPipelineState(m_alphaShadowPipelineState.Get());
+//				pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"t0"), pBaseFrame->m_shadowDepthHandle);        // Set the shadow texture as an SRV.
 			}
 			else {
 				pCommandList->SetPipelineState(m_alphaPipelineState.Get());
+//				pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"t0"), pDevice->GetNullSrvGpuHandle());        // Set the shadow texture as an SRV.
 			}
 		}
 		else {
 			if (IsOwnShadowActive()) {
 				pCommandList->SetPipelineState(m_defaultShadowPipelineState.Get());
+//				pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"t0"), pBaseFrame->m_shadowDepthHandle);        // Set the shadow texture as an SRV.
 			}
 			else {
 				pCommandList->SetPipelineState(m_defaultPipelineState.Get());
+//				pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"t0"), pDevice->GetNullSrvGpuHandle());        // Set the shadow texture as an SRV.
 			}
 
 		}

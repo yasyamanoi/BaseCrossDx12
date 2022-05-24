@@ -8,26 +8,16 @@
 
 namespace basecross {
 
-	//--------------------------------------------------------------------------------------
-	//	struct Behavior::Impl;
-	//--------------------------------------------------------------------------------------
-	struct Behavior::Impl {
-		weak_ptr<GameObject> m_GameObject;
-		explicit Impl(const shared_ptr<GameObject>& GameObjectPtr) :
-			m_GameObject(GameObjectPtr)
-		{}
-		~Impl() {}
-	};
 
 	//--------------------------------------------------------------------------------------
 	///	行動クラスの親クラス
 	//--------------------------------------------------------------------------------------
 	Behavior::Behavior(const shared_ptr<GameObject>& GameObjectPtr) :
-		pImpl(new Impl(GameObjectPtr))
+		m_GameObject(GameObjectPtr)
 	{}
 	Behavior::~Behavior() {}
 	shared_ptr<GameObject> Behavior::GetGameObject() const {
-		auto shptr = pImpl->m_GameObject.lock();
+		auto shptr = m_GameObject.lock();
 		if (!shptr) {
 			throw BaseException(
 				L"GameObjectは有効ではありません",

@@ -648,7 +648,7 @@ namespace basecross {
 
 	PsBox::~PsBox() {}
 
-	void PsBox::OnInit() {
+	void PsBox::OnCreate() {
 		PfxBox box((PfxVector3)pImpl->m_PsBoxParam.m_HalfSize);
 		PfxShape shape;
 		shape.reset();
@@ -694,7 +694,7 @@ namespace basecross {
 
 	PsSphere::~PsSphere() {}
 
-	void PsSphere::OnInit() {
+	void PsSphere::OnCreate() {
 		PfxSphere sphere((PfxFloat)pImpl->m_PsSphereParam.m_Radius);
 		PfxShape shape;
 		shape.reset();
@@ -740,7 +740,7 @@ namespace basecross {
 	}
 	PsCapsule::~PsCapsule() {}
 
-	void PsCapsule::OnInit() {
+	void PsCapsule::OnCreate() {
 		PfxCapsule capsule(
 			(PfxFloat)pImpl->m_PsCapsuleParam.m_HalfLen,
 			(PfxFloat)pImpl->m_PsCapsuleParam.m_Radius
@@ -788,7 +788,7 @@ namespace basecross {
 	}
 	PsCylinder::~PsCylinder() {}
 
-	void PsCylinder::OnInit() {
+	void PsCylinder::OnCreate() {
 		PfxCylinder cylinder(
 			(PfxFloat)pImpl->m_PsCylinderParam.m_HalfLen,
 			(PfxFloat)pImpl->m_PsCylinderParam.m_Radius
@@ -980,7 +980,7 @@ namespace basecross {
 
 	PsCombined::~PsCombined() {}
 
-	void PsCombined::OnInit() {
+	void PsCombined::OnCreate() {
 		vector<PfxUInt16> PrimIndices;
 		ps::getNewCombinedShapesIndices(PrimIndices, (PfxUInt16)pImpl->m_PsCombinedParam.m_Primitives.size());
 		ps::collidables[m_Index].reset(ps::combinedShapes, &PrimIndices.front(), (int)PrimIndices.size());
@@ -1121,7 +1121,7 @@ namespace basecross {
 	}
 	PsBallJoint::~PsBallJoint() {}
 
-	void PsBallJoint::OnInit() {
+	void PsBallJoint::OnCreate() {
 		PfxBallJointInitParam jparam;
 		jparam.anchorPoint = pImpl->m_PsBallJointParam.m_AnchorPoint;
 		PfxRigidState &stateA = ps::states[pImpl->m_PsBallJointParam.m_IndexA];
@@ -1173,7 +1173,7 @@ namespace basecross {
 	}
 	PsSwingTwistJoint::~PsSwingTwistJoint() {}
 
-	void PsSwingTwistJoint::OnInit() {
+	void PsSwingTwistJoint::OnCreate() {
 		PfxSwingTwistJointInitParam jparam;
 		jparam.anchorPoint = pImpl->m_PsSwingTwistJointParam.m_AnchorPoint;
 		jparam.twistAxis = pImpl->m_PsSwingTwistJointParam.m_TwistAxis;
@@ -1231,7 +1231,7 @@ namespace basecross {
 
 	PsHingeJoint::~PsHingeJoint() {}
 
-	void PsHingeJoint::OnInit() {
+	void PsHingeJoint::OnCreate() {
 		PfxHingeJointInitParam jparam;
 		jparam.anchorPoint = pImpl->m_PsHingeJointParam.m_AnchorPoint;
 		jparam.axis = pImpl->m_PsHingeJointParam.m_Axis;
@@ -1286,7 +1286,7 @@ namespace basecross {
 	}
 	PsSliderJoint::~PsSliderJoint() {}
 
-	void PsSliderJoint::OnInit() {
+	void PsSliderJoint::OnCreate() {
 		PfxSliderJointInitParam jparam;
 		jparam.anchorPoint = pImpl->m_PsSliderJointParam.m_AnchorPoint;
 		jparam.direction = pImpl->m_PsSliderJointParam.m_Direction;
@@ -1342,7 +1342,7 @@ namespace basecross {
 	}
 	PsFixJoint::~PsFixJoint() {}
 
-	void PsFixJoint::OnInit() {
+	void PsFixJoint::OnCreate() {
 		PfxFixJointInitParam jparam;
 		jparam.anchorPoint = pImpl->m_PsFixJointParam.m_AnchorPoint;
 		PfxRigidState &stateA = ps::states[pImpl->m_PsFixJointParam.m_IndexA];
@@ -1394,7 +1394,7 @@ namespace basecross {
 
 	PsUniversalJoint::~PsUniversalJoint() {}
 
-	void PsUniversalJoint::OnInit() {
+	void PsUniversalJoint::OnCreate() {
 		PfxUniversalJointInitParam jparam;
 		jparam.anchorPoint = pImpl->m_PsUniversalJointParam.m_AnchorPoint;
 		jparam.axis = pImpl->m_PsUniversalJointParam.m_Axis;

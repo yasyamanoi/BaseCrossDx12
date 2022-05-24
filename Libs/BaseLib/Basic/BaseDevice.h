@@ -30,7 +30,7 @@ namespace basecross {
 		//縦横比
 		float m_aspectRatio;
 		//ESCキーで終了させるかどうか
-		bool m_QuiteEscapeKey;
+		bool m_quiteEscapeKey;
 		//ラップモードかどうか
 		bool m_useWarpDevice;
 		//ウインドウタイトル
@@ -52,6 +52,8 @@ namespace basecross {
 		ComPtr<ID3D12DescriptorHeap> m_dsvHeap;
 		ComPtr<ID3D12DescriptorHeap> m_cbvSrvUavHeap;
 		ComPtr<ID3D12DescriptorHeap> m_samplerHeap;
+		//null用のGPUハンドル
+		D3D12_GPU_DESCRIPTOR_HANDLE m_nullSrvGpuHandle;
 
 
 		ComPtr<ID3D12RootSignature> m_rootSignature;
@@ -163,14 +165,14 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void OnInit();
+		void OnCreate();
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	デバイスの更新描画時に呼ばれるイベント
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void OnUpdateRender();
+		void OnUpdateDraw();
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	デバイスの更新時に呼ばれるイベント
@@ -184,7 +186,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void OnRender();
+		void OnDraw();
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	デバイスの破棄時に呼ばれるイベント
@@ -266,7 +268,7 @@ namespace basecross {
 		@return	終了するならtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		bool IsQuiteEscapeKey() const {return m_QuiteEscapeKey;}
+		bool IsQuiteEscapeKey() const {return m_quiteEscapeKey;}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	Escで終了するかどうかの設定
@@ -274,7 +276,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SetQuiteEscapeKey(bool b) {m_QuiteEscapeKey = b;}
+		void SetQuiteEscapeKey(bool b) {m_quiteEscapeKey = b;}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	コマンドラインをパースする
@@ -319,6 +321,15 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		ComPtr<ID3D12DescriptorHeap> GetCbvSrvUavDescriptorHeap() const {
 			return m_cbvSrvUavHeap;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	Null用のCbvSrvUavディスクリプタヒープのハンドルを得る
+		@return	Null用のCbvSrvUavディスクリプタヒープのハンドル
+		*/
+		//--------------------------------------------------------------------------------------
+		D3D12_GPU_DESCRIPTOR_HANDLE GetNullSrvGpuHandle() {
+			return m_nullSrvGpuHandle;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!

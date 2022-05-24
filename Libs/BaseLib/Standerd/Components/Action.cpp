@@ -8,82 +8,67 @@
 namespace basecross {
 
 	//--------------------------------------------------------------------------------------
-	//	struct ActionComponent::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct ActionComponent::Impl {
-		bool m_Run;			//移動中かどうか
-		bool m_Arrived;	//到着したかどうか
-		float m_TotalTime;	//移動にかける時間
-		float m_NowTime;	//現在の時間
-		Impl() :
-			m_Run(false),
-			m_Arrived(false),
-			m_TotalTime(0),
-			m_NowTime(0)
-		{}
-		~Impl() {}
-	};
-
-	//--------------------------------------------------------------------------------------
 	//	class ActionComponent : public Component ;
 	//	用途: アクション系コンポーネントの親クラス
 	//--------------------------------------------------------------------------------------
 	//構築と破棄
 	ActionComponent::ActionComponent(const shared_ptr<GameObject>& GameObjectPtr) :
 		Component(GameObjectPtr),
-		pImpl(new Impl())
+		m_Run(false),
+		m_Arrived(false),
+		m_TotalTime(0),
+		m_NowTime(0)
 	{}
 	ActionComponent::~ActionComponent() {}
 
 	//アクセサ
 	void ActionComponent::SetRun(bool b) {
-		pImpl->m_Run = b;
+		m_Run = b;
 	}
 	void  ActionComponent::SetArrived(bool b) {
-		pImpl->m_Arrived = b;
+		m_Arrived = b;
 	}
 
 
 	bool ActionComponent::IsRun()const {
-		return pImpl->m_Run;
+		return m_Run;
 	}
 	bool ActionComponent::GetRun()const {
-		return pImpl->m_Run;
+		return m_Run;
 	}
 
 	bool ActionComponent::IsArrived()const {
-		return pImpl->m_Arrived;
+		return m_Arrived;
 	}
 	bool ActionComponent::GetArrived()const {
-		return pImpl->m_Arrived;
+		return m_Arrived;
 	}
 
 	float ActionComponent::GetTotalTime() const {
-		return pImpl->m_TotalTime;
+		return m_TotalTime;
 	}
 	void ActionComponent::SetTotalTime(float f) {
-		pImpl->m_TotalTime = f;
+		m_TotalTime = f;
 	}
 
 	float ActionComponent::GetNowTime() const {
-		return pImpl->m_NowTime;
+		return m_NowTime;
 	}
 	void ActionComponent::SetNowTime(float f) {
-		pImpl->m_NowTime = f;
+		m_NowTime = f;
 	}
 
 	//NowTimeを加算して、TotalTimeと比較する
 	bool ActionComponent::AdditionalNowTime() {
-		if (pImpl->m_Run) {
-			if (pImpl->m_TotalTime > 0) {
+		if (m_Run) {
+			if (m_TotalTime > 0) {
 				float ElapsedTime = App::GetElapsedTime();
-				pImpl->m_NowTime += ElapsedTime;
-				if (pImpl->m_NowTime >= pImpl->m_TotalTime) {
-					pImpl->m_NowTime = pImpl->m_TotalTime;
-					pImpl->m_Run = false;
+				m_NowTime += ElapsedTime;
+				if (m_NowTime >= m_TotalTime) {
+					m_NowTime = m_TotalTime;
+					m_Run = false;
 					//到着した
-					pImpl->m_Arrived = true;
+					m_Arrived = true;
 				}
 				return true;
 			}
@@ -93,12 +78,12 @@ namespace basecross {
 
 
 	void ActionComponent::Stop() {
-		pImpl->m_Run = false;
+		m_Run = false;
 	}
 	void ActionComponent::ReStart() {
-		if (!pImpl->m_Arrived) {
+		if (!m_Arrived) {
 			//到着してなければ動作させる
-			pImpl->m_Run = true;
+			m_Run = true;
 		}
 	}
 
@@ -142,21 +127,6 @@ namespace basecross {
 		}
 	}
 
-	//--------------------------------------------------------------------------------------
-	//	struct ScaleComponent::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct ScaleComponent::Impl {
-		bsm::Vec3 m_StartScale;	//開始倍率
-		bsm::Vec3 m_TargetScale;	//目的倍率
-		Lerp::rate m_Rate;	//補間方法
-		Impl() :
-			m_StartScale(1.0f, 1.0f, 1.0f),
-			m_TargetScale(1.0f, 1.0f, 1.0f),
-			m_Rate(Lerp::Linear)
-		{}
-		~Impl() {}
-	};
 
 	//--------------------------------------------------------------------------------------
 	//	class ScaleComponent : public Component ;
@@ -165,33 +135,35 @@ namespace basecross {
 	//構築と破棄
 	ScaleComponent::ScaleComponent(const shared_ptr<GameObject>& GameObjectPtr) :
 		ActionComponent(GameObjectPtr),
-		pImpl(new Impl())
+		m_StartScale(1.0f, 1.0f, 1.0f),
+		m_TargetScale(1.0f, 1.0f, 1.0f),
+		m_Rate(Lerp::Linear)
 	{}
 	ScaleComponent::~ScaleComponent() {}
 
 
 	//アクセサ
-	Lerp::rate ScaleComponent::GetRate() const { return pImpl->m_Rate; }
-	void ScaleComponent::SetRate(const Lerp::rate r) { pImpl->m_Rate = r; }
+	Lerp::rate ScaleComponent::GetRate() const { return m_Rate; }
+	void ScaleComponent::SetRate(const Lerp::rate r) { m_Rate = r; }
 
-	const bsm::Vec3& ScaleComponent::GetStartScale() const { return pImpl->m_StartScale; }
-	void ScaleComponent::SetStartScale(const bsm::Vec3& StartPosition) { pImpl->m_StartScale = StartPosition; }
-	void ScaleComponent::SetStartScale(float x, float y, float z) { pImpl->m_StartScale = bsm::Vec3(x, y, z); }
+	const bsm::Vec3& ScaleComponent::GetStartScale() const { return m_StartScale; }
+	void ScaleComponent::SetStartScale(const bsm::Vec3& StartPosition) { m_StartScale = StartPosition; }
+	void ScaleComponent::SetStartScale(float x, float y, float z) { m_StartScale = bsm::Vec3(x, y, z); }
 
-	const bsm::Vec3& ScaleComponent::GetTargetScale() const { return pImpl->m_TargetScale; }
-	void ScaleComponent::SetTargetScale(const bsm::Vec3& TargetScale) { pImpl->m_TargetScale = TargetScale; }
-	void ScaleComponent::SetTargetScale(float x, float y, float z) { pImpl->m_TargetScale = bsm::Vec3(x, y, z); }
+	const bsm::Vec3& ScaleComponent::GetTargetScale() const { return m_TargetScale; }
+	void ScaleComponent::SetTargetScale(const bsm::Vec3& TargetScale) { m_TargetScale = TargetScale; }
+	void ScaleComponent::SetTargetScale(float x, float y, float z) { m_TargetScale = bsm::Vec3(x, y, z); }
 
 	//操作
 	void ScaleComponent::Run() {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
-		pImpl->m_StartScale = TransPtr->GetScale();
+		m_StartScale = TransPtr->GetScale();
 		SetNowTime(0);
 		SetRun(true);
 		SetArrived(false);
 		if (GetTotalTime() <= 0) {
 			//トータルタイムが0以下なら、すでに到着していることになる
-			TransPtr->SetScale(pImpl->m_TargetScale);
+			TransPtr->SetScale(m_TargetScale);
 			SetTotalTime(0);
 			SetNowTime(0);
 			SetRun(false);
@@ -204,19 +176,19 @@ namespace basecross {
 			auto TransPtr = GetGameObject()->GetComponent<Transform>();
 			if (AdditionalNowTime()) {
 				bsm::Vec3 Scale = Lerp::CalculateLerp<bsm::Vec3>(
-					pImpl->m_StartScale,
-					pImpl->m_TargetScale,
+					m_StartScale,
+					m_TargetScale,
 					0,
 					GetTotalTime(),
 					GetNowTime(),
-					pImpl->m_Rate
+					m_Rate
 					);
 				TransPtr->SetScale(Scale);
 			}
 			else {
 				if (GetTotalTime() <= 0) {
 					//トータルタイムが0以下なら、すでに到着していることになる
-					TransPtr->SetScale(pImpl->m_TargetScale);
+					TransPtr->SetScale(m_TargetScale);
 					SetTotalTime(0);
 					SetNowTime(0);
 					SetRun(false);
@@ -231,15 +203,15 @@ namespace basecross {
 	//Update後に呼ぶべき
 	bsm::Vec3 ScaleComponent::GetNowScale() const {
 		if (GetTotalTime() <= 0) {
-			return pImpl->m_TargetScale;
+			return m_TargetScale;
 		}
 		bsm::Vec3 Scale = Lerp::CalculateLerp(
-			pImpl->m_StartScale,
-			pImpl->m_TargetScale,
+			m_StartScale,
+			m_TargetScale,
 			0,
 			GetTotalTime(),
 			GetNowTime(),
-			pImpl->m_Rate
+			m_Rate
 		);
 		return Scale;
 	}
@@ -260,32 +232,20 @@ namespace basecross {
 	}
 
 	//--------------------------------------------------------------------------------------
-	//	struct ScaleBy::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct ScaleBy::Impl {
-		bsm::Vec3 m_LocalScale;	//相対スケール
-	public:
-		Impl() :
-			m_LocalScale(1.0f, 1.0f, 1.0f)
-		{}
-		~Impl() {}
-	};
-
-	//--------------------------------------------------------------------------------------
 	//	class ScaleBy : public  ScaleComponent;
 	//	用途: 目的の相対スケールにに拡大縮小
 	//--------------------------------------------------------------------------------------
 	//構築と破棄
 	ScaleBy::ScaleBy(const shared_ptr<GameObject>& GameObjectPtr) :
-		ScaleComponent(GameObjectPtr), pImpl(new Impl()) {}
+		ScaleComponent(GameObjectPtr), 
+		m_LocalScale(1.0f, 1.0f, 1.0f) {}
 	ScaleBy::~ScaleBy() {}
 
 
 	//アクセサ
-	const bsm::Vec3& ScaleBy::GetLocalScale() const { return pImpl->m_LocalScale; }
-	void ScaleBy::SetLocalScale(const bsm::Vec3& LocalScale) { pImpl->m_LocalScale = LocalScale; }
-	void ScaleBy::SetLocalScale(float x, float y, float z) { pImpl->m_LocalScale = bsm::Vec3(x, y, z); }
+	const bsm::Vec3& ScaleBy::GetLocalScale() const { return m_LocalScale; }
+	void ScaleBy::SetLocalScale(const bsm::Vec3& LocalScale) { m_LocalScale = LocalScale; }
+	void ScaleBy::SetLocalScale(float x, float y, float z) { m_LocalScale = bsm::Vec3(x, y, z); }
 
 	void ScaleBy::SetParams(float TotalTime, const bsm::Vec3& LocalScale, Lerp::rate Rate) {
 		SetLocalScale(LocalScale);
@@ -298,30 +258,12 @@ namespace basecross {
 	void ScaleBy::Run() {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
 		bsm::Vec3 Target = TransPtr->GetScale();
-		Target.x *= pImpl->m_LocalScale.x;
-		Target.y *= pImpl->m_LocalScale.y;
-		Target.z *= pImpl->m_LocalScale.z;
+		Target.x *= m_LocalScale.x;
+		Target.y *= m_LocalScale.y;
+		Target.z *= m_LocalScale.z;
 		SetTargetScale(Target);
 		ScaleComponent::Run();
 	}
-
-
-
-	//--------------------------------------------------------------------------------------
-	//	struct RotateComponent::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct RotateComponent::Impl {
-		bsm::Quat m_StartQuaternion;	//開始回転
-		bsm::Quat m_TargetQuaternion;	//終了回転
-	public:
-		Impl() :
-			m_StartQuaternion(),
-			m_TargetQuaternion()
-		{}
-		~Impl() {}
-
-	};
 
 	//--------------------------------------------------------------------------------------
 	//	class RotateComponent : public ActionComponent ;
@@ -330,61 +272,62 @@ namespace basecross {
 	//構築と破棄
 	RotateComponent::RotateComponent(const shared_ptr<GameObject>& GameObjectPtr) :
 		ActionComponent(GameObjectPtr),
-		pImpl(new Impl())
+		m_StartQuaternion(),
+		m_TargetQuaternion()
 	{
 	}
 	RotateComponent::~RotateComponent() {}
 
 
 	//アクセサ
-	const bsm::Quat& RotateComponent::GetStartQuaternion() const { return pImpl->m_StartQuaternion; }
+	const bsm::Quat& RotateComponent::GetStartQuaternion() const { return m_StartQuaternion; }
 	void RotateComponent::SetStartQuaternion(const bsm::Quat& StartQuaternion) {
-		pImpl->m_StartQuaternion = StartQuaternion;
-		pImpl->m_StartQuaternion.normalize();
+		m_StartQuaternion = StartQuaternion;
+		m_StartQuaternion.normalize();
 	}
 
 	bsm::Vec3 RotateComponent::GetStartRotate() const {
-		return pImpl->m_StartQuaternion.toRotVec();
+		return m_StartQuaternion.toRotVec();
 	}
 	void RotateComponent::SetStartRotate(const bsm::Vec3& StartRotate) {
-		pImpl->m_StartQuaternion.rotationRollPitchYawFromVector(StartRotate);
-		pImpl->m_StartQuaternion.normalize();
+		m_StartQuaternion.rotationRollPitchYawFromVector(StartRotate);
+		m_StartQuaternion.normalize();
 	}
 	void RotateComponent::SetStartRotate(float x, float y, float z) {
-		pImpl->m_StartQuaternion.rotationRollPitchYawFromVector(bsm::Vec3(x, y, z));
-		pImpl->m_StartQuaternion.normalize();
+		m_StartQuaternion.rotationRollPitchYawFromVector(bsm::Vec3(x, y, z));
+		m_StartQuaternion.normalize();
 	}
 
 	const bsm::Quat& RotateComponent::GetTargetQuaternion() const {
-		return pImpl->m_TargetQuaternion;
+		return m_TargetQuaternion;
 	}
 	void RotateComponent::SetTargetQuaternion(const bsm::Quat& TargetQuaternion) {
-		pImpl->m_TargetQuaternion = TargetQuaternion;
-		pImpl->m_TargetQuaternion.normalize();
+		m_TargetQuaternion = TargetQuaternion;
+		m_TargetQuaternion.normalize();
 	}
 	bsm::Vec3 RotateComponent::GetTargetRotate() const {
-		return pImpl->m_TargetQuaternion.toRotVec();
+		return m_TargetQuaternion.toRotVec();
 	}
 	void RotateComponent::SetTargetRotate(const bsm::Vec3& TargetRotate) {
-		pImpl->m_TargetQuaternion.rotationRollPitchYawFromVector(TargetRotate);
-		pImpl->m_TargetQuaternion.normalize();
+		m_TargetQuaternion.rotationRollPitchYawFromVector(TargetRotate);
+		m_TargetQuaternion.normalize();
 	}
 	void RotateComponent::SetTargetRotate(float x, float y, float z) {
-		pImpl->m_TargetQuaternion.rotationRollPitchYawFromVector(bsm::Vec3(x, y, z));
-		pImpl->m_TargetQuaternion.normalize();
+		m_TargetQuaternion.rotationRollPitchYawFromVector(bsm::Vec3(x, y, z));
+		m_TargetQuaternion.normalize();
 	}
 
 	//操作
 	void RotateComponent::Run() {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
 		//クオータニオンから現在の回転を得る
-		pImpl->m_StartQuaternion = TransPtr->GetQuaternion();
+		m_StartQuaternion = TransPtr->GetQuaternion();
 		SetNowTime(0);
 		SetRun(true);
 		SetArrived(false);
 		if (GetTotalTime() <= 0) {
 			//トータルタイムが0以下なら、すでに到着していることになる
-			TransPtr->SetQuaternion(pImpl->m_TargetQuaternion);
+			TransPtr->SetQuaternion(m_TargetQuaternion);
 			SetTotalTime(0);
 			SetNowTime(0);
 			SetRun(false);
@@ -396,8 +339,8 @@ namespace basecross {
 			auto TransPtr = GetGameObject()->GetComponent<Transform>();
 			if (AdditionalNowTime()) {
 				bsm::Quat Qt(XMQuaternionSlerp(
-					pImpl->m_StartQuaternion,
-					pImpl->m_TargetQuaternion,
+					m_StartQuaternion,
+					m_TargetQuaternion,
 					GetNowTime() / GetTotalTime()
 				));
 				Qt.normalize();
@@ -406,7 +349,7 @@ namespace basecross {
 			else {
 				if (GetTotalTime() <= 0) {
 					//トータルタイムが0以下なら、すでに到着していることになる
-					TransPtr->SetQuaternion(pImpl->m_TargetQuaternion);
+					TransPtr->SetQuaternion(m_TargetQuaternion);
 					SetTotalTime(0);
 					SetNowTime(0);
 					SetRun(false);
@@ -421,11 +364,11 @@ namespace basecross {
 	//Update後に呼ぶべき
 	bsm::Vec3 RotateComponent::GetNowRotate() const {
 		if (GetTotalTime() <= 0) {
-			return pImpl->m_TargetQuaternion.toRotVec();
+			return m_TargetQuaternion.toRotVec();
 		}
 		bsm::Quat Qt(XMQuaternionSlerp(
-			pImpl->m_StartQuaternion,
-			pImpl->m_TargetQuaternion,
+			m_StartQuaternion,
+			m_TargetQuaternion,
 			GetNowTime() / GetTotalTime()
 		));
 		Qt.normalize();
@@ -433,11 +376,11 @@ namespace basecross {
 	}
 	bsm::Quat RotateComponent::GetNowQuaternion() const {
 		if (GetTotalTime() <= 0) {
-			return pImpl->m_TargetQuaternion;
+			return m_TargetQuaternion;
 		}
 		bsm::Quat Qt(XMQuaternionSlerp(
-			pImpl->m_StartQuaternion,
-			pImpl->m_TargetQuaternion,
+			m_StartQuaternion,
+			m_TargetQuaternion,
 			GetNowTime() / GetTotalTime()
 		));
 		Qt.normalize();
@@ -467,18 +410,6 @@ namespace basecross {
 	}
 
 
-	//--------------------------------------------------------------------------------------
-	//	struct RotateBy::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct RotateBy::Impl {
-		bsm::Quat m_LocalQuaternion;	//相対回転
-		Impl() :
-			m_LocalQuaternion()
-		{}
-		~Impl() {}
-	};
-
 
 	//--------------------------------------------------------------------------------------
 	//	class RotateBy : public  RotateComponent ;
@@ -486,25 +417,27 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	//構築と破棄
 	RotateBy::RotateBy(const shared_ptr<GameObject>& GameObjectPtr) :
-		RotateComponent(GameObjectPtr), pImpl(new Impl()) {}
+		RotateComponent(GameObjectPtr),
+		m_LocalQuaternion()
+	{}
 	RotateBy::~RotateBy() {}
 
 	//アクセサ
-	const bsm::Quat& RotateBy::GetLocalQuaternion() const { return pImpl->m_LocalQuaternion; }
+	const bsm::Quat& RotateBy::GetLocalQuaternion() const { return m_LocalQuaternion; }
 	void RotateBy::SetLocalQuaternion(const bsm::Quat& LocalQuaternion) {
-		pImpl->m_LocalQuaternion = LocalQuaternion;
-		pImpl->m_LocalQuaternion.normalize();
+		m_LocalQuaternion = LocalQuaternion;
+		m_LocalQuaternion.normalize();
 	}
 	bsm::Vec3 RotateBy::GetLocalRotate() const {
-		return pImpl->m_LocalQuaternion.toRotVec();
+		return m_LocalQuaternion.toRotVec();
 	}
 	void RotateBy::SetLocalRotate(const bsm::Vec3& LocalRotate) {
-		pImpl->m_LocalQuaternion.rotationRollPitchYawFromVector(LocalRotate);
-		pImpl->m_LocalQuaternion.normalize();
+		m_LocalQuaternion.rotationRollPitchYawFromVector(LocalRotate);
+		m_LocalQuaternion.normalize();
 	}
 	void RotateBy::SetLocalRotate(float x, float y, float z) {
-		pImpl->m_LocalQuaternion.rotationRollPitchYawFromVector(bsm::Vec3(x, y, z));
-		pImpl->m_LocalQuaternion.normalize();
+		m_LocalQuaternion.rotationRollPitchYawFromVector(bsm::Vec3(x, y, z));
+		m_LocalQuaternion.normalize();
 	}
 
 	void RotateBy::SetParams(float TotalTime, const bsm::Vec3& LocalRotate) {
@@ -522,32 +455,10 @@ namespace basecross {
 	void RotateBy::Run() {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
 		bsm::Quat QtNow = TransPtr->GetQuaternion();
-		bsm::Quat Target = QtNow * pImpl->m_LocalQuaternion;
+		bsm::Quat Target = QtNow * m_LocalQuaternion;
 		SetTargetQuaternion(Target);
 		RotateComponent::Run();
 	}
-
-	//--------------------------------------------------------------------------------------
-	//	struct MoveComponent::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct MoveComponent::Impl {
-		bsm::Vec3 m_StartPosition;	//開始地点
-		bsm::Vec3 m_TargetPosition;	//目的地点
-		Lerp::rate m_RateX;	//補間方法X
-		Lerp::rate m_RateY;	//補間方法Y
-		Lerp::rate m_RateZ;	//補間方法Z
-		bsm::Vec3 m_Velocity;	//現在の速度
-		Impl() :
-			m_StartPosition(0, 0, 0),
-			m_TargetPosition(0, 0, 0),
-			m_RateX(Lerp::Linear),
-			m_RateY(Lerp::Linear),
-			m_RateZ(Lerp::Linear),
-			m_Velocity(0, 0, 0)
-		{}
-		~Impl() {}
-	};
 
 	//--------------------------------------------------------------------------------------
 	//	class MoveComponent : public ActionComponent ;
@@ -556,42 +467,47 @@ namespace basecross {
 	//構築と破棄
 	MoveComponent::MoveComponent(const shared_ptr<GameObject>& GameObjectPtr) :
 		ActionComponent(GameObjectPtr),
-		pImpl(new Impl())
+		m_StartPosition(0, 0, 0),
+		m_TargetPosition(0, 0, 0),
+		m_RateX(Lerp::Linear),
+		m_RateY(Lerp::Linear),
+		m_RateZ(Lerp::Linear),
+		m_Velocity(0, 0, 0)
 	{}
 	MoveComponent::~MoveComponent() {}
 	//アクセサ
 
 	Lerp::rate MoveComponent::GetRateX() const {
-		return pImpl->m_RateX;
+		return m_RateX;
 	}
 	Lerp::rate MoveComponent::GetRateY() const {
-		return pImpl->m_RateY;
+		return m_RateY;
 	}
 	Lerp::rate MoveComponent::GetRateZ() const {
-		return pImpl->m_RateZ;
+		return m_RateZ;
 	}
 	void MoveComponent::SetRateX(const Lerp::rate r) {
-		pImpl->m_RateX = r;
+		m_RateX = r;
 	}
 	void MoveComponent::SetRateY(const Lerp::rate r) {
-		pImpl->m_RateY = r;
+		m_RateY = r;
 	}
 	void MoveComponent::SetRateZ(const Lerp::rate r) {
-		pImpl->m_RateZ = r;
+		m_RateZ = r;
 	}
 	void MoveComponent::SetRateAll(const Lerp::rate r) {
-		pImpl->m_RateX = r;
-		pImpl->m_RateY = r;
-		pImpl->m_RateZ = r;
+		m_RateX = r;
+		m_RateY = r;
+		m_RateZ = r;
 	}
 	void MoveComponent::SetRateAll(const Lerp::rate rX, const Lerp::rate rY, const Lerp::rate rZ) {
-		pImpl->m_RateX = rX;
-		pImpl->m_RateY = rY;
-		pImpl->m_RateZ = rZ;
+		m_RateX = rX;
+		m_RateY = rY;
+		m_RateZ = rZ;
 	}
 
 	bsm::Vec3 MoveComponent::GetVelocity()const {
-		bsm::Vec3 Ret = pImpl->m_Velocity;
+		bsm::Vec3 Ret = m_Velocity;
 		if (GetTotalTime() <= 0) {
 			Ret.setAll(0.0f);
 		}
@@ -605,50 +521,50 @@ namespace basecross {
 
 
 
-	const bsm::Vec3& MoveComponent::GetStartPosition() const { return pImpl->m_StartPosition; }
-	void MoveComponent::SetStartPosition(const bsm::Vec3& StartPosition) { pImpl->m_StartPosition = StartPosition; }
-	void MoveComponent::SetStartPosition(float x, float y, float z) { pImpl->m_StartPosition = bsm::Vec3(x, y, z); }
+	const bsm::Vec3& MoveComponent::GetStartPosition() const { return m_StartPosition; }
+	void MoveComponent::SetStartPosition(const bsm::Vec3& StartPosition) { m_StartPosition = StartPosition; }
+	void MoveComponent::SetStartPosition(float x, float y, float z) { m_StartPosition = bsm::Vec3(x, y, z); }
 
-	const bsm::Vec3& MoveComponent::GetTargetPosition() const { return pImpl->m_TargetPosition; }
-	void MoveComponent::SetTargetPosition(const bsm::Vec3& TargetPosition) { pImpl->m_TargetPosition = TargetPosition; }
-	void MoveComponent::SetTargetPosition(float x, float y, float z) { pImpl->m_TargetPosition = bsm::Vec3(x, y, z); }
+	const bsm::Vec3& MoveComponent::GetTargetPosition() const { return m_TargetPosition; }
+	void MoveComponent::SetTargetPosition(const bsm::Vec3& TargetPosition) { m_TargetPosition = TargetPosition; }
+	void MoveComponent::SetTargetPosition(float x, float y, float z) { m_TargetPosition = bsm::Vec3(x, y, z); }
 
 	bsm::Vec3 MoveComponent::CalcVelocitySub(float NowTime) {
 		bsm::Vec3 Pos;
-		if (pImpl->m_RateX == pImpl->m_RateY && pImpl->m_RateX == pImpl->m_RateZ) {
+		if (m_RateX == m_RateY && m_RateX == m_RateZ) {
 			Pos = Lerp::CalculateLerp<bsm::Vec3>(
-				pImpl->m_StartPosition,
-				pImpl->m_TargetPosition,
+				m_StartPosition,
+				m_TargetPosition,
 				0,
 				GetTotalTime(),
 				NowTime,
-				pImpl->m_RateX
+				m_RateX
 				);
 		}
 		else {
 			Pos.x = Lerp::CalculateLerp<float>(
-				pImpl->m_StartPosition.x,
-				pImpl->m_TargetPosition.x,
+				m_StartPosition.x,
+				m_TargetPosition.x,
 				0,
 				GetTotalTime(),
 				NowTime,
-				pImpl->m_RateX
+				m_RateX
 				);
 			Pos.y = Lerp::CalculateLerp<float>(
-				pImpl->m_StartPosition.y,
-				pImpl->m_TargetPosition.y,
+				m_StartPosition.y,
+				m_TargetPosition.y,
 				0,
 				GetTotalTime(),
 				NowTime,
-				pImpl->m_RateY
+				m_RateY
 				);
 			Pos.z = Lerp::CalculateLerp<float>(
-				pImpl->m_StartPosition.z,
-				pImpl->m_TargetPosition.z,
+				m_StartPosition.z,
+				m_TargetPosition.z,
 				0,
 				GetTotalTime(),
 				NowTime,
-				pImpl->m_RateZ
+				m_RateZ
 				);
 		}
 		return Pos;
@@ -657,23 +573,23 @@ namespace basecross {
 
 	void MoveComponent::CalcVelocity() {
 		if (GetTotalTime() <= 0) {
-			pImpl->m_Velocity = bsm::Vec3(0, 0, 0);
+			m_Velocity = bsm::Vec3(0, 0, 0);
 			return;
 		}
 		else {
 			if (!GetRun() || GetArrived()) {
-				pImpl->m_Velocity = bsm::Vec3(0, 0, 0);
+				m_Velocity = bsm::Vec3(0, 0, 0);
 				return;
 			}
 			else {
 				float NowTime = GetNowTime();
 				if (NowTime <= 0) {
-					pImpl->m_Velocity = bsm::Vec3(0, 0, 0);
+					m_Velocity = bsm::Vec3(0, 0, 0);
 					return;
 				}
 				float ElapsedTime = App::GetElapsedTime();
 				if (ElapsedTime <= 0) {
-					pImpl->m_Velocity = bsm::Vec3(0, 0, 0);
+					m_Velocity = bsm::Vec3(0, 0, 0);
 					return;
 				}
 				float BeforeTime = GetNowTime() - App::GetElapsedTime();
@@ -681,12 +597,12 @@ namespace basecross {
 					BeforeTime = 0;
 				}
 				if ((NowTime - BeforeTime) <= 0) {
-					pImpl->m_Velocity = bsm::Vec3(0, 0, 0);
+					m_Velocity = bsm::Vec3(0, 0, 0);
 					return;
 				}
 				bsm::Vec3 BeforePos = CalcVelocitySub(BeforeTime);
 				bsm::Vec3 NowPos = CalcVelocitySub(NowTime);
-				pImpl->m_Velocity = (NowPos - BeforePos) / ElapsedTime;
+				m_Velocity = (NowPos - BeforePos) / ElapsedTime;
 				return;
 			}
 		}
@@ -696,13 +612,13 @@ namespace basecross {
 	//操作
 	void MoveComponent::Run() {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
-		pImpl->m_StartPosition = TransPtr->GetWorldPosition();
+		m_StartPosition = TransPtr->GetWorldPosition();
 		SetNowTime(0);
 		SetRun(true);
 		SetArrived(false);
 		if (GetTotalTime() <= 0) {
 			//トータルタイムが0以下なら、すでに到着していることになる
-			TransPtr->SetWorldPosition(pImpl->m_TargetPosition);
+			TransPtr->SetWorldPosition(m_TargetPosition);
 			SetTotalTime(0);
 			SetNowTime(0);
 			SetRun(false);
@@ -716,40 +632,40 @@ namespace basecross {
 			auto PtrTrans = GetGameObject()->GetComponent<Transform>();
 			if (AdditionalNowTime()) {
 				bsm::Vec3 Pos;
-				if (pImpl->m_RateX == pImpl->m_RateY && pImpl->m_RateX == pImpl->m_RateZ) {
+				if (m_RateX == m_RateY && m_RateX == m_RateZ) {
 					Pos = Lerp::CalculateLerp<bsm::Vec3>(
-						pImpl->m_StartPosition,
-						pImpl->m_TargetPosition,
+						m_StartPosition,
+						m_TargetPosition,
 						0,
 						GetTotalTime(),
 						GetNowTime(),
-						pImpl->m_RateX
+						m_RateX
 						);
 				}
 				else {
 					Pos.x = Lerp::CalculateLerp<float>(
-						pImpl->m_StartPosition.x,
-						pImpl->m_TargetPosition.x,
+						m_StartPosition.x,
+						m_TargetPosition.x,
 						0,
 						GetTotalTime(),
 						GetNowTime(),
-						pImpl->m_RateX
+						m_RateX
 						);
 					Pos.y = Lerp::CalculateLerp<float>(
-						pImpl->m_StartPosition.y,
-						pImpl->m_TargetPosition.y,
+						m_StartPosition.y,
+						m_TargetPosition.y,
 						0,
 						GetTotalTime(),
 						GetNowTime(),
-						pImpl->m_RateY
+						m_RateY
 						);
 					Pos.z = Lerp::CalculateLerp<float>(
-						pImpl->m_StartPosition.z,
-						pImpl->m_TargetPosition.z,
+						m_StartPosition.z,
+						m_TargetPosition.z,
 						0,
 						GetTotalTime(),
 						GetNowTime(),
-						pImpl->m_RateZ
+						m_RateZ
 						);
 				}
 				PtrTrans->SetWorldPosition(Pos);
@@ -757,7 +673,7 @@ namespace basecross {
 			else {
 				if (GetTotalTime() <= 0) {
 					//トータルタイムが0以下なら、すでに到着していることになる
-					PtrTrans->SetWorldPosition(pImpl->m_TargetPosition);
+					PtrTrans->SetWorldPosition(m_TargetPosition);
 					SetTotalTime(0);
 					SetNowTime(0);
 					SetRun(false);
@@ -773,43 +689,43 @@ namespace basecross {
 	//Update後に呼ぶべき
 	bsm::Vec3 MoveComponent::GetNowPosition() const {
 		if (GetTotalTime() <= 0) {
-			return pImpl->m_TargetPosition;
+			return m_TargetPosition;
 		}
 		bsm::Vec3 Pos;
-		if (pImpl->m_RateX == pImpl->m_RateY && pImpl->m_RateX == pImpl->m_RateZ) {
+		if (m_RateX == m_RateY && m_RateX == m_RateZ) {
 			Pos = Lerp::CalculateLerp<bsm::Vec3>(
-				pImpl->m_StartPosition,
-				pImpl->m_TargetPosition,
+				m_StartPosition,
+				m_TargetPosition,
 				0,
 				GetTotalTime(),
 				GetNowTime(),
-				pImpl->m_RateX
+				m_RateX
 				);
 		}
 		else {
 			Pos.x = Lerp::CalculateLerp<float>(
-				pImpl->m_StartPosition.x,
-				pImpl->m_TargetPosition.x,
+				m_StartPosition.x,
+				m_TargetPosition.x,
 				0,
 				GetTotalTime(),
 				GetNowTime(),
-				pImpl->m_RateX
+				m_RateX
 				);
 			Pos.y = Lerp::CalculateLerp<float>(
-				pImpl->m_StartPosition.y,
-				pImpl->m_TargetPosition.y,
+				m_StartPosition.y,
+				m_TargetPosition.y,
 				0,
 				GetTotalTime(),
 				GetNowTime(),
-				pImpl->m_RateY
+				m_RateY
 				);
 			Pos.z = Lerp::CalculateLerp<float>(
-				pImpl->m_StartPosition.z,
-				pImpl->m_TargetPosition.z,
+				m_StartPosition.z,
+				m_TargetPosition.z,
 				0,
 				GetTotalTime(),
 				GetNowTime(),
-				pImpl->m_RateZ
+				m_RateZ
 				);
 		}
 		return Pos;
@@ -841,17 +757,6 @@ namespace basecross {
 
 
 
-	//--------------------------------------------------------------------------------------
-	//	struct MoveBy::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct MoveBy::Impl {
-		bsm::Vec3 m_LocalVector;	//相対方向
-		Impl() :
-			m_LocalVector(0, 0, 0)
-		{}
-		~Impl() {}
-	};
 
 	//--------------------------------------------------------------------------------------
 	//	class MoveBy : public  MoveComponent ;
@@ -859,13 +764,15 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	//構築と破棄
 	MoveBy::MoveBy(const shared_ptr<GameObject>& GameObjectPtr) :
-		MoveComponent(GameObjectPtr), pImpl(new Impl()) {}
+		MoveComponent(GameObjectPtr),
+		m_LocalVector(0, 0, 0)
+	{}
 	MoveBy::~MoveBy() {}
 
 	//アクセサ
-	const bsm::Vec3& MoveBy::GetLocalVector() const { return pImpl->m_LocalVector; }
-	void MoveBy::SetLocalVector(const bsm::Vec3& LocalVector) { pImpl->m_LocalVector = LocalVector; }
-	void MoveBy::SetLocalVector(float x, float y, float z) { pImpl->m_LocalVector = bsm::Vec3(x, y, z); }
+	const bsm::Vec3& MoveBy::GetLocalVector() const { return m_LocalVector; }
+	void MoveBy::SetLocalVector(const bsm::Vec3& LocalVector) { m_LocalVector = LocalVector; }
+	void MoveBy::SetLocalVector(float x, float y, float z) { m_LocalVector = bsm::Vec3(x, y, z); }
 
 	void MoveBy::SetParams(float TotalTime, const bsm::Vec3& LocalVector, Lerp::rate Rate) {
 		SetLocalVector(LocalVector);
@@ -885,45 +792,11 @@ namespace basecross {
 	void MoveBy::Run() {
 		auto PtrTrans = GetGameObject()->GetComponent<Transform>();
 		bsm::Vec3 Pos = PtrTrans->GetWorldPosition();
-		bsm::Vec3 Target = Pos + pImpl->m_LocalVector;
+		bsm::Vec3 Target = Pos + m_LocalVector;
 		SetTargetPosition(Target);
 		MoveComponent::Run();
 	}
 
-
-
-	//--------------------------------------------------------------------------------------
-	//	struct Action::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct Action::Impl {
-		bool m_Looped;
-
-		bool m_ScaleArrived;	//m_Loopがfalseのときのみ有効
-		bool m_RotateArrived;	//m_Loopがfalseのときのみ有効
-		bool m_MoveArrived;	//m_Loopがfalseのときのみ有効
-
-
-		vector<shared_ptr<ActionComponent> > m_ScaleVec;
-		vector<shared_ptr<ActionComponent> > m_RotateVec;
-		vector<shared_ptr<ActionComponent> > m_MoveVec;
-
-		size_t m_ScaleActiveIndex;
-		size_t m_RotateActiveIndex;
-		size_t m_MoveActiveIndex;
-
-		Impl() :
-			m_Looped(false),
-			m_ScaleArrived(false),
-			m_RotateArrived(false),
-			m_MoveArrived(false),
-			m_ScaleActiveIndex(0),
-			m_RotateActiveIndex(0),
-			m_MoveActiveIndex(0)
-		{}
-		~Impl() {}
-
-	};
 
 	//--------------------------------------------------------------------------------------
 	//	class Action : public Component ;
@@ -932,34 +805,40 @@ namespace basecross {
 	//構築と破棄
 	Action::Action(const shared_ptr<GameObject>& GameObjectPtr) :
 		Component(GameObjectPtr),
-		pImpl(new Impl())
+		m_Looped(false),
+		m_ScaleArrived(false),
+		m_RotateArrived(false),
+		m_MoveArrived(false),
+		m_ScaleActiveIndex(0),
+		m_RotateActiveIndex(0),
+		m_MoveActiveIndex(0)
 	{}
 	Action::~Action() {}
 
 	//アクセサ
-	bool Action::IsLooped()const { return pImpl->m_Looped; }
-	bool Action::GetLooped()const { return pImpl->m_Looped; }
-	void Action::SetLooped(bool b) { pImpl->m_Looped = b; }
+	bool Action::IsLooped()const { return m_Looped; }
+	bool Action::GetLooped()const { return m_Looped; }
+	void Action::SetLooped(bool b) { m_Looped = b; }
 
 	bool Action::IsArrived()const {
 		bool retScale = true;
-		if (pImpl->m_ScaleVec.size() > 0) {
+		if (m_ScaleVec.size() > 0) {
 			//アクションがあるが終了してない
-			if (!pImpl->m_ScaleArrived) {
+			if (!m_ScaleArrived) {
 				retScale = false;
 			}
 		}
 		bool retRot = true;
-		if (pImpl->m_RotateVec.size() > 0) {
+		if (m_RotateVec.size() > 0) {
 			//アクションがあるが終了してない
-			if (!pImpl->m_RotateArrived) {
+			if (!m_RotateArrived) {
 				retRot = false;
 			}
 		}
 		bool retMove = true;
-		if (pImpl->m_MoveVec.size() > 0) {
+		if (m_MoveVec.size() > 0) {
 			//アクションがあるが終了してない
-			if (!pImpl->m_MoveArrived) {
+			if (!m_MoveArrived) {
 				retMove = false;
 			}
 		}
@@ -972,45 +851,45 @@ namespace basecross {
 
 
 	size_t Action::GetScaleActiveIndex() const {
-		if (pImpl->m_ScaleVec.size() <= 0) {
+		if (m_ScaleVec.size() <= 0) {
 			throw BaseException(
 				L"スケールアクションが登録されていません",
-				L"if (pImpl->m_ScaleVec.size() <= 0)",
+				L"if (m_ScaleVec.size() <= 0)",
 				L"Action::GetScaleActiveIndex()"
 			);
 		}
-		return pImpl->m_ScaleActiveIndex;
+		return m_ScaleActiveIndex;
 	}
 	size_t Action::GetRotateActiveIndex() const {
-		if (pImpl->m_RotateVec.size() <= 0) {
+		if (m_RotateVec.size() <= 0) {
 			throw BaseException(
 				L"回転アクションが登録されていません",
-				L"if (pImpl->m_RotateVec.size() <= 0)",
+				L"if (m_RotateVec.size() <= 0)",
 				L"Action::GetRotateActiveIndex()"
 			);
 		}
-		return pImpl->m_RotateActiveIndex;
+		return m_RotateActiveIndex;
 	}
 	size_t Action::GetMoveActiveIndex() const {
-		if (pImpl->m_MoveVec.size() <= 0) {
+		if (m_MoveVec.size() <= 0) {
 			throw BaseException(
 				L"移動アクションが登録されていません",
-				L"if (pImpl->m_MoveVec.size() <= 0)",
+				L"if (m_MoveVec.size() <= 0)",
 				L"Action::GetMoveActiveIndex()"
 			);
 		}
-		return pImpl->m_MoveActiveIndex;
+		return m_MoveActiveIndex;
 	}
 
 	//現在の速度
 	//Moveコンポーネントがない場合はbsm::Vec3(0,0,0)を返す
 
 	bsm::Vec3 Action::GetVelocity()const {
-		if (pImpl->m_MoveVec.size() <= 0) {
+		if (m_MoveVec.size() <= 0) {
 			return bsm::Vec3(0, 0, 0);
 		}
 		else {
-			auto Ptr = dynamic_pointer_cast<MoveComponent>(pImpl->m_MoveVec[pImpl->m_MoveActiveIndex]);
+			auto Ptr = dynamic_pointer_cast<MoveComponent>(m_MoveVec[m_MoveActiveIndex]);
 			if (Ptr) {
 				return Ptr->GetVelocity();
 			}
@@ -1026,50 +905,50 @@ namespace basecross {
 	shared_ptr<ScaleTo> Action::AddScaleTo(float TotalTime, const bsm::Vec3& TargetScale, Lerp::rate Rate) {
 		auto Ptr = ObjectFactory::Create<ScaleTo>(GetGameObject());
 		Ptr->SetParams(TotalTime, TargetScale, Rate);
-		pImpl->m_ScaleVec.push_back(Ptr);
+		m_ScaleVec.push_back(Ptr);
 		return Ptr;
 	}
 	shared_ptr<ScaleBy> Action::AddScaleBy(float TotalTime, const bsm::Vec3& LocalScale, Lerp::rate Rate) {
 		auto Ptr = ObjectFactory::Create<ScaleBy>(GetGameObject());
 		Ptr->SetParams(TotalTime, LocalScale, Rate);
-		pImpl->m_ScaleVec.push_back(Ptr);
+		m_ScaleVec.push_back(Ptr);
 		return Ptr;
 	}
 
 	shared_ptr<ActionInterval> Action::AddScaleInterval(float TotalTime) {
 		auto Ptr = ObjectFactory::Create<ActionInterval>(GetGameObject());
 		Ptr->SetTotalTime(TotalTime);
-		pImpl->m_ScaleVec.push_back(Ptr);
+		m_ScaleVec.push_back(Ptr);
 		return Ptr;
 	}
 
 	shared_ptr<ActionComponent> Action::GetScaleComponent(size_t TargetIndex)const {
-		if (TargetIndex >= pImpl->m_ScaleVec.size()) {
+		if (TargetIndex >= m_ScaleVec.size()) {
 			throw BaseException(
 				L"インデックスが範囲外です",
-				L"if (TargetIndex >= pImpl->m_ScaleVec.size())",
+				L"if (TargetIndex >= m_ScaleVec.size())",
 				L"Action::GetScaleComponent()"
 			);
 		}
-		return pImpl->m_ScaleVec[TargetIndex];
+		return m_ScaleVec[TargetIndex];
 	}
 
-	vector<shared_ptr<ActionComponent>>& Action::GetScaleVec() const {
-		return pImpl->m_ScaleVec;
+	vector<shared_ptr<ActionComponent>>& Action::GetScaleVec() {
+		return m_ScaleVec;
 	}
 
 
 	shared_ptr<RotateTo> Action::AddRotateTo(float TotalTime, const bsm::Vec3& TargetRotate) {
 		auto Ptr = ObjectFactory::Create<RotateTo>(GetGameObject());
 		Ptr->SetParams(TotalTime, TargetRotate);
-		pImpl->m_RotateVec.push_back(Ptr);
+		m_RotateVec.push_back(Ptr);
 		return Ptr;
 	}
 
 	shared_ptr<RotateTo> Action::AddRotateTo(float TotalTime, const bsm::Quat& TargetQuaternion) {
 		auto Ptr = ObjectFactory::Create<RotateTo>(GetGameObject());
 		Ptr->SetParams(TotalTime, TargetQuaternion);
-		pImpl->m_RotateVec.push_back(Ptr);
+		m_RotateVec.push_back(Ptr);
 		return Ptr;
 	}
 
@@ -1077,14 +956,14 @@ namespace basecross {
 	shared_ptr<RotateBy> Action::AddRotateBy(float TotalTime, const bsm::Vec3& LocalRotate) {
 		auto Ptr = ObjectFactory::Create<RotateBy>(GetGameObject());
 		Ptr->SetParams(TotalTime, LocalRotate);
-		pImpl->m_RotateVec.push_back(Ptr);
+		m_RotateVec.push_back(Ptr);
 		return Ptr;
 	}
 
 	shared_ptr<RotateBy> Action::AddRotateBy(float TotalTime, const bsm::Quat& LocalQuaternion) {
 		auto Ptr = ObjectFactory::Create<RotateBy>(GetGameObject());
 		Ptr->SetParams(TotalTime, LocalQuaternion);
-		pImpl->m_RotateVec.push_back(Ptr);
+		m_RotateVec.push_back(Ptr);
 		return Ptr;
 	}
 
@@ -1092,36 +971,36 @@ namespace basecross {
 	shared_ptr<ActionInterval> Action::AddRotateInterval(float TotalTime) {
 		auto Ptr = ObjectFactory::Create<ActionInterval>(GetGameObject());
 		Ptr->SetTotalTime(TotalTime);
-		pImpl->m_RotateVec.push_back(Ptr);
+		m_RotateVec.push_back(Ptr);
 		return Ptr;
 	}
 
 	shared_ptr<ActionComponent> Action::GetRotateComponent(size_t TargetIndex)const {
-		if (TargetIndex >= pImpl->m_RotateVec.size()) {
+		if (TargetIndex >= m_RotateVec.size()) {
 			throw BaseException(
 				L"インデックスが範囲外です",
-				L"if (TargetIndex >= pImpl->m_RotateVec.size())",
+				L"if (TargetIndex >= m_RotateVec.size())",
 				L"Action::GetRotateComponent()"
 			);
 		}
-		return pImpl->m_RotateVec[TargetIndex];
+		return m_RotateVec[TargetIndex];
 	}
 
-	vector<shared_ptr<ActionComponent>>& Action::GetRotateVec() const {
-		return pImpl->m_RotateVec;
+	vector<shared_ptr<ActionComponent>>& Action::GetRotateVec() {
+		return m_RotateVec;
 	}
 
 	shared_ptr<MoveTo> Action::AddMoveTo(float TotalTime, const bsm::Vec3& TargetPosition, Lerp::rate Rate) {
 		auto Ptr = ObjectFactory::Create<MoveTo>(GetGameObject());
 		Ptr->SetParams(TotalTime, TargetPosition, Rate);
-		pImpl->m_MoveVec.push_back(Ptr);
+		m_MoveVec.push_back(Ptr);
 		return Ptr;
 	}
 
 	shared_ptr<MoveTo> Action::AddMoveTo(float TotalTime, const bsm::Vec3& TargetPosition, Lerp::rate RateX, Lerp::rate RateY, Lerp::rate RateZ) {
 		auto Ptr = ObjectFactory::Create<MoveTo>(GetGameObject());
 		Ptr->SetParams(TotalTime, TargetPosition, RateX, RateY, RateZ);
-		pImpl->m_MoveVec.push_back(Ptr);
+		m_MoveVec.push_back(Ptr);
 		return Ptr;
 	}
 
@@ -1129,14 +1008,14 @@ namespace basecross {
 	shared_ptr<MoveBy> Action::AddMoveBy(float TotalTime, const bsm::Vec3& LocalVector, Lerp::rate Rate) {
 		auto Ptr = ObjectFactory::Create<MoveBy>(GetGameObject());
 		Ptr->SetParams(TotalTime, LocalVector, Rate);
-		pImpl->m_MoveVec.push_back(Ptr);
+		m_MoveVec.push_back(Ptr);
 		return Ptr;
 	}
 
 	shared_ptr<MoveBy> Action::AddMoveBy(float TotalTime, const bsm::Vec3& LocalVector, Lerp::rate RateX, Lerp::rate RateY, Lerp::rate RateZ) {
 		auto Ptr = ObjectFactory::Create<MoveBy>(GetGameObject());
 		Ptr->SetParams(TotalTime, LocalVector, RateX, RateY, RateZ);
-		pImpl->m_MoveVec.push_back(Ptr);
+		m_MoveVec.push_back(Ptr);
 		return Ptr;
 	}
 
@@ -1144,37 +1023,37 @@ namespace basecross {
 	shared_ptr<ActionInterval> Action::AddMoveInterval(float TotalTime) {
 		auto Ptr = ObjectFactory::Create<ActionInterval>(GetGameObject());
 		Ptr->SetTotalTime(TotalTime);
-		pImpl->m_MoveVec.push_back(Ptr);
+		m_MoveVec.push_back(Ptr);
 		return Ptr;
 	}
 
 	shared_ptr<ActionComponent> Action::GetMoveComponent(size_t TargetIndex)const {
-		if (TargetIndex >= pImpl->m_MoveVec.size()) {
+		if (TargetIndex >= m_MoveVec.size()) {
 			throw BaseException(
 				L"インデックスが範囲外です",
-				L"if (TargetIndex >= pImpl->m_MoveVec.size())",
+				L"if (TargetIndex >= m_MoveVec.size())",
 				L"Action::GetMoveComponent()"
 			);
 		}
-		return pImpl->m_MoveVec[TargetIndex];
+		return m_MoveVec[TargetIndex];
 	}
 
-	vector<shared_ptr<ActionComponent>>& Action::GetMoveVec() const {
-		return pImpl->m_MoveVec;
+	vector<shared_ptr<ActionComponent>>& Action::GetMoveVec() {
+		return m_MoveVec;
 	}
 	//すべてのアクションをクリアする
 	void Action::AllActionClear() {
-		pImpl->m_ScaleVec.clear();
-		pImpl->m_RotateVec.clear();
-		pImpl->m_MoveVec.clear();
+		m_ScaleVec.clear();
+		m_RotateVec.clear();
+		m_MoveVec.clear();
 
-		pImpl->m_Looped = false;
-		pImpl->m_ScaleArrived = false;
-		pImpl->m_RotateArrived = false;
-		pImpl->m_MoveArrived = false;
-		pImpl->m_ScaleActiveIndex = 0;
-		pImpl->m_RotateActiveIndex = 0;
-		pImpl->m_MoveActiveIndex = 0;
+		m_Looped = false;
+		m_ScaleArrived = false;
+		m_RotateArrived = false;
+		m_MoveArrived = false;
+		m_ScaleActiveIndex = 0;
+		m_RotateActiveIndex = 0;
+		m_MoveActiveIndex = 0;
 	}
 
 
@@ -1186,9 +1065,9 @@ namespace basecross {
 		}
 	}
 	void Action::Run() {
-		RunSub(pImpl->m_ScaleVec, pImpl->m_ScaleActiveIndex);
-		RunSub(pImpl->m_RotateVec, pImpl->m_RotateActiveIndex);
-		RunSub(pImpl->m_MoveVec, pImpl->m_MoveActiveIndex);
+		RunSub(m_ScaleVec, m_ScaleActiveIndex);
+		RunSub(m_RotateVec, m_RotateActiveIndex);
+		RunSub(m_MoveVec, m_MoveActiveIndex);
 	}
 
 	void Action::StopSub(vector<shared_ptr<ActionComponent> >& TgtVector, size_t& TgtIndex) {
@@ -1197,9 +1076,9 @@ namespace basecross {
 		}
 	}
 	void Action::Stop() {
-		StopSub(pImpl->m_ScaleVec, pImpl->m_ScaleActiveIndex);
-		StopSub(pImpl->m_RotateVec, pImpl->m_RotateActiveIndex);
-		StopSub(pImpl->m_MoveVec, pImpl->m_MoveActiveIndex);
+		StopSub(m_ScaleVec, m_ScaleActiveIndex);
+		StopSub(m_RotateVec, m_RotateActiveIndex);
+		StopSub(m_MoveVec, m_MoveActiveIndex);
 	}
 
 	void Action::ReStartSub(vector<shared_ptr<ActionComponent> >& TgtVector, size_t& TgtIndex) {
@@ -1209,9 +1088,9 @@ namespace basecross {
 	}
 
 	void Action::ReStart() {
-		ReStartSub(pImpl->m_ScaleVec, pImpl->m_ScaleActiveIndex);
-		ReStartSub(pImpl->m_RotateVec, pImpl->m_RotateActiveIndex);
-		ReStartSub(pImpl->m_MoveVec, pImpl->m_MoveActiveIndex);
+		ReStartSub(m_ScaleVec, m_ScaleActiveIndex);
+		ReStartSub(m_RotateVec, m_RotateActiveIndex);
+		ReStartSub(m_MoveVec, m_MoveActiveIndex);
 	}
 
 	bool Action::UpdateSub(vector<shared_ptr<ActionComponent> >& TgtVector, size_t& TgtIndex) {
@@ -1225,7 +1104,7 @@ namespace basecross {
 					TgtIndex++;
 					if (TgtIndex >= TgtVector.size()) {
 						//範囲外なら
-						if (pImpl->m_Looped) {
+						if (m_Looped) {
 							TgtIndex = 0;
 							TgtVector[TgtIndex]->Run();
 						}
@@ -1246,9 +1125,9 @@ namespace basecross {
 	}
 	//更新
 	void Action::OnUpdate() {
-		pImpl->m_ScaleArrived = UpdateSub(pImpl->m_ScaleVec, pImpl->m_ScaleActiveIndex);
-		pImpl->m_RotateArrived = UpdateSub(pImpl->m_RotateVec, pImpl->m_RotateActiveIndex);
-		pImpl->m_MoveArrived = UpdateSub(pImpl->m_MoveVec, pImpl->m_MoveActiveIndex);
+		m_ScaleArrived = UpdateSub(m_ScaleVec, m_ScaleActiveIndex);
+		m_RotateArrived = UpdateSub(m_RotateVec, m_RotateActiveIndex);
+		m_MoveArrived = UpdateSub(m_MoveVec, m_MoveActiveIndex);
 	}
 
 

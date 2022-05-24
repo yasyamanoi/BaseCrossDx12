@@ -17,7 +17,7 @@ namespace basecross {
 		m_width(width),
 		m_height(height),
 		m_title(title),
-		m_QuiteEscapeKey(true),
+		m_quiteEscapeKey(true),
 		m_useWarpDevice(false),
 		m_viewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)),
 		m_scissorRect(0, 0, static_cast<LONG>(width), static_cast<LONG>(height)),
@@ -189,14 +189,14 @@ namespace basecross {
 		*ppAdapter = adapter.Detach();
 	}
 
-	void BaseDevice::OnInit() {
+	void BaseDevice::OnCreate() {
 		LoadPipeline();
 		LoadAssets();
 	}
 	void BaseDevice::LoadPipeline() {
 		UINT dxgiFactoryFlags = 0;
 #if defined(_DEBUG)
-			{
+		{
 			ComPtr<ID3D12Debug> debugController;
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
 			{
@@ -294,6 +294,22 @@ namespace basecross {
 			cbvSrvUavHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 			ThrowIfFailed(m_device->CreateDescriptorHeap(&cbvSrvUavHeapDesc, IID_PPV_ARGS(&m_cbvSrvUavHeap)));
 			NAME_D3D12_OBJECT(m_cbvSrvUavHeap);
+			//null用のハンドル
+			UINT nullIndex = GetSrvNextIndex();
+
+			//CPU側
+			CD3DX12_CPU_DESCRIPTOR_HANDLE cbvSrvCpuHandle(
+				GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
+				nullIndex,
+				GetCbvSrvUavDescriptorHandleIncrementSize()
+			);
+			//GPU側
+			CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvGpuHandle(
+				GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
+				nullIndex,
+				GetCbvSrvUavDescriptorHandleIncrementSize()
+			);
+			m_nullSrvGpuHandle = cbvSrvGpuHandle;
 
 			//サンプラー用.
 			D3D12_DESCRIPTOR_HEAP_DESC samplerHeapDesc = {};
@@ -361,6 +377,31 @@ namespace basecross {
 			featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
 		}
 
+		CD3DX12_DESCRIPTOR_RANGE1 ranges[6]; // Perfomance TIP: Order from most frequent to least frequent.
+		ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);	// 1 frequently changed diffuse texture using register t1.
+		ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 1, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);	// 1 frequently changed normal texture using register t2.
+		ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);	// 1 frequently changed constant buffer.
+		ranges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);												// 1 infrequently changed shadow texture - starting in register t0.
+		ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);						// 1 static samplers.
+		ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 1);						// 1 static samplers.
+
+		CD3DX12_ROOT_PARAMETER1 rootParameters[6];
+		rootParameters[0].InitAsDescriptorTable(1, &ranges[0], D3D12_SHADER_VISIBILITY_PIXEL);
+		rootParameters[1].InitAsDescriptorTable(1, &ranges[1], D3D12_SHADER_VISIBILITY_PIXEL);
+		rootParameters[2].InitAsDescriptorTable(1, &ranges[2], D3D12_SHADER_VISIBILITY_ALL);
+		rootParameters[3].InitAsDescriptorTable(1, &ranges[3], D3D12_SHADER_VISIBILITY_PIXEL);
+		rootParameters[4].InitAsDescriptorTable(1, &ranges[4], D3D12_SHADER_VISIBILITY_PIXEL);
+		rootParameters[5].InitAsDescriptorTable(1, &ranges[5], D3D12_SHADER_VISIBILITY_PIXEL);
+
+		SetGpuSlot(L"t0", 3);
+		SetGpuSlot(L"t1", 0);
+		SetGpuSlot(L"t2", 1);
+		SetGpuSlot(L"s0", 4);
+		SetGpuSlot(L"s1", 5);
+		SetGpuSlot(L"b0", 2);
+
+/*
+
 		CD3DX12_DESCRIPTOR_RANGE1 ranges[4]; // Perfomance TIP: Order from most frequent to least frequent.
 		ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);    // 2 frequently changed diffuse + normal textures - using registers t1 and t2.
 		ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);    // 1 frequently changed constant buffer.
@@ -380,6 +421,7 @@ namespace basecross {
 		SetGpuSlot(L"s1", 3);
 		SetGpuSlot(L"b0", 1);
 
+*/
 
 		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
 		rootSignatureDesc.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
@@ -549,9 +591,15 @@ namespace basecross {
 
 	void BaseDevice::CreateInitPipelineState() {
 
+		CD3DX12_DEPTH_STENCIL_DESC depthStencilDesc(D3D12_DEFAULT);
+		depthStencilDesc.DepthEnable = TRUE;
+		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+		depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		depthStencilDesc.StencilEnable = FALSE;
+
+		// Describe and create the PSO for rendering the scene.
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		ZeroMemory(&psoDesc, sizeof(psoDesc));
-		psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };
+		psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };;
 		psoDesc.pRootSignature = m_rootSignature.Get();
 		psoDesc.VS =
 		{
@@ -565,18 +613,18 @@ namespace basecross {
 		};
 		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		psoDesc.DepthStencilState.DepthEnable = FALSE;
-		psoDesc.DepthStencilState.StencilEnable = FALSE;
+		psoDesc.DepthStencilState = depthStencilDesc;
 		psoDesc.SampleMask = UINT_MAX;
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		psoDesc.NumRenderTargets = 1;
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		psoDesc.SampleDesc.Count = 1;
+
 		ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_initPipelineState)));
 		NAME_D3D12_OBJECT(m_initPipelineState);
-		//シャドウマップ用
-//		psoDesc.InputLayout = { VertexPosition::GetVertexElement(), VertexPosition::GetNumElements() };
 
+		// シャドウマップ用
 		psoDesc.PS = CD3DX12_SHADER_BYTECODE(0, 0);
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
 		psoDesc.NumRenderTargets = 0;
@@ -584,13 +632,12 @@ namespace basecross {
 		ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineStateShadowMap)));
 		NAME_D3D12_OBJECT(m_pipelineStateShadowMap);
 
-
 	}
 
 	void BaseDevice::CreateBaseFrame() {
 		for (UINT i = 0; i < m_frameCount; i++)
 		{
-			m_baseFrame[i] = new BaseFrame(m_initPipelineState.Get(),&m_viewport,i);
+			m_baseFrame[i] = new BaseFrame(m_initPipelineState.Get(), m_pipelineStateShadowMap.Get(), & m_viewport, i);
 			App::GetBaseScene()->OnInitFrame(m_baseFrame[i]);
 			App::GetBaseScene()->WriteConstantBuffers(m_baseFrame[i]);
 		}
@@ -633,13 +680,13 @@ namespace basecross {
 		g_mtx.unlock();
 	}
 
-	void BaseDevice::OnUpdateRender() {
+	void BaseDevice::OnUpdateDraw() {
 
 		int retCode = 0;
 		try {
 			App::GetInputDevice().ResetControlerState();
 			OnUpdate();
-			OnRender();
+			OnDraw();
 		}
 		catch (BaseException& e) {
 			//デバッグ出力をする。
@@ -736,12 +783,13 @@ namespace basecross {
 		const float clearColor[] = { color.x, color.y, color.z, color.w };
 		GetCurrentBaseFrame()->m_beginCommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 		GetCurrentBaseFrame()->m_beginCommandList->ClearDepthStencilView(m_dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-		// Clear the depth stencil buffer in preparation for rendering the shadow map.
-		GetCurrentBaseFrame()->m_beginCommandList->ClearDepthStencilView(GetCurrentBaseFrame()->m_shadowDepthView, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-
 		ThrowIfFailed(GetCurrentBaseFrame()->m_beginCommandList->Close());
 
 		m_process = process::shadowmap;
+
+		// Clear the depth stencil buffer in preparation for rendering the shadow map.
+		GetCurrentBaseFrame()->m_shadowCommandList->ClearDepthStencilView(GetCurrentBaseFrame()->m_shadowDepthView, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
 		GetCurrentBaseFrame()->m_shadowCommandList->OMSetRenderTargets(0, nullptr, FALSE, 
 			&GetCurrentBaseFrame()->m_shadowDepthView);    // No render target needed for the shadow pa
 		GetCurrentBaseFrame()->m_shadowCommandList->SetGraphicsRootSignature(m_rootSignature.Get());
@@ -750,6 +798,8 @@ namespace basecross {
 
 		GetCurrentBaseFrame()->m_shadowCommandList->RSSetViewports(1, &m_viewport);
 		GetCurrentBaseFrame()->m_shadowCommandList->RSSetScissorRects(1, &m_scissorRect);
+
+		GetCurrentBaseFrame()->m_shadowCommandList->SetPipelineState(m_pipelineStateShadowMap.Get());
 
 		App::GetBaseScene()->PopulateShadowmapCommandList(pBaseFrame);
 
@@ -762,21 +812,29 @@ namespace basecross {
 		GetCurrentBaseFrame()->m_sceneCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 		GetCurrentBaseFrame()->m_sceneCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"t0"), GetCurrentBaseFrame()->m_shadowDepthHandle);        // Set the shadow texture as an SRV.
+//		GetCurrentBaseFrame()->m_sceneCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"t0"), m_nullSrvGpuHandle);        // Set the shadow texture as an SRV.
+
+
+//m_nullSrvHandle
 
 
 		GetCurrentBaseFrame()->m_sceneCommandList->RSSetViewports(1, &m_viewport);
 		GetCurrentBaseFrame()->m_sceneCommandList->RSSetScissorRects(1, &m_scissorRect);
 
+
 		App::GetBaseScene()->PopulateCommandList(pBaseFrame);
+
+//		GetCurrentBaseFrame()->m_sceneCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBaseFrame()->m_shadowTexture.Get(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
 		ThrowIfFailed(GetCurrentBaseFrame()->m_sceneCommandList->Close());
 
 	}
 
-	void BaseDevice::OnRender() {
+	void BaseDevice::OnDraw() {
 
 		ThrowIfFailed(GetCurrentBaseFrame()->m_beginCommandAllocator->Reset());
 		ThrowIfFailed(GetCurrentBaseFrame()->m_beginCommandList->Reset(GetCurrentBaseFrame()->m_beginCommandAllocator.Get(), GetCurrentBaseFrame()->m_pipelineState.Get()));
+
 
 		ThrowIfFailed(GetCurrentBaseFrame()->m_shadowCommandAllocator->Reset());
 		ThrowIfFailed(GetCurrentBaseFrame()->m_shadowCommandList->Reset(GetCurrentBaseFrame()->m_shadowCommandAllocator.Get(), GetCurrentBaseFrame()->m_pipelineState.Get()));
@@ -791,6 +849,8 @@ namespace basecross {
 		PopulateCommandList(GetCurrentBaseFrame());
 
 		m_process = process::end;
+
+//		GetCurrentBaseFrame()->m_endCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBaseFrame()->m_shadowTexture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 
 		GetCurrentBaseFrame()->m_endCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 		ThrowIfFailed(GetCurrentBaseFrame()->m_endCommandList->Close());

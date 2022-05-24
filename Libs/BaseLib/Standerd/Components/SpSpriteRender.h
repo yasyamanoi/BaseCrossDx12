@@ -67,7 +67,7 @@ namespace basecross {
 			vector<VertexPositionColor>& vertices, vector<uint32_t>& indices);
 		virtual ~SpPCSpriteRender() {}
 		//ëÄçÏ
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		virtual void OnUpdate()override {}
 		virtual void OnDestroy()override {}
 	};
@@ -88,7 +88,7 @@ namespace basecross {
 			vector<VertexPositionTexture>& vertices, vector<uint32_t>& indices);
 		virtual ~SpPTSpriteRender() {}
 		//ëÄçÏ
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		virtual void OnUpdate()override {}
 		virtual void OnDestroy()override {}
 	};
@@ -109,7 +109,7 @@ namespace basecross {
 			vector<VertexPositionColorTexture>& vertices, vector<uint32_t>& indices);
 		virtual ~SpPCTSpriteRender() {}
 		//ëÄçÏ
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		virtual void OnUpdate()override {}
 		virtual void OnDestroy()override {}
 	};

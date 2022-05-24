@@ -413,11 +413,11 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		virtual void OnCollisionExit(const CollisionPair& Pair) {}
 
-		virtual void OnPreInit() override;
+		virtual void OnPreCreate() override;
 		virtual void OnUpdate()override {}
 		virtual void OnUpdate2()override {}
 		virtual void OnShadowmapRender();
-		virtual void OnRender()override;
+		virtual void OnDraw()override;
 		virtual void OnInitFrame(BaseFrame* pBaseFrame);
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame);
 		virtual void OnDestroy()override {}
@@ -430,6 +430,7 @@ namespace basecross {
 	///	ゲームオブジェクトのweak_ptrをグループ化したもの
 	//--------------------------------------------------------------------------------------
 	class GameObjectGroup : public ObjectInterface {
+		vector< weak_ptr<GameObject> > m_Group;
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -486,17 +487,11 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override {}
+		virtual void OnCreate()override {}
 
 		virtual void OnUpdate()override {}
-		virtual void OnRender() override {}
+		virtual void OnDraw() override {}
 		virtual void OnDestroy() override {}
-
-
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 

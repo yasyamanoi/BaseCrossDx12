@@ -16,7 +16,8 @@ namespace basecross {
 		m_samplerKey(L"LinearClamp"),
 		m_frameParamIndex(0),
 		m_baseMesh(nullptr),
-		m_baseTexture(nullptr)
+		m_baseTexture(nullptr),
+		m_baseTexture2(nullptr)
 	{}
 
 
@@ -28,7 +29,7 @@ namespace basecross {
 		m_gameObject = GameObjectPtr;
 	}
 
-	void Component::OnRender() {
+	void Component::OnDraw() {
 		auto pDefaultDev = App::GetBaseDevice();
 		auto pFrame = pDefaultDev->GetCurrentBaseFrame();
 		PopulateCommandList(pFrame);

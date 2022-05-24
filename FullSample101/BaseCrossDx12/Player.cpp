@@ -199,7 +199,7 @@ namespace basecross {
 	}
 
 	//初期化
-	void Player::OnInit() {
+	void Player::OnCreate() {
 
 		//初期位置などの設定
 		auto ptr = AddComponent<Transform>();
@@ -228,9 +228,9 @@ namespace basecross {
 		//ptrString->SetTextRect(Rect2D<float>(16.0f, 16.0f, 640.0f, 480.0f));
 
 		//影をつける（シャドウマップを描画する）
-		//auto shadowPtr = AddComponent<Shadowmap>();
+		auto shadowPtr = AddComponent<Shadowmap>();
 		////影の形（メッシュ）を設定
-		//shadowPtr->SetMeshResource(L"DEFAULT_SPHERE");
+		shadowPtr->SetMesh(L"DEFAULT_SPHERE");
 
 		//描画コンポーネントの設定
 		auto ptrDraw = AddComponent<SpPNTStaticRender>();

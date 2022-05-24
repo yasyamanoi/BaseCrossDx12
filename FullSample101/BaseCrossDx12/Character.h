@@ -15,18 +15,21 @@ namespace basecross {
 		Vec3 m_Scale;
 		Vec3 m_Rotation;
 		Vec3 m_Position;
+		bool m_Own;
 	public:
 		//構築と破棄
 		FixedBox(const shared_ptr<Stage>& StagePtr,
 			const Vec3& Scale,
 			const Vec3& Rotation,
-			const Vec3& Position
+			const Vec3& Position,
+			bool own
 		);
 		virtual ~FixedBox();
 		//初期化
-		virtual void OnInit() override;
+		virtual void OnCreate() override;
 		//操作
 	};
+
 
 
 	//--------------------------------------------------------------------------------------
@@ -45,7 +48,7 @@ namespace basecross {
 		);
 		virtual ~FixedSphere();
 		//初期化
-		virtual void OnInit() override;
+		virtual void OnCreate() override;
 		//操作
 	};
 
@@ -67,7 +70,7 @@ namespace basecross {
 		);
 		virtual ~FixedCapsule();
 		//初期化
-		virtual void OnInit() override;
+		virtual void OnCreate() override;
 		//操作
 	};
 
@@ -91,7 +94,7 @@ namespace basecross {
 		SeekObject(const shared_ptr<Stage>& StagePtr, const Vec3& StartPos);
 		virtual ~SeekObject();
 		//初期化
-		virtual void OnInit() override;
+		virtual void OnCreate() override;
 		//アクセサ
 		const unique_ptr<StateMachine<SeekObject>>& GetStateMachine() {
 			return m_StateMachine;
@@ -169,7 +172,7 @@ namespace basecross {
 		);
 		virtual ~MoveBox();
 		//初期化
-		virtual void OnInit() override;
+		virtual void OnCreate() override;
 		//操作
 		virtual void OnUpdate() override;
 		virtual void OnCollisionExcute(const CollisionPair& Pair) override;
@@ -192,7 +195,7 @@ namespace basecross {
 		);
 		virtual ~MoveFixedBox();
 		//初期化
-		virtual void OnInit() override;
+		virtual void OnCreate() override;
 		//操作
 	};
 

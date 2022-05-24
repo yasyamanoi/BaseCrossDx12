@@ -5,6 +5,7 @@
 
 #include "INCStructs.hlsli"
 #include "SpINCConstant.hlsli"
+#include "SpINCPixel.hlsli"
 
 
 float4 main(PSPCTInput input) : SV_TARGET

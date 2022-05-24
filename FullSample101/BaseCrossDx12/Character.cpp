@@ -17,18 +17,21 @@ namespace basecross {
 	FixedBox::FixedBox(const shared_ptr<Stage>& StagePtr,
 		const Vec3& Scale,
 		const Vec3& Rotation,
-		const Vec3& Position
+		const Vec3& Position,
+		bool own
 	) :
 		GameObject(StagePtr),
 		m_Scale(Scale),
 		m_Rotation(Rotation),
-		m_Position(Position)
+		m_Position(Position),
+		m_Own(own)
 	{
 	}
 	FixedBox::~FixedBox() {}
 
 	//初期化
-	void FixedBox::OnInit() {
+	void FixedBox::OnCreate() {
+		//初期化処理
 		auto ptrTransform = GetComponent<Transform>();
 		ptrTransform->SetScale(m_Scale);
 		ptrTransform->SetRotation(m_Rotation);
@@ -41,15 +44,21 @@ namespace basecross {
 		//影をつける（シャドウマップを描画する）
 //		auto shadowPtr = AddComponent<Shadowmap>();
 		//影の形（メッシュ）を設定
-//		shadowPtr->SetMeshResource(L"DEFAULT_CUBE");
+//		shadowPtr->SetMesh(L"DEFAULT_CUBE");
 		auto ptrDraw = AddComponent<SpPNTStaticRender>();
+//		auto ptrDraw = AddComponent<ExStaticRender>();
 		ptrDraw->SetMesh(L"DEFAULT_CUBE");
 		ptrDraw->SetTexture(L"SKY_TX");
+		
+
 //		ptrDraw->SetFogEnabled(true);
-//		ptrDraw->SetOwnShadowActive(true);
+		if (m_Own) {
+			ptrDraw->SetOwnShadowActive(true);
+		}
 
 
 	}
+
 
 	//--------------------------------------------------------------------------------------
 	//	class FixedSphere : public GameObject;
@@ -69,7 +78,7 @@ namespace basecross {
 	FixedSphere::~FixedSphere() {}
 
 	//初期化
-	void FixedSphere::OnInit() {
+	void FixedSphere::OnCreate() {
 		auto ptrTransform = GetComponent<Transform>();
 		ptrTransform->SetScale(m_Scale);
 		ptrTransform->SetRotation(m_Rotation);
@@ -109,7 +118,7 @@ namespace basecross {
 	FixedCapsule::~FixedCapsule() {}
 
 	//初期化
-	void FixedCapsule::OnInit() {
+	void FixedCapsule::OnCreate() {
 		auto ptrTransform = GetComponent<Transform>();
 		ptrTransform->SetScale(m_Scale);
 		ptrTransform->SetRotation(m_Rotation);
@@ -146,7 +155,7 @@ namespace basecross {
 	SeekObject::~SeekObject() {}
 
 	//初期化
-	void SeekObject::OnInit() {
+	void SeekObject::OnCreate() {
 		auto ptrTransform = GetComponent<Transform>();
 		ptrTransform->SetPosition(m_StartPos);
 		ptrTransform->SetScale(0.125f, 0.25f, 0.25f);
@@ -285,7 +294,7 @@ namespace basecross {
 	MoveBox::~MoveBox() {}
 
 	//初期化
-	void MoveBox::OnInit() {
+	void MoveBox::OnCreate() {
 		auto ptrTransform = GetComponent<Transform>();
 		ptrTransform->SetScale(m_Scale);
 		ptrTransform->SetRotation(m_Rotation);
@@ -355,7 +364,7 @@ namespace basecross {
 	MoveFixedBox::~MoveFixedBox() {}
 
 	//初期化
-	void MoveFixedBox::OnInit() {
+	void MoveFixedBox::OnCreate() {
 		AddTag(L"MoveFixedBox");
 		auto ptrTransform = GetComponent<Transform>();
 		ptrTransform->SetScale(m_Scale);
@@ -373,14 +382,14 @@ namespace basecross {
 		//アクション開始
 		PtrAction->Run();
 		//影をつける
-		auto shadowPtr = AddComponent<Shadowmap>();
-		shadowPtr->SetMesh(L"DEFAULT_CUBE");
+//		auto shadowPtr = AddComponent<Shadowmap>();
+//		shadowPtr->SetMesh(L"DEFAULT_CUBE");
 		//描画処理
 		auto ptrDraw = AddComponent<SpPNTStaticRender>();
 //		ptrDraw->SetFogEnabled(true);
 		ptrDraw->SetMesh(L"DEFAULT_CUBE");
 		ptrDraw->SetTexture(L"WALL_TX");
-		ptrDraw->SetOwnShadowActive(true);
+//		ptrDraw->SetOwnShadowActive(true);
 	}
 
 }

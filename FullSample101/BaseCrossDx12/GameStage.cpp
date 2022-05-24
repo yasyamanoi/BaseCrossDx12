@@ -47,8 +47,9 @@ namespace basecross {
 		};
 		//オブジェクトの作成
 		for (auto v : vec) {
-			AddGameObject<FixedBox>(v[0], v[1], v[2]);
+			AddGameObject<FixedBox>(v[0], v[1], v[2],true);
 		}
+
 	}
 
 	void GameStage::CreateFixedSphere() {
@@ -151,7 +152,7 @@ namespace basecross {
 
 
 
-	void GameStage::OnInit() {
+	void GameStage::OnCreate() {
 		//カメラとライトの設定
 		m_camera = ObjectFactory::Create<MyCamera>();
 		m_camera->SetEye(Vec3(0, 3.43f, -6.37f));

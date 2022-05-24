@@ -162,7 +162,7 @@ namespace basecross {
 				// ‰Šú‰»Ž¸”s
 				throw exception("Com‰Šú‰»‚ÉŽ¸”s‚µ‚Ü‚µ‚½B");
 			}
-			pBaseDevice->OnInit();
+			pBaseDevice->OnCreate();
 			ShowWindow(m_hwnd, nCmdShow);
 
 			MSG msg = {};
@@ -282,7 +282,7 @@ namespace basecross {
 			if (pDevice)
 			{
 				//XV•`‰æˆ—
-				pDevice->OnUpdateRender();
+				pDevice->OnUpdateDraw();
 			}
 			return 0;
 		case WM_DESTROY:

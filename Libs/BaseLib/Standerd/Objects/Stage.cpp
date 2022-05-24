@@ -311,7 +311,7 @@ namespace basecross {
 		}
 	}
 
-	void Stage::OnPreInit() {
+	void Stage::OnPreCreate() {
 		//コリジョン管理者の作成
 		m_collisionManager = ObjectFactory::Create<CollisionManager>(GetThis<Stage>());
 		//物理計算リセット
@@ -319,10 +319,10 @@ namespace basecross {
 	}
 
 
-	void Stage::OnRender() {
+	void Stage::OnDraw() {
 		for (auto& v : m_gameObjectVec) {
 			if (v->IsRenderActive()) {
-				v->OnRender();
+				v->OnDraw();
 			}
 		}
 	}

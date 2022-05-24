@@ -13,6 +13,10 @@ namespace basecross {
 	///	アクション系コンポーネントの親クラス
 	//--------------------------------------------------------------------------------------
 	class ActionComponent : public Component {
+		bool m_Run;			//移動中かどうか
+		bool m_Arrived;	//到着したかどうか
+		float m_TotalTime;	//移動にかける時間
+		float m_NowTime;	//現在の時間
 	protected:
 		//構築と破棄
 		//--------------------------------------------------------------------------------------
@@ -139,14 +143,14 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override {}
+		virtual void OnCreate()override {}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	描画、空関数（Drawは基本的に行わない）
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnRender()override {}
+		virtual void OnDraw()override {}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	破棄処理
@@ -154,10 +158,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void OnDestroy()override {}
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -208,6 +208,9 @@ namespace basecross {
 	///	拡大縮小アクションの親クラス
 	//--------------------------------------------------------------------------------------
 	class ScaleComponent : public ActionComponent {
+		bsm::Vec3 m_StartScale;	//開始倍率
+		bsm::Vec3 m_TargetScale;	//目的倍率
+		Lerp::rate m_Rate;	//補間方法
 	protected:
 		//構築と破棄
 		//--------------------------------------------------------------------------------------
@@ -313,10 +316,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void OnUpdate()override;
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -354,6 +353,7 @@ namespace basecross {
 	///	目的の相対スケールにに拡大縮小
 	//--------------------------------------------------------------------------------------
 	class ScaleBy : public  ScaleComponent {
+		bsm::Vec3 m_LocalScale;	//相対スケール
 	public:
 		//構築と破棄
 		//--------------------------------------------------------------------------------------
@@ -413,16 +413,14 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void Run()override;
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 	//--------------------------------------------------------------------------------------
 	///	回転アクションの親クラス
 	//--------------------------------------------------------------------------------------
 	class RotateComponent : public ActionComponent {
+		bsm::Quat m_StartQuaternion;	//開始回転
+		bsm::Quat m_TargetQuaternion;	//終了回転
 	protected:
 		//構築と破棄
 		//--------------------------------------------------------------------------------------
@@ -558,10 +556,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void OnUpdate()override;
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -608,6 +602,7 @@ namespace basecross {
 	///	目的の相対角度に回転
 	//--------------------------------------------------------------------------------------
 	class RotateBy : public  RotateComponent {
+		bsm::Quat m_LocalQuaternion;	//相対回転
 	public:
 		//構築と破棄
 		//--------------------------------------------------------------------------------------
@@ -694,10 +689,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void Run()override;
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 
@@ -708,6 +699,12 @@ namespace basecross {
 	///	移動アクションの親クラス
 	//--------------------------------------------------------------------------------------
 	class MoveComponent : public ActionComponent {
+		bsm::Vec3 m_StartPosition;	//開始地点
+		bsm::Vec3 m_TargetPosition;	//目的地点
+		Lerp::rate m_RateX;	//補間方法X
+		Lerp::rate m_RateY;	//補間方法Y
+		Lerp::rate m_RateZ;	//補間方法Z
+		bsm::Vec3 m_Velocity;	//現在の速度
 		void CalcVelocity();
 		bsm::Vec3 CalcVelocitySub(float NowTime);
 	protected:
@@ -871,10 +868,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void OnUpdate()override;
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -924,6 +917,7 @@ namespace basecross {
 	///	目的の相対位置に移動
 	//--------------------------------------------------------------------------------------
 	class MoveBy : public  MoveComponent {
+		bsm::Vec3 m_LocalVector;	//相対方向
 	public:
 		//構築と破棄
 		//--------------------------------------------------------------------------------------
@@ -995,10 +989,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void Run()override;
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 
@@ -1007,6 +997,17 @@ namespace basecross {
 	///	自動状態変更コンポーネント
 	//--------------------------------------------------------------------------------------
 	class Action : public Component {
+		bool m_Looped;
+		bool m_ScaleArrived;	//m_Loopがfalseのときのみ有効
+		bool m_RotateArrived;	//m_Loopがfalseのときのみ有効
+		bool m_MoveArrived;	//m_Loopがfalseのときのみ有効
+		vector<shared_ptr<ActionComponent> > m_ScaleVec;
+		vector<shared_ptr<ActionComponent> > m_RotateVec;
+		vector<shared_ptr<ActionComponent> > m_MoveVec;
+		size_t m_ScaleActiveIndex;
+		size_t m_RotateActiveIndex;
+		size_t m_MoveActiveIndex;
+
 		void RunSub(vector<shared_ptr<ActionComponent> >& TgtVector, size_t& TgtIndex);
 		void StopSub(vector<shared_ptr<ActionComponent> >& TgtVector, size_t& TgtIndex);
 		void ReStartSub(vector<shared_ptr<ActionComponent> >& TgtVector, size_t& TgtIndex);
@@ -1161,7 +1162,7 @@ namespace basecross {
 		@return	スケールコンポーネントの配列の参照
 		*/
 		//--------------------------------------------------------------------------------------
-		vector<shared_ptr<ActionComponent>>& GetScaleVec() const;
+		vector<shared_ptr<ActionComponent>>& GetScaleVec();
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	RotateToアクションを追加する<br/>
@@ -1244,7 +1245,7 @@ namespace basecross {
 		@return	回転コンポーネントの配列の参照
 		*/
 		//--------------------------------------------------------------------------------------
-		vector<shared_ptr<ActionComponent>>& GetRotateVec() const;
+		vector<shared_ptr<ActionComponent>>& GetRotateVec();
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	MoveToアクションを追加する
@@ -1333,7 +1334,7 @@ namespace basecross {
 		@return	移動コンポーネントの配列の参照
 		*/
 		//--------------------------------------------------------------------------------------
-		vector<shared_ptr<ActionComponent>>& GetMoveVec() const;
+		vector<shared_ptr<ActionComponent>>& GetMoveVec();
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	すべてのアクションをクリアする
@@ -1369,7 +1370,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override {}
+		virtual void OnCreate()override {}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	更新処理
@@ -1383,7 +1384,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnRender()override {}
+		virtual void OnDraw()override {}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	終了処理
@@ -1391,10 +1392,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void OnDestroy()override {}
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 

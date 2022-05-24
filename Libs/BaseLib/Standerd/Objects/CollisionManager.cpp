@@ -366,7 +366,7 @@ namespace basecross {
 		}
 	}
 
-	void CollisionManager::OnInit() {
+	void CollisionManager::OnCreate() {
 		pImpl->m_MiscPerformance.SetActive(true);
 	}
 

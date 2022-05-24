@@ -122,6 +122,29 @@ namespace basecross {
 		Vec4 bones[3 * 72];
 	};
 
+	struct ExLightState
+	{
+		XMFLOAT4 position;
+		XMFLOAT4 direction;
+		XMFLOAT4 color;
+		XMFLOAT4 falloff;
+
+		XMFLOAT4X4 view;
+		XMFLOAT4X4 projection;
+	};
+
+	struct ExConstant
+	{
+		XMFLOAT4X4 model;
+		XMFLOAT4X4 view;
+		XMFLOAT4X4 projection;
+		XMFLOAT4 ambientColor;
+		BOOL sampleShadowMap;
+		BOOL padding[3];        // Must be aligned to be made up of N float4s.
+		ExLightState lights[3];
+	};
+
+
 
 	//--------------------------------------------------------------------------------------
 	///	コンポーネント親クラス
@@ -138,6 +161,7 @@ namespace basecross {
 		virtual ~Component() {}
 		shared_ptr<BaseMesh> m_baseMesh;
 		shared_ptr<BaseTexture> m_baseTexture;
+		shared_ptr<BaseTexture> m_baseTexture2;
 		virtual void PopulateCommandList(BaseFrame* pBaseFrame) {}
 	public:
 		//--------------------------------------------------------------------------------------
@@ -218,6 +242,37 @@ namespace basecross {
 		void SetTexture(const wstring& key) {
 			SetTexture(App::GetBaseScene()->GetTexture(key));
 		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	テクスチャ2の取得
+		@return	テクスチャ2
+		*/
+		//--------------------------------------------------------------------------------------
+		shared_ptr<BaseTexture> GetTexture2() const {
+			return m_baseTexture2;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	テクスチャ2の設定
+		@param[in]	baseTexture	テクスチャ
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetTexture2(const shared_ptr<BaseTexture>& baseTexture) {
+			m_baseTexture2 = baseTexture;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	テクスチャの設定
+		@param[in]	key	テクスチャのリソースキー
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetTexture2(const wstring& key) {
+			SetTexture2(App::GetBaseScene()->GetTexture(key));
+		}
+
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	サンプラーキーの取得
@@ -322,7 +377,7 @@ namespace basecross {
 
 		virtual void OnInitFrame(BaseFrame* pBaseFrame) {}
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame){}
-		virtual void OnRender()override;
+		virtual void OnDraw()override;
 	};
 
 

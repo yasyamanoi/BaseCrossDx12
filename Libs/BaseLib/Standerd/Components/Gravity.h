@@ -12,6 +12,8 @@ namespace basecross {
 	///	 重力コンポーネント
 	//--------------------------------------------------------------------------------------
 	class Gravity : public Component {
+		bsm::Vec3 m_Gravity;
+		bsm::Vec3 m_GravityVelocity;
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -93,13 +95,9 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override {}
-		virtual void OnRender()override {}
+		virtual void OnCreate()override {}
+		virtual void OnDraw()override {}
 		virtual void OnDestroy()override {}
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 }

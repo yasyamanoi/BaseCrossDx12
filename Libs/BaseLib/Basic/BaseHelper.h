@@ -824,12 +824,12 @@ namespace basecross {
 	///	パフォーマンスカウンター
 	//--------------------------------------------------------------------------------------
 	class PerformanceCounter {
-		bool m_IsActive;
-		bool m_IsStarted;
-		float m_PerformanceTime;
-		LARGE_INTEGER m_Freq;
-		LARGE_INTEGER m_Before;
-		LARGE_INTEGER m_After;
+		bool m_isActive;
+		bool m_isStarted;
+		float m_performanceTime;
+		LARGE_INTEGER m_freq;
+		LARGE_INTEGER m_before;
+		LARGE_INTEGER m_after;
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -837,13 +837,13 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		PerformanceCounter() :
-			m_IsActive(false),
-			m_PerformanceTime(0.0f),
-			m_IsStarted(false)
+			m_isActive(false),
+			m_performanceTime(0.0f),
+			m_isStarted(false)
 		{
-			m_Freq = {};
-			m_Before = {};
-			m_After = {};
+			m_freq = {};
+			m_before = {};
+			m_after = {};
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -858,7 +858,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		bool IsAvtive() const {
-			return m_IsActive;
+			return m_isActive;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -868,7 +868,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		void SetActive(bool b) {
-			m_IsActive = b;
+			m_isActive = b;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -877,26 +877,26 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		void Start() {
-			if (IsAvtive() && !m_IsStarted) {
+			if (IsAvtive() && !m_isStarted) {
 				// m_PerformanceTimeはStart時は初期化しない
 				// m_PerformanceTime = 0.0f;
-				m_Freq = {};
-				m_Before = {};
-				m_After = {};
-				m_IsStarted = true;
-				if (!QueryPerformanceFrequency(&m_Freq))
+				m_freq = {};
+				m_before = {};
+				m_after = {};
+				m_isStarted = true;
+				if (!QueryPerformanceFrequency(&m_freq))
 				{
 					throw BaseException(
 						L"システム周波数を取得できません。",
-						L"if (!QueryPerformanceFrequency(&m_Freq))",
+						L"if (!QueryPerformanceFrequency(&m_freq))",
 						L"PerformanceCounter::Start()"
 					);
 				}
-				if (!QueryPerformanceCounter(&m_Before))
+				if (!QueryPerformanceCounter(&m_before))
 				{
 					throw BaseException(
 						L"パフォーマンスカウンタ（処理前）を取得できません。",
-						L"if (!QueryPerformanceCounter(&m_Before))",
+						L"if (!QueryPerformanceCounter(&m_before))",
 						L"PerformanceCounter::Start()"
 					);
 				}
@@ -909,19 +909,19 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		void End() {
-			if (IsAvtive() && m_IsStarted) {
-				if (!QueryPerformanceCounter(&m_After))
+			if (IsAvtive() && m_isStarted) {
+				if (!QueryPerformanceCounter(&m_after))
 				{
 					throw BaseException(
 						L"パフォーマンスカウンタ（処理後）を取得できません。",
-						L"if (!QueryPerformanceCounter(&m_After))",
+						L"if (!QueryPerformanceCounter(&m_after))",
 						L"PerformanceCounter::Start()"
 					);
 				}
-				if (m_Freq.QuadPart != 0) {
-					m_PerformanceTime = ((float)((m_After.QuadPart - m_Before.QuadPart) * 1000.0f) / (float)m_Freq.QuadPart);
+				if (m_freq.QuadPart != 0) {
+					m_performanceTime = ((float)((m_after.QuadPart - m_before.QuadPart) * 1000.0f) / (float)m_freq.QuadPart);
 				}
-				m_IsStarted = false;
+				m_isStarted = false;
 			}
 		}
 		//--------------------------------------------------------------------------------------
@@ -932,7 +932,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		float GetPerformanceTime() const {
 			if (IsAvtive()) {
-				return m_PerformanceTime;
+				return m_performanceTime;
 			}
 			else {
 				return 0.0f;
@@ -949,32 +949,32 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	struct Event {
 		///	遅延時間（SendEventの場合は常に0）
-		float m_DispatchTime;
+		float m_dispatchTime;
 		///	このメッセージを送ったオブジェクト
-		weak_ptr<ObjectInterface> m_Sender;
+		weak_ptr<ObjectInterface> m_sender;
 		///	受け取るオブジェクト（nullptrの場合はアクティブステージ内すべてもしくはキーワードで識別するオブジェクト）
-		weak_ptr<ObjectInterface> m_Receiver;
+		weak_ptr<ObjectInterface> m_receiver;
 		///	メッセージ文字列
-		wstring m_MsgStr;
+		wstring m_msgStr;
 		///	追加情報をもつオブジェクトのポインタ
-		shared_ptr<void> m_Info;
+		shared_ptr<void> m_info;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	コンストラクタ
-		@param[in]	DispatchTime	配送までの時間
-		@param[in]	Sender	送り側オブジェクト（nullptr可）
-		@param[in]	Receiver	受け手側オブジェクト
-		@param[in]	MsgStr	メッセージ文字列
-		@param[in]	Info	追加情報をもつユーザーデータ
+		@param[in]	dispatchTime	配送までの時間
+		@param[in]	sender	送り側オブジェクト（nullptr可）
+		@param[in]	receiver	受け手側オブジェクト
+		@param[in]	msgStr	メッセージ文字列
+		@param[in]	info	追加情報をもつユーザーデータ
 		*/
 		//--------------------------------------------------------------------------------------
-		Event(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-			const wstring& MsgStr, const shared_ptr<void>& Info = shared_ptr<void>()) :
-			m_DispatchTime(DispatchTime),
-			m_Sender(Sender),
-			m_Receiver(Receiver),
-			m_MsgStr(MsgStr),
-			m_Info(Info)
+		Event(float dispatchTime, const shared_ptr<ObjectInterface>& sender, const shared_ptr<ObjectInterface>& receiver,
+			const wstring& msgStr, const shared_ptr<void>& info = shared_ptr<void>()) :
+			m_dispatchTime(dispatchTime),
+			m_sender(sender),
+			m_receiver(receiver),
+			m_msgStr(msgStr),
+			m_info(info)
 		{}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -988,11 +988,13 @@ namespace basecross {
 	///	イベント配送クラス
 	//--------------------------------------------------------------------------------------
 	class EventDispatcher {
+		//イベントのキュー
+		list< shared_ptr<Event> > m_priorityQ;
+		map<wstring, vector<weak_ptr<ObjectInterface>>> m_eventInterfaceGroupMap;
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	コンストラクタ
-		@param[in]	SceneBasePtr	シーンベースのポインタ
 		*/
 		//--------------------------------------------------------------------------------------
 		explicit EventDispatcher();
@@ -1002,68 +1004,66 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual ~EventDispatcher();
-
-
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントを受け取るグループに追加（グループがなければその名前で作成）
-		@param[in]	GroupKey	グループ名
-		@param[in]	Receiver	受け手側オブジェクト
+		@param[in]	groupKey	グループ名
+		@param[in]	receiver	受け手側オブジェクト
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void AddEventReceiverGroup(const wstring& GroupKey, const shared_ptr<ObjectInterface>& Receiver);
+		void AddEventReceiverGroup(const wstring& groupKey, const shared_ptr<ObjectInterface>& receiver);
 
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのPOST（キューに入れる）
-		@param[in]	Delay	配送までの時間
-		@param[in]	Sender	送り側オブジェクト（nullptr可）
-		@param[in]	Receiver	受け手側オブジェクト
-		@param[in]	MsgStr	メッセージ文字列
-		@param[in]	Info	追加情報をもつユーザーデータ
+		@param[in]	delay	配送までの時間
+		@param[in]	sender	送り側オブジェクト（nullptr可）
+		@param[in]	receiver	受け手側オブジェクト
+		@param[in]	msgStr	メッセージ文字列
+		@param[in]	info	追加情報をもつユーザーデータ
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void PostEvent(float Delay, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		void PostEvent(float delay, const shared_ptr<ObjectInterface>& sender, const shared_ptr<ObjectInterface>& receiver,
+			const wstring& msgStr, const  shared_ptr<void>& info = shared_ptr<void>());
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのPOST（キューに入れる）
-		@param[in]	DispatchTime	POSTする時間（0で次のターン）
-		@param[in]	Sender	イベント送信者（nullptr可）
-		@param[in]	ReceiverKey	受け手側オブジェクトを判別するキー
-		@param[in]	MsgStr	メッセージ
-		@param[in,out]	Info	追加情報
+		@param[in]	dispatchTime	POSTする時間（0で次のターン）
+		@param[in]	sender	イベント送信者（nullptr可）
+		@param[in]	receiverKey	受け手側オブジェクトを判別するキー
+		@param[in]	msgStr	メッセージ
+		@param[in,out]	info	追加情報
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		void PostEvent(float dispatchTime, const shared_ptr<ObjectInterface>& sender, const wstring& receiverKey,
+			const wstring& msgStr, const  shared_ptr<void>& info = shared_ptr<void>());
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのSEND（キューに入れずにそのまま送る）
-		@param[in]	Sender	送り側オブジェクト（nullptr可）
-		@param[in]	Receiver	受け手側オブジェクト
-		@param[in]	MsgStr	メッセージ文字列
-		@param[in]	Info	追加情報をもつユーザーデータ
+		@param[in]	sender	送り側オブジェクト（nullptr可）
+		@param[in]	receiver	受け手側オブジェクト
+		@param[in]	msgStr	メッセージ文字列
+		@param[in]	info	追加情報をもつユーザーデータ
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		void SendEvent(const shared_ptr<ObjectInterface>& sender, const shared_ptr<ObjectInterface>& receiver,
+			const wstring& msgStr, const  shared_ptr<void>& info = shared_ptr<void>());
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのSEND（キューに入れずにそのまま送る）
-		@param[in]	Sender	イベント送信者（nullptr可）
-		@param[in]	Receiver	イベント受信者（nullptr不可）
-		@param[in]	MsgStr	メッセージ
-		@param[in,out]	Info	追加情報
+		@param[in]	sender	イベント送信者（nullptr可）
+		@param[in]	receiver	イベント受信者（nullptr不可）
+		@param[in]	msgStr	メッセージ
+		@param[in,out]	info	追加情報
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		void SendEvent(const shared_ptr<ObjectInterface>& sender, const wstring& receiverKey,
+			const wstring& msgStr, const  shared_ptr<void>& info = shared_ptr<void>());
 
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1074,15 +1074,19 @@ namespace basecross {
 		void DispatchDelayedEvent();
 		//--------------------------------------------------------------------------------------
 		/*!
+		//用途: イベントの送信
+		//戻り値: なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void Discharge(const shared_ptr<Event>& event);
+		//--------------------------------------------------------------------------------------
+		/*!
 		@brief	キューにたまっているメッセージを削除する
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
 		void ClearEventQ();
 	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 		//コピー禁止
 		EventDispatcher(const EventDispatcher&) = delete;
 		EventDispatcher& operator=(const EventDispatcher&) = delete;
@@ -1091,8 +1095,6 @@ namespace basecross {
 		EventDispatcher& operator=(const EventDispatcher&&) = delete;
 	};
 
-
-
 	//--------------------------------------------------------------------------------------
 	///	Objectインターフェイス
 	//--------------------------------------------------------------------------------------
@@ -1100,9 +1102,9 @@ namespace basecross {
 		friend class ObjectFactory;
 		//クリエイト済みかどうか
 		//Create関数が呼び出し後にtrueになる
-		bool m_Created{ false };
+		bool m_created{ false };
 		void SetCreated(bool b) {
-			m_Created = b;
+			m_created = b;
 		}
 	protected:
 		ObjectInterface() {}
@@ -1117,9 +1119,9 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		template<typename T>
 		std::shared_ptr<T> GetThis() {
-			auto Ptr = dynamic_pointer_cast<T>(shared_from_this());
-			if (Ptr) {
-				return Ptr;
+			auto ptr = dynamic_pointer_cast<T>(shared_from_this());
+			if (ptr) {
+				return ptr;
 			}
 			else {
 				wstring str(L"thisを");
@@ -1140,59 +1142,58 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		bool IsCreated()const {
-			return m_Created;
+			return m_created;
 		}
-
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのPOST（キューに入れる）
-		@param[in]	DispatchTime	POSTする時間（0で次のターン）
-		@param[in]	Sender	イベント送信者（nullptr可）
-		@param[in]	Receiver	イベント受信者（nullptr不可）
-		@param[in]	MsgStr	メッセージ
-		@param[in,out]	Info	追加情報
+		@param[in]	dispatchTime	POSTする時間（0で次のターン）
+		@param[in]	sender	イベント送信者（nullptr可）
+		@param[in]	receiver	イベント受信者（nullptr不可）
+		@param[in]	msgStr	メッセージ
+		@param[in,out]	info	追加情報
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-			const wstring& MsgStr, const shared_ptr<void>& Info = shared_ptr<void>());
+		void PostEvent(float dispatchTime, const shared_ptr<ObjectInterface>& sender, const shared_ptr<ObjectInterface>& receiver,
+			const wstring& msgStr, const shared_ptr<void>& info = shared_ptr<void>());
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのPOST（キューに入れる）
-		@param[in]	DispatchTime	POSTする時間（0で次のターン）
-		@param[in]	Sender	イベント送信者（nullptr可）
-		@param[in]	ReceiverKey	受け手側オブジェクトを判別するキー
-		@param[in]	MsgStr	メッセージ
-		@param[in,out]	Info	追加情報
+		@param[in]	dispatchTime	POSTする時間（0で次のターン）
+		@param[in]	sender	イベント送信者（nullptr可）
+		@param[in]	receiverKey	受け手側オブジェクトを判別するキー
+		@param[in]	msgStr	メッセージ
+		@param[in,out]	info	追加情報
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		void PostEvent(float dispatchTime, const shared_ptr<ObjectInterface>& sender, const wstring& receiverKey,
+			const wstring& msgStr, const  shared_ptr<void>& info = shared_ptr<void>());
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのSEND（キューに入れずにそのまま送る）
-		@param[in]	Sender	イベント送信者（nullptr可）
-		@param[in]	ReceiverKey	受け手側オブジェクトを判別するキー
-		@param[in]	MsgStr	メッセージ
-		@param[in,out]	Info	追加情報
+		@param[in]	sender	イベント送信者（nullptr可）
+		@param[in]	receiverKey	受け手側オブジェクトを判別するキー
+		@param[in]	msgStr	メッセージ
+		@param[in,out]	info	追加情報
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-			const wstring& MsgStr, const shared_ptr<void>& Info = shared_ptr<void>());
+		void SendEvent(const shared_ptr<ObjectInterface>& sender, const shared_ptr<ObjectInterface>& receiver,
+			const wstring& msgStr, const shared_ptr<void>& info = shared_ptr<void>());
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのSEND（キューに入れずにそのまま送る）
-		@param[in]	Sender	イベント送信者（nullptr可）
-		@param[in]	Receiver	イベント受信者（nullptr不可）
-		@param[in]	MsgStr	メッセージ
-		@param[in,out]	Info	追加情報
+		@param[in]	sender	イベント送信者（nullptr可）
+		@param[in]	receiver	イベント受信者（nullptr不可）
+		@param[in]	msgStr	メッセージ
+		@param[in,out]	info	追加情報
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		void SendEvent(const shared_ptr<ObjectInterface>& sender, const wstring& receiverKey,
+			const wstring& msgStr, const  shared_ptr<void>& info = shared_ptr<void>());
 		//仮想関数群
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1200,14 +1201,14 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnPreInit() {}
+		virtual void OnPreCreate() {}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化処理
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit() = 0;
+		virtual void OnCreate() = 0;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントを受け取る
@@ -1236,7 +1237,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnRender() = 0;
+		virtual void OnDraw() = 0;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	破棄時処理
@@ -1284,12 +1285,12 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		template<typename T, typename... Ts>
 		static shared_ptr<T> Create(Ts&&... params) {
-			shared_ptr<T> Ptr = shared_ptr<T>(new T(params...));
+			shared_ptr<T> ptr = shared_ptr<T>(new T(params...));
 			//初期化関数呼び出し
-			Ptr->OnPreInit();
-			Ptr->OnInit();
-			Ptr->SetCreated(true);
-			return Ptr;
+			ptr->OnPreCreate();
+			ptr->OnCreate();
+			ptr->SetCreated(true);
+			return ptr;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1302,11 +1303,11 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		template<typename T, typename... Ts>
 		static shared_ptr<T> CreateInitParam(Ts&&... params) {
-			shared_ptr<T> Ptr = shared_ptr<T>(new T());
+			shared_ptr<T> ptr = shared_ptr<T>(new T());
 			//初期化関数呼び出し
-			Ptr->OnInit(params...);
-			Ptr->SetCreated(true);
-			return Ptr;
+			ptr->OnCreate(params...);
+			ptr->SetCreated(true);
+			return ptr;
 		}
 
 	};
@@ -1320,8 +1321,8 @@ namespace basecross {
 		Dx12ShaderResource();
 		virtual ~Dx12ShaderResource();
 		//シェーダアクセサ
-		ID3DBlob* GetShaderBlob(const wstring& Filename, ComPtr<ID3DBlob>& ShaderComPtr);
-		ComPtr<ID3DBlob>& GetShaderBlobComPtr(const wstring& Filename, ComPtr<ID3DBlob>& ShaderComPtr);
+		ID3DBlob* GetShaderBlob(const wstring& fileName, ComPtr<ID3DBlob>& shaderComPtr);
+		ComPtr<ID3DBlob>& GetShaderBlobComPtr(const wstring& fileName, ComPtr<ID3DBlob>& shaderComPtr);
 	private:
 		//コピー禁止
 		Dx12ShaderResource(const Dx12ShaderResource&) = delete;
@@ -1336,18 +1337,18 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	template<typename ShaderType>
 	class Dx12Shader : public Dx12ShaderResource {
-		wstring m_Filename;
+		wstring m_fileName;
 	protected:
 		//デリーター
 		struct Deleter
 		{
 			void operator()(ShaderType* p) { delete p; }
 		};
-		ComPtr<ID3DBlob> m_ShaderPtr;
+		ComPtr<ID3DBlob> m_shaderPtr;
 		//構築と破棄
-		Dx12Shader<ShaderType>(const wstring& Filename) : Dx12ShaderResource(), m_Filename(Filename) {}
+		Dx12Shader<ShaderType>(const wstring& fileName) : Dx12ShaderResource(), m_fileName(fileName) {}
 		virtual ~Dx12Shader() {}
-		static unique_ptr<ShaderType, Deleter> m_Ptr;
+		static unique_ptr<ShaderType, Deleter> m_ptr;
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1356,7 +1357,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		ID3DBlob* GetShader() {
-			return GetShaderBlob(m_Filename, m_ShaderPtr);
+			return GetShaderBlob(m_fileName, m_shaderPtr);
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1365,7 +1366,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		ComPtr<ID3DBlob>& GetShaderComPtr() {
-			return GetShaderBlobComPtr(m_Filename, m_ShaderPtr);
+			return GetShaderBlobComPtr(m_fileName, m_shaderPtr);
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1374,10 +1375,10 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static unique_ptr<ShaderType, Deleter>& GetPtr() {
-			if (!m_Ptr) {
-				m_Ptr.reset(new ShaderType());
+			if (!m_ptr) {
+				m_ptr.reset(new ShaderType());
 			}
-			return m_Ptr;
+			return m_ptr;
 		}
 	};
 
@@ -1389,7 +1390,7 @@ namespace basecross {
 		ShaderName(); \
 	};
 	//シェーダ実体用マクロ
-#define IMPLEMENT_DX12SHADER(ShaderName,CsoFilename) unique_ptr<ShaderName, ShaderName::Deleter> ShaderName::m_Ptr; \
+#define IMPLEMENT_DX12SHADER(ShaderName,CsoFilename) unique_ptr<ShaderName, ShaderName::Deleter> ShaderName::m_ptr; \
 	ShaderName::ShaderName() : \
 	Dx12Shader(CsoFilename){}
 

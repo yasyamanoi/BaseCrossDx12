@@ -35,7 +35,7 @@ namespace basecross {
 		virtual shared_ptr<LightSet> GetActiveLightSet() const override {
 			return m_lightSet;
 		}
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		virtual void OnUpdateLightCamera() override {
 			m_camera->OnUpdate();
 		}

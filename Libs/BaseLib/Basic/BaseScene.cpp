@@ -320,7 +320,7 @@ namespace basecross {
 	void BaseScene::PopulateCommandList(BaseFrame* pBaseFrame) {
 		auto stagePtr = GetActiveStage();
 		if (stagePtr) {
-			stagePtr->OnRender();
+			stagePtr->OnDraw();
 		}
 	}
 

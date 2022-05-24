@@ -150,7 +150,7 @@ namespace basecross {
 	}
 
 
-	void BcPNTStaticRender::OnInit() {
+	void BcPNTStaticRender::OnCreate() {
 		CreatePipelineStates();
 	}
 

@@ -3,13 +3,6 @@
 //
 //--------------------------------------------------------------------------------------
 
-Texture2D g_DepthMap : register(t0);
-Texture2D g_texture : register(t1);
-Texture2D normalMap : register(t2);
-
-SamplerState g_sampler : register(s0);
-SamplerComparisonState g_SamplerDepthMap : register(s1);
-
 cbuffer ParametersBuffer : register(b0)
 {
 	float4x4 World	: packoffset(c0);

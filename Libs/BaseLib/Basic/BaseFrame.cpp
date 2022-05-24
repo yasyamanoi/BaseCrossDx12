@@ -9,8 +9,9 @@
 
 namespace basecross {
 
-	BaseFrame::BaseFrame(ID3D12PipelineState* pPso, D3D12_VIEWPORT* pViewport, UINT frameResourceIndex) :
+	BaseFrame::BaseFrame(ID3D12PipelineState* pPso, ID3D12PipelineState* pShadowPso, D3D12_VIEWPORT* pViewport, UINT frameResourceIndex) :
 		m_pipelineState(pPso),
+		m_pipelineStateShadow(pShadowPso),
 		m_fenceValue(0)
 	{
 		auto pDevice = App::GetID3D12Device();
@@ -27,7 +28,7 @@ namespace basecross {
 
 		//Shadowmap用のコマンドリスト
 		ThrowIfFailed(pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_shadowCommandAllocator)));
-		ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_shadowCommandAllocator.Get(), m_pipelineState.Get(), IID_PPV_ARGS(&m_shadowCommandList)));
+		ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_shadowCommandAllocator.Get(), m_pipelineStateShadow.Get(), IID_PPV_ARGS(&m_shadowCommandList)));
 		ThrowIfFailed(m_shadowCommandList->Close());
 
 
@@ -41,7 +42,7 @@ namespace basecross {
 		ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_endCommandAllocator.Get(), m_pipelineState.Get(), IID_PPV_ARGS(&m_endCommandList)));
 		ThrowIfFailed(m_endCommandList->Close());
 
-		// Describe and create the shadow map texture.
+		// シャドウマップ用のテクスチャ
 		CD3DX12_RESOURCE_DESC shadowTexDesc(
 			D3D12_RESOURCE_DIMENSION_TEXTURE2D,
 			0,
@@ -55,7 +56,7 @@ namespace basecross {
 			D3D12_TEXTURE_LAYOUT_UNKNOWN,
 			D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 
-		D3D12_CLEAR_VALUE clearValue;// Performance tip: Tell the runtime at resource creation the desired clear value.
+		D3D12_CLEAR_VALUE clearValue;
 		clearValue.Format = DXGI_FORMAT_D32_FLOAT;
 		clearValue.DepthStencil.Depth = 1.0f;
 		clearValue.DepthStencil.Stencil = 0;
@@ -64,7 +65,7 @@ namespace basecross {
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&shadowTexDesc,
-			D3D12_RESOURCE_STATE_DEPTH_WRITE,
+			D3D12_RESOURCE_STATE_DEPTH_WRITE, //D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 			&clearValue,
 			IID_PPV_ARGS(&m_shadowTexture)));
 
@@ -73,11 +74,11 @@ namespace basecross {
 		const UINT dsvDescriptorSize = pDefaultDev->GetDsvDescriptorHandleIncrementSize();
 		CD3DX12_CPU_DESCRIPTOR_HANDLE depthHandle(
 			pDefaultDev->GetDsvDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
-			1 + frameResourceIndex, dsvDescriptorSize // + 1 for the shadow map.
+			1 + frameResourceIndex, //シャドウマップのぶん、1をプラス
+			dsvDescriptorSize 
 		); 
 
-		// Describe and create the shadow depth view and cache the CPU 
-		// descriptor handle.
+		// シャドウマップ用のデプスビュー 
 		D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
 		depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
 		depthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -85,21 +86,6 @@ namespace basecross {
 		pDevice->CreateDepthStencilView(m_shadowTexture.Get(), &depthStencilViewDesc, depthHandle);
 		m_shadowDepthView = depthHandle;
 
-		//シェーダリソースビュー
-		//描画コンポーネントを使うため、サンプルと同じではない
-		// Get a handle to the start of the descriptor heap then offset it 
-		// based on the existing textures and the frame resource index. Each 
-		// frame has 1 SRV (shadow tex) and 2 CBVs.
-		/*
-		const UINT nullSrvCount = 2;                                // Null descriptors at the start of the heap.
-		const UINT textureCount = _countof(DefaultAssets::Textures);    // Diffuse + normal textures near the start of the heap.  Ideally, track descriptor heap contents/offsets at a higher level.
-		const UINT cbvSrvDescriptorSize = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-		CD3DX12_CPU_DESCRIPTOR_HANDLE cbvSrvCpuHandle(pCbvSrvHeap->GetCPUDescriptorHandleForHeapStart());
-		CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvGpuHandle(pCbvSrvHeap->GetGPUDescriptorHandleForHeapStart());
-		m_nullSrvHandle = cbvSrvGpuHandle;
-		cbvSrvCpuHandle.Offset(nullSrvCount + textureCount + (frameResourceIndex * DefaultDevice::m_FrameCount), cbvSrvDescriptorSize);
-		cbvSrvGpuHandle.Offset(nullSrvCount + textureCount + (frameResourceIndex * DefaultDevice::m_FrameCount), cbvSrvDescriptorSize);
-		*/
 		//ディスクプリタのハンドルを作成
 		UINT srvIndex = pDefaultDev->GetSrvNextIndex();
 		//CPU側
@@ -114,42 +100,36 @@ namespace basecross {
 			srvIndex,
 			pDefaultDev->GetCbvSrvUavDescriptorHandleIncrementSize()
 		);
-		//GPU側はメンバ変数としてとっておく
-		m_shadowDepthHandle = cbvSrvGpuHandle;
-		/*
-		// Describe and create a shader resource view (SRV) for the shadow depth 
-		// texture and cache the GPU descriptor handle. This SRV is for sampling 
-		// the shadow map from our shader. It uses the same texture that we use 
-		// as a depth-stencil during the shadow pass.
+
 		D3D12_SHADER_RESOURCE_VIEW_DESC shadowSrvDesc = {};
 		shadowSrvDesc.Format = DXGI_FORMAT_R32_FLOAT;
 		shadowSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		shadowSrvDesc.Texture2D.MipLevels = 1;
 		shadowSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		pDevice->CreateShaderResourceView(m_shadowTexture.Get(), &shadowSrvDesc, cbvSrvCpuHandle);
-		m_shadowDepthHandle = cbvSrvGpuHandle;
-		*/
 
 		//shadowテクスチャのシェーダリソースビューを作成
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		//フォーマット
-		srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MipLevels = 1;
-		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+//		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		////フォーマット
+//		srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+//		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+//		srvDesc.Texture2D.MipLevels = 1;
+//		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		//シェーダリソースビュー
-		pDevice->CreateShaderResourceView(
-			m_shadowTexture.Get(),
-			&srvDesc,
-			cbvSrvCpuHandle);
+//		pDevice->CreateShaderResourceView(
+//			m_shadowTexture.Get(),
+//			&srvDesc,
+//			cbvSrvCpuHandle);
 
-
-
-
+		//GPU側はメンバ変数としてとっておく
+		m_shadowDepthHandle = cbvSrvGpuHandle;
+		//nullのハンドル
+		m_nullSrvHandle = pDefaultDev->GetNullSrvGpuHandle();
 
 	}
 
 	BaseFrame::~BaseFrame() {
+
 		m_updateCommandAllocator = nullptr;
 		m_updateCommandList = nullptr;
 
@@ -174,4 +154,4 @@ namespace basecross {
 	}
 
 }
-//
+// end namespace basecross

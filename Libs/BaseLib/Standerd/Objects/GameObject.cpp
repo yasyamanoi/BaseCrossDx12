@@ -79,7 +79,7 @@ namespace basecross {
 	}
 
 
-	void GameObject::OnRender() {
+	void GameObject::OnDraw() {
 		ComponentRender();
 	}
 
@@ -88,7 +88,7 @@ namespace basecross {
 		Transptr->SetToBefore();
 	}
 
-	void GameObject::OnPreInit() {
+	void GameObject::OnPreCreate() {
 		//Transform必須
 		AddComponent<Transform>();
 	}
@@ -161,7 +161,7 @@ namespace basecross {
 		auto shadowmapPtr = GetComponent<Shadowmap>(false);
 		if (shadowmapPtr) {
 			if (shadowmapPtr->IsRenderActive()) {
-				shadowmapPtr->OnRender();
+				shadowmapPtr->OnDraw();
 			}
 		}
 	}
@@ -179,7 +179,7 @@ namespace basecross {
 
 //			if (it2 != m_compMap.end()) {
 				if (it2->second->IsRenderActive()) {
-					it2->second->OnRender();
+					it2->second->OnDraw();
 				}
 			}
 			it++;
@@ -223,43 +223,29 @@ namespace basecross {
 		return GetStage()->GetActiveLightSet();
 	}
 
-
-
-
-	//--------------------------------------------------------------------------------------
-	//	用途: Implイディオム
-	//--------------------------------------------------------------------------------------
-	struct GameObjectGroup::Impl {
-		vector< weak_ptr<GameObject> > m_Group;
-		Impl() {}
-		~Impl() {}
-	};
-
-
 	//--------------------------------------------------------------------------------------
 	//	class GameObjectGroup;
 	//--------------------------------------------------------------------------------------
 	GameObjectGroup::GameObjectGroup() :
-		ObjectInterface(),
-		pImpl(new Impl())
+		ObjectInterface()
 	{}
 	GameObjectGroup::~GameObjectGroup() {}
 	//アクセサ
 	const vector< weak_ptr<GameObject> >& GameObjectGroup::GetGroupVector() const {
-		return pImpl->m_Group;
+		return m_Group;
 	}
 	shared_ptr<GameObject> GameObjectGroup::at(size_t index) {
-		if (index >= pImpl->m_Group.size()) {
+		if (index >= m_Group.size()) {
 			wstring msg = Util::SizeTToWStr(index);
 			msg += L" >= ";
-			msg += Util::SizeTToWStr(pImpl->m_Group.size());
+			msg += Util::SizeTToWStr(m_Group.size());
 			throw BaseException(
 				L"インデックスが範囲外です",
 				msg,
 				L"GameObjectGroup::at()"
 			);
 		}
-		if (pImpl->m_Group.at(index).expired()) {
+		if (m_Group.at(index).expired()) {
 			wstring msg = Util::SizeTToWStr(index);
 			throw BaseException(
 				L"そのインデックスのオブジェクトは無効です。",
@@ -267,18 +253,18 @@ namespace basecross {
 				L"GameObjectGroup::at()"
 			);
 		}
-		return pImpl->m_Group.at(index).lock();
+		return m_Group.at(index).lock();
 	}
 	size_t GameObjectGroup::size() const {
-		return pImpl->m_Group.size();
+		return m_Group.size();
 	}
 	//操作
 	void GameObjectGroup::IntoGroup(const shared_ptr<GameObject>& Obj) {
-		pImpl->m_Group.push_back(Obj);
+		m_Group.push_back(Obj);
 	}
 
 	void GameObjectGroup::AllClear() {
-		pImpl->m_Group.clear();
+		m_Group.clear();
 	}
 
 

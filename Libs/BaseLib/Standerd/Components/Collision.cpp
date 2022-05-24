@@ -7,39 +7,6 @@
 
 namespace basecross {
 
-
-	//--------------------------------------------------------------------------------------
-	//	struct Collision::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct Collision::Impl {
-		bool m_Fixed;		//静止オブジェクトかどうか
-//		weak_ptr<MeshResource> m_MeshResource;	//メッシュリソース
-		weak_ptr<GameObjectGroup> m_ExcludeCollisionGroup;	//判定から除外するグループ
-		vector<weak_ptr<GameObject>> m_ExcludeCollisionGameObjects; //判定から除外するゲームオブジェクトの配列
-		//判定から除外するタグ
-		set<wstring> m_ExcludeCollisionTags;
-		//衝突後の処理
-		AfterCollision m_AfterCollision;
-		//スリープチェック用
-		bool m_SleepActive;
-		bsm::Mat4x4 m_SleepCheckWorldMatrix;
-		float m_SleepCheckTimer;
-		float m_SleepTime;
-		bool m_IsSleep;
-		Impl() :
-			m_Fixed(false),
-			m_AfterCollision(AfterCollision::Auto),
-			m_SleepActive(false),
-			m_SleepCheckWorldMatrix(),
-			m_SleepCheckTimer(0.0f),
-			m_SleepTime(2.0f),
-			m_IsSleep(false)
-		{
-		}
-		~Impl() {}
-	};
-
 	//--------------------------------------------------------------------------------------
 	//	class Collision : public Component ;
 	//	用途: 衝突判定コンポーネントの親クラス
@@ -47,47 +14,53 @@ namespace basecross {
 	//構築と破棄
 	Collision::Collision(const shared_ptr<GameObject>& GameObjectPtr) :
 		Component(GameObjectPtr),
-		pImpl(new Impl())
+		m_Fixed(false),
+		m_AfterCollision(AfterCollision::Auto),
+		m_SleepActive(false),
+		m_SleepCheckWorldMatrix(),
+		m_SleepCheckTimer(0.0f),
+		m_SleepTime(2.0f),
+		m_IsSleep(false)
 	{}
 	Collision::~Collision() {}
 
 	bool Collision::GetFixed() const {
-		return pImpl->m_Fixed;
+		return m_Fixed;
 	}
 	bool Collision::IsFixed() const {
-		return pImpl->m_Fixed;
+		return m_Fixed;
 	}
 	void Collision::SetFixed(bool b) {
-		pImpl->m_Fixed = b;
+		m_Fixed = b;
 	}
 
 	AfterCollision Collision::GetAfterCollision() const {
-		return pImpl->m_AfterCollision;
+		return m_AfterCollision;
 	}
 	void Collision::SetAfterCollision(AfterCollision a) {
-		pImpl->m_AfterCollision = a;
+		m_AfterCollision = a;
 	}
 
 	bsm::Vec3 Collision::GetVelocity() const {
 		return GetGameObject()->GetComponent<Transform>()->GetVelocity();
 	}
 
-	vector<weak_ptr<GameObject>>& Collision::GetExcludeCollisionGameObjects() const {
-		return pImpl->m_ExcludeCollisionGameObjects;
+	vector<weak_ptr<GameObject>>& Collision::GetExcludeCollisionGameObjects() {
+		return m_ExcludeCollisionGameObjects;
 	}
 
 	void Collision::AddExcludeCollisionGameObject(const shared_ptr<GameObject>& obj) {
-		pImpl->m_ExcludeCollisionGameObjects.push_back(obj);
+		m_ExcludeCollisionGameObjects.push_back(obj);
 	}
 
 	void  Collision::RemoveExcludeCollisionGameObject(const shared_ptr<GameObject>& obj) {
-		for (auto it = pImpl->m_ExcludeCollisionGameObjects.begin();
-			it != pImpl->m_ExcludeCollisionGameObjects.end();
+		for (auto it = m_ExcludeCollisionGameObjects.begin();
+			it != m_ExcludeCollisionGameObjects.end();
 			it++)
 		{
 			auto shobj = (*it).lock();
 			if (shobj && (shobj == obj)) {
-				pImpl->m_ExcludeCollisionGameObjects.erase(it);
+				m_ExcludeCollisionGameObjects.erase(it);
 				return;
 			}
 		}
@@ -96,7 +69,7 @@ namespace basecross {
 
 
 	shared_ptr<GameObjectGroup> Collision::GetExcludeCollisionGroup() const {
-		auto shptr = pImpl->m_ExcludeCollisionGroup.lock();
+		auto shptr = m_ExcludeCollisionGroup.lock();
 		if (shptr) {
 			return shptr;
 		}
@@ -104,17 +77,17 @@ namespace basecross {
 	}
 
 	void Collision::SetExcludeCollisionGroup(const shared_ptr<GameObjectGroup>& Group) {
-		pImpl->m_ExcludeCollisionGroup = Group;
+		m_ExcludeCollisionGroup = Group;
 	}
 
 	void Collision::SetExcludeCollisionGroup(const wstring& GroupStr) {
-		pImpl->m_ExcludeCollisionGroup = GetGameObject()->GetStage()->GetSharedObjectGroup(GroupStr);
+		m_ExcludeCollisionGroup = GetGameObject()->GetStage()->GetSharedObjectGroup(GroupStr);
 	}
 
 
 
 	bool Collision::FindExcludeCollisionTag(const wstring& tagstr) const {
-		if (pImpl->m_ExcludeCollisionTags.find(tagstr) == pImpl->m_ExcludeCollisionTags.end()) {
+		if (m_ExcludeCollisionTags.find(tagstr) == m_ExcludeCollisionTags.end()) {
 			return false;
 		}
 		return true;
@@ -128,11 +101,11 @@ namespace basecross {
 				L"Collision::AddExcludeCollisionTag()"
 			);
 		}
-		pImpl->m_ExcludeCollisionTags.insert(tagstr);
+		m_ExcludeCollisionTags.insert(tagstr);
 
 	}
 	void  Collision::RemoveExcludeCollisionTag(const wstring& tagstr) {
-		pImpl->m_ExcludeCollisionTags.erase(tagstr);
+		m_ExcludeCollisionTags.erase(tagstr);
 	}
 
 
@@ -146,7 +119,7 @@ namespace basecross {
 			}
 			it++;
 		}
-		auto shptr = pImpl->m_ExcludeCollisionGroup.lock();
+		auto shptr = m_ExcludeCollisionGroup.lock();
 		if (shptr) {
 			auto Vec = shptr->GetGroupVector();
 			for (auto& v : Vec) {
@@ -156,7 +129,7 @@ namespace basecross {
 				}
 			}
 		}
-		for (auto v : pImpl->m_ExcludeCollisionGameObjects) {
+		for (auto v : m_ExcludeCollisionGameObjects) {
 			auto shobj = v.lock();
 			if (shobj && (shobj == Obj)) {
 				return true;
@@ -167,22 +140,22 @@ namespace basecross {
 	}
 
 	bool Collision::IsSleepActive()const {
-		return pImpl->m_SleepActive;
+		return m_SleepActive;
 	}
 
 	void Collision::SetSleepActive(bool b) {
-		pImpl->m_SleepActive = b;
+		m_SleepActive = b;
 	}
 
 	float Collision::GetSleepTime() const {
-		return pImpl->m_SleepTime;
+		return m_SleepTime;
 	}
 
 	void Collision::SetSleepTime(float f) {
 		if (!IsSleepActive() || IsFixed()) {
 			return;
 		}
-		pImpl->m_SleepTime = true;
+		m_SleepTime = true;
 	}
 
 	void Collision::SleepCheckSet() {
@@ -190,17 +163,17 @@ namespace basecross {
 			return;
 		}
 		auto WorldMat = GetGameObject()->GetComponent<Transform>()->GetWorldMatrix();
-		if (WorldMat.nearEqual(pImpl->m_SleepCheckWorldMatrix, 0.01f)) {
+		if (WorldMat.nearEqual(m_SleepCheckWorldMatrix, 0.01f)) {
 			float elapsedTime = App::GetElapsedTime();
-			pImpl->m_SleepCheckTimer += elapsedTime;
-			if (pImpl->m_SleepCheckTimer >= pImpl->m_SleepTime) {
-				pImpl->m_IsSleep = true;
+			m_SleepCheckTimer += elapsedTime;
+			if (m_SleepCheckTimer >= m_SleepTime) {
+				m_IsSleep = true;
 			}
 		}
 		else {
-			pImpl->m_IsSleep = false;
-			pImpl->m_SleepCheckWorldMatrix = WorldMat;
-			pImpl->m_SleepCheckTimer = 0.0f;
+			m_IsSleep = false;
+			m_SleepCheckWorldMatrix = WorldMat;
+			m_SleepCheckTimer = 0.0f;
 		}
 	}
 
@@ -208,18 +181,18 @@ namespace basecross {
 		if (!IsSleepActive() || IsFixed()) {
 			return false;
 		}
-		return pImpl->m_IsSleep;
+		return m_IsSleep;
 	}
 
 	void Collision::WakeUp() {
 		if (!IsSleepActive() || IsFixed()) {
 			return;
 		}
-		if (pImpl->m_IsSleep) {
+		if (m_IsSleep) {
 			auto WorldMat = GetGameObject()->GetComponent<Transform>()->GetWorldMatrix();
-			pImpl->m_IsSleep = false;
-			pImpl->m_SleepCheckWorldMatrix = WorldMat;
-			pImpl->m_SleepCheckTimer = 0.0f;
+			m_IsSleep = false;
+			m_SleepCheckWorldMatrix = WorldMat;
+			m_SleepCheckTimer = 0.0f;
 		}
 	}
 
@@ -231,24 +204,6 @@ namespace basecross {
 	void Collision::OnUpdate() {
 	}
 
-
-	//--------------------------------------------------------------------------------------
-	//	struct CollisionSphere::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct CollisionSphere::Impl {
-		float m_MakedDiameter;					//作成時の直径
-		//配列ボリュームと衝突時に衝突した配列を特定するインデックス
-		size_t m_IsHitVolumeIndex;
-		CalcScaling m_CalcScaling;
-		Impl() :
-			m_MakedDiameter(1.0f),
-			m_IsHitVolumeIndex(0),
-			m_CalcScaling(CalcScaling::YScale)
-		{}
-		~Impl() {}
-	};
-
 	//--------------------------------------------------------------------------------------
 	//	class CollisionSphere : public Collision ;
 	//	用途: 球衝突判定コンポーネント
@@ -256,45 +211,47 @@ namespace basecross {
 	//構築と破棄
 	CollisionSphere::CollisionSphere(const shared_ptr<GameObject>& GameObjectPtr) :
 		Collision(GameObjectPtr),
-		pImpl(new Impl())
+		m_MakedDiameter(1.0f),
+		m_IsHitVolumeIndex(0),
+		m_CalcScaling(CalcScaling::YScale)
 	{}
 	CollisionSphere::~CollisionSphere() {}
 
-	void CollisionSphere::OnInit() {
+	void CollisionSphere::OnCreate() {
 		SetRenderActive(false);
 	}
 
 	//アクセサ
 	float CollisionSphere::GetMakedDiameter() const {
-		return pImpl->m_MakedDiameter;
+		return m_MakedDiameter;
 	}
 	void CollisionSphere::SetMakedDiameter(float f) {
-		pImpl->m_MakedDiameter = f;
+		m_MakedDiameter = f;
 	}
 	float CollisionSphere::GetMakedRadius() const {
-		return pImpl->m_MakedDiameter * 0.5f;
+		return m_MakedDiameter * 0.5f;
 	}
 	void CollisionSphere::SetMakedRadius(float f) {
-		pImpl->m_MakedDiameter = f * 2.0f;
+		m_MakedDiameter = f * 2.0f;
 	}
 
 	CalcScaling CollisionSphere::GetCalcScaling() const {
-		return pImpl->m_CalcScaling;
+		return m_CalcScaling;
 
 	}
 	void CollisionSphere::SetCalcScaling(CalcScaling s) {
-		pImpl->m_CalcScaling = s;
+		m_CalcScaling = s;
 	}
 
 
 	SPHERE CollisionSphere::GetSphere() const {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
 		bsm::Mat4x4 MatBase;
-		MatBase.scale(bsm::Vec3(pImpl->m_MakedDiameter, pImpl->m_MakedDiameter, pImpl->m_MakedDiameter));
+		MatBase.scale(bsm::Vec3(m_MakedDiameter, m_MakedDiameter, m_MakedDiameter));
 		MatBase *= TransPtr->GetWorldMatrix();
 		//このオブジェクトのSPHEREを作成
 		SPHERE Ret(MatBase.transInMatrix(), MatBase.scaleInMatrix().x * 0.5f);
-		switch (pImpl->m_CalcScaling) {
+		switch (m_CalcScaling) {
 		case CalcScaling::XScale:
 			Ret.m_Radius = MatBase.scaleInMatrix().x * 0.5f;
 			break;
@@ -314,11 +271,11 @@ namespace basecross {
 	SPHERE CollisionSphere::GetBeforeSphere() const {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
 		bsm::Mat4x4 MatBase;
-		MatBase.scale(bsm::Vec3(pImpl->m_MakedDiameter, pImpl->m_MakedDiameter, pImpl->m_MakedDiameter));
+		MatBase.scale(bsm::Vec3(m_MakedDiameter, m_MakedDiameter, m_MakedDiameter));
 		MatBase *= TransPtr->GetBeforeWorldMatrix();
 		//このオブジェクトのSPHEREを作成
 		SPHERE Ret(MatBase.transInMatrix(), MatBase.scaleInMatrix().x * 0.5f);
-		switch (pImpl->m_CalcScaling) {
+		switch (m_CalcScaling) {
 		case CalcScaling::XScale:
 			Ret.m_Radius = MatBase.scaleInMatrix().x * 0.5f;
 			break;
@@ -575,7 +532,7 @@ namespace basecross {
 
 
 
-	void CollisionSphere::OnRender() {
+	void CollisionSphere::OnDraw() {
 /*
 		GenericDraw Draw;
 		bsm::Mat4x4 MeshToTransformMatrix;
@@ -583,7 +540,7 @@ namespace basecross {
 		auto PtrTransform = GetGameObject()->GetComponent<Transform>();
 		auto Scale = PtrTransform->GetScale();
 		bsm::Vec3 CollScale(Scale.x, Scale.x, Scale.x);
-		switch (pImpl->m_CalcScaling) {
+		switch (m_CalcScaling) {
 		case CalcScaling::YScale:
 			CollScale = bsm::Vec3(Scale.y, Scale.y, Scale.y);
 			break;
@@ -602,36 +559,6 @@ namespace basecross {
 */
 	}
 
-
-	//--------------------------------------------------------------------------------------
-	//	struct CollisionCapsule::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct CollisionCapsule::Impl {
-		float m_MakedDiameter;			//作成時の直径
-		float m_MakedHeight;			//作成時高さ
-		//配列ボリュームと衝突時に衝突した配列を特定するインデックス
-		size_t m_IsHitVolumeIndex;
-		bsm::Mat4x4 m_BeforeWorldMatrix;
-		bsm::Mat4x4 m_WorldMatrix;
-		CAPSULE m_BeforeWorldCapsule;
-		CAPSULE m_WorldCapsule;
-		bool m_FirstBeforeCalc;
-		bool m_FirstCalc;
-		Impl() :
-			m_MakedDiameter(1.0f),
-			m_MakedHeight(1.0f),
-			m_IsHitVolumeIndex(0),
-			m_BeforeWorldMatrix(),
-			m_WorldMatrix(),
-			m_BeforeWorldCapsule(),
-			m_WorldCapsule(),
-			m_FirstBeforeCalc(true),
-			m_FirstCalc(true)
-		{}
-		~Impl() {}
-	};
-
 	//--------------------------------------------------------------------------------------
 	//	class CollisionCapsule : public Collision ;
 	//	用途: カプセル衝突判定コンポーネント
@@ -639,63 +566,59 @@ namespace basecross {
 	//構築と破棄
 	CollisionCapsule::CollisionCapsule(const shared_ptr<GameObject>& GameObjectPtr) :
 		Collision(GameObjectPtr),
-		pImpl(new Impl())
+		m_MakedDiameter(1.0f),
+		m_MakedHeight(1.0f),
+		m_IsHitVolumeIndex(0)
 	{}
 	CollisionCapsule::~CollisionCapsule() {}
 
 	//初期化
-	void CollisionCapsule::OnInit() {
+	void CollisionCapsule::OnCreate() {
 		SetRenderActive(false);
 	}
 
 	//アクセサ
 	float CollisionCapsule::GetMakedDiameter() const {
-		return pImpl->m_MakedDiameter;
+		return m_MakedDiameter;
 	}
 	void CollisionCapsule::SetMakedDiameter(float f) {
-		pImpl->m_MakedDiameter = f;
+		m_MakedDiameter = f;
 	}
 	float CollisionCapsule::GetMakedRadius() const {
-		return pImpl->m_MakedDiameter * 0.5f;
+		return m_MakedDiameter * 0.5f;
 	}
 	void CollisionCapsule::SetMakedRadius(float f) {
-		pImpl->m_MakedDiameter = f * 2.0f;
+		m_MakedDiameter = f * 2.0f;
 	}
 
 	float CollisionCapsule::GetMakedHeight() const {
-		return pImpl->m_MakedHeight;
+		return m_MakedHeight;
 	}
 	void CollisionCapsule::SetMakedHeight(float f) {
-		pImpl->m_MakedHeight = f;
+		m_MakedHeight = f;
 	}
 
-	CAPSULE CollisionCapsule::GetCapsule() const {
+	CAPSULE CollisionCapsule::GetCapsule()const {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
-		//		if (pImpl->m_FirstCalc) {
-		pImpl->m_WorldMatrix = TransPtr->GetWorldMatrix();
-		pImpl->m_WorldCapsule = CAPSULE(
-			pImpl->m_MakedDiameter * 0.5f,
-			bsm::Vec3(0, pImpl->m_MakedHeight * -0.5f, 0),
-			bsm::Vec3(0, pImpl->m_MakedHeight * 0.5f, 0),
-			pImpl->m_WorldMatrix);
-		pImpl->m_FirstCalc = false;
-		//		}
-		return pImpl->m_WorldCapsule;
+		auto WorldMatrix = TransPtr->GetWorldMatrix();
+		auto WorldCapsule = CAPSULE(
+			m_MakedDiameter * 0.5f,
+			bsm::Vec3(0, m_MakedHeight * -0.5f, 0),
+			bsm::Vec3(0, m_MakedHeight * 0.5f, 0),
+			WorldMatrix);
+		return WorldCapsule;
 	}
 
 
-	CAPSULE CollisionCapsule::GetBeforeCapsule() const {
+	CAPSULE CollisionCapsule::GetBeforeCapsule()const {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
-		//		if (pImpl->m_FirstBeforeCalc) {
-		pImpl->m_BeforeWorldMatrix = TransPtr->GetBeforeWorldMatrix();
-		pImpl->m_BeforeWorldCapsule = CAPSULE(
-			pImpl->m_MakedDiameter * 0.5f,
-			bsm::Vec3(0, pImpl->m_MakedHeight * -0.5f, 0),
-			bsm::Vec3(0, pImpl->m_MakedHeight * 0.5f, 0),
-			pImpl->m_BeforeWorldMatrix);
-		pImpl->m_FirstBeforeCalc = false;
-		//		}
-		return pImpl->m_BeforeWorldCapsule;
+		auto BeforeWorldMatrix = TransPtr->GetBeforeWorldMatrix();
+		auto BeforeWorldCapsule = CAPSULE(
+			m_MakedDiameter * 0.5f,
+			bsm::Vec3(0, m_MakedHeight * -0.5f, 0),
+			bsm::Vec3(0, m_MakedHeight * 0.5f, 0),
+			BeforeWorldMatrix);
+		return BeforeWorldCapsule;
 	}
 
 	bool CollisionCapsule::SimpleCollisionCall(const shared_ptr<Collision>& Src) {
@@ -950,37 +873,10 @@ namespace basecross {
 		return GetCapsule().GetWrappedAABB();
 	}
 
-	void CollisionCapsule::OnRender() {
+	void CollisionCapsule::OnDraw() {
 		//GenericDraw Draw;
 		//Draw.DrawWireFrame(GetGameObject(), App::GetApp()->GetResource<MeshResource>(L"DEFAULT_PC_CAPSULE"));
 	}
-
-
-	//--------------------------------------------------------------------------------------
-	//	struct CollisionObb::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct CollisionObb::Impl {
-		float m_Size;					//作成時のサイズ
-		float m_ChkOnUnderLaySize;
-		bsm::Mat4x4 m_BeforeWorldMatrix;
-		bsm::Mat4x4 m_WorldMatrix;
-		OBB m_BeforeWorldObb;
-		OBB m_WorldObb;
-		bool m_FirstBeforeCalc;
-		bool m_FirstCalc;
-		Impl() :
-			m_Size(1.0f),
-			m_ChkOnUnderLaySize(0.1f),
-			m_BeforeWorldMatrix(),
-			m_WorldMatrix(),
-			m_BeforeWorldObb(),
-			m_WorldObb(),
-			m_FirstBeforeCalc(true),
-			m_FirstCalc(true)
-		{}
-		~Impl() {}
-	};
 
 	//--------------------------------------------------------------------------------------
 	//	class CollisionObb : public Collision ;
@@ -989,49 +885,44 @@ namespace basecross {
 	//構築と破棄
 	CollisionObb::CollisionObb(const shared_ptr<GameObject>& GameObjectPtr) :
 		Collision(GameObjectPtr),
-		pImpl(new Impl())
+		m_Size(1.0f),
+		m_ChkOnUnderLaySize(0.1f)
 	{}
 	CollisionObb::~CollisionObb() {}
 
 	//初期化
-	void CollisionObb::OnInit() {
+	void CollisionObb::OnCreate() {
 		SetRenderActive(false);
 	}
 
 
 	//アクセサ
 	float CollisionObb::GetMakedSize() const {
-		return pImpl->m_Size;
+		return m_Size;
 	}
 	void CollisionObb::SetMakedSize(float f) {
-		pImpl->m_Size = f;
+		m_Size = f;
 	}
 
 	OBB CollisionObb::GetObb() const {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
-		//		if (pImpl->m_FirstCalc) {
-		pImpl->m_WorldMatrix = TransPtr->GetWorldMatrix();
+		auto WorldMatrix = TransPtr->GetWorldMatrix();
 		bsm::Mat4x4 MatBase;
-		MatBase.scale(bsm::Vec3(pImpl->m_Size, pImpl->m_Size, pImpl->m_Size));
-		MatBase *= pImpl->m_WorldMatrix;
-		pImpl->m_WorldObb = OBB(bsm::Vec3(pImpl->m_Size, pImpl->m_Size, pImpl->m_Size), MatBase);
-		pImpl->m_FirstCalc = false;
-		//		}
-		return pImpl->m_WorldObb;
+		MatBase.scale(bsm::Vec3(m_Size, m_Size, m_Size));
+		MatBase *= WorldMatrix;
+		auto WorldObb = OBB(bsm::Vec3(m_Size, m_Size, m_Size), MatBase);
+		return WorldObb;
 	}
 
 
 	OBB CollisionObb::GetBeforeObb() const {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
-		//		if (pImpl->m_FirstBeforeCalc) {
-		pImpl->m_BeforeWorldMatrix = TransPtr->GetBeforeWorldMatrix();
+		auto BeforeWorldMatrix = TransPtr->GetBeforeWorldMatrix();
 		bsm::Mat4x4 MatBase;
-		MatBase.scale(bsm::Vec3(pImpl->m_Size, pImpl->m_Size, pImpl->m_Size));
-		MatBase *= pImpl->m_BeforeWorldMatrix;
-		pImpl->m_BeforeWorldObb = OBB(bsm::Vec3(pImpl->m_Size, pImpl->m_Size, pImpl->m_Size), MatBase);
-		pImpl->m_FirstBeforeCalc = false;
-		//		}
-		return pImpl->m_BeforeWorldObb;
+		MatBase.scale(bsm::Vec3(m_Size, m_Size, m_Size));
+		MatBase *= BeforeWorldMatrix;
+		auto BeforeWorldObb = OBB(bsm::Vec3(m_Size, m_Size, m_Size), MatBase);
+		return BeforeWorldObb;
 	}
 
 	bool CollisionObb::SimpleCollisionCall(const shared_ptr<Collision>& Src) {
@@ -1283,23 +1174,12 @@ namespace basecross {
 
 
 
-	void CollisionObb::OnRender() {
+	void CollisionObb::OnDraw() {
 		//GenericDraw Draw;
 		//Draw.DrawWireFrame(GetGameObject(), App::GetApp()->GetResource<MeshResource>(L"DEFAULT_PC_CUBE"));
 	}
 
 
-	//--------------------------------------------------------------------------------------
-	//	struct CollisionRect::Impl;
-	//	用途: コンポーネントImplクラス
-	//--------------------------------------------------------------------------------------
-	struct CollisionRect::Impl {
-		float m_Size;					//作成時のサイズ
-		Impl() :
-			m_Size(1.0f)
-		{}
-		~Impl() {}
-	};
 
 	//--------------------------------------------------------------------------------------
 	//	class CollisionRect : public Collision ;
@@ -1308,12 +1188,12 @@ namespace basecross {
 	//構築と破棄
 	CollisionRect::CollisionRect(const shared_ptr<GameObject>& GameObjectPtr) :
 		Collision(GameObjectPtr),
-		pImpl(new Impl())
+		m_Size(1.0f)
 	{}
 	CollisionRect::~CollisionRect() {}
 
 	//初期化
-	void CollisionRect::OnInit() {
+	void CollisionRect::OnCreate() {
 		SetFixed(true),
 		SetRenderActive(false);
 	}
@@ -1335,10 +1215,10 @@ namespace basecross {
 
 
 	float CollisionRect::GetMakedSize() const {
-		return pImpl->m_Size;
+		return m_Size;
 	}
 	void CollisionRect::SetMakedSize(float f) {
-		pImpl->m_Size = f;
+		m_Size = f;
 	}
 
 	COLRECT CollisionRect::GetColRect() const {
@@ -1379,7 +1259,7 @@ namespace basecross {
 
 
 
-	void CollisionRect::OnRender() {
+	void CollisionRect::OnDraw() {
 		//GenericDraw Draw;
 		//Draw.DrawWireFrame(GetGameObject(), App::GetApp()->GetResource<MeshResource>(L"DEFAULT_PC_SQUARE"));
 

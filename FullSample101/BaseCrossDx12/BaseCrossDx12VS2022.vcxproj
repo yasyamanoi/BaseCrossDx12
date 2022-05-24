@@ -47,14 +47,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Temp\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Temp\$(Configuration)\$(SolutionName)\</IntDir>
     <IncludePath>$(SolutionDir)..\Libs\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\Libs\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Temp\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Temp\$(Configuration)\$(SolutionName)\</IntDir>
     <IncludePath>$(SolutionDir)..\Libs\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\Libs\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
@@ -128,6 +128,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="WinMain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Update="E:\GitHubYas\BaseCrossDx12Dev\Libs\BaseLib\Shaders\ExPSPNTTn.hlsl">
+      <FileType>Document</FileType>
+    </FxCompile>
+    <FxCompile Update="E:\GitHubYas\BaseCrossDx12Dev\Libs\BaseLib\Shaders\ExVSPNTTn.hlsl">
+      <FileType>Document</FileType>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Update="E:\GitHubYas\BaseCrossDx12Dev\Libs\BaseLib\Shaders\BcINCConstant.hlsli">

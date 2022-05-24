@@ -173,7 +173,7 @@ namespace basecross {
 		sce::PhysicsEffects::PfxRigidBody& getPfxRigidBody();
 
 		virtual void OnUpdate() override {}
-		virtual void OnRender() override {}
+		virtual void OnDraw() override {}
 		virtual void OnDestroy() override {}
 	};
 
@@ -213,7 +213,7 @@ namespace basecross {
 		@brief	初期化
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化時のパラメータを得る
@@ -273,7 +273,7 @@ namespace basecross {
 		@brief	初期化
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化時のパラメータを得る
@@ -333,7 +333,7 @@ namespace basecross {
 		@brief	初期化
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化時のパラメータを得る
@@ -392,7 +392,7 @@ namespace basecross {
 		@brief	初期化
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化時のパラメータを得る
@@ -609,7 +609,7 @@ namespace basecross {
 		@brief	初期化
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化時のパラメータを得る
@@ -710,7 +710,7 @@ namespace basecross {
 		virtual void SetActive(bool b) = 0;
 
 		virtual void OnUpdate() override {}
-		virtual void OnRender() override {}
+		virtual void OnDraw() override {}
 		virtual void OnDestroy() override {}
 	};
 
@@ -746,7 +746,7 @@ namespace basecross {
 		@brief	初期化
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化時のパラメータを得る
@@ -810,7 +810,7 @@ namespace basecross {
 		@brief	初期化
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化時のパラメータを得る
@@ -871,7 +871,7 @@ namespace basecross {
 		@brief	初期化
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化時のパラメータを得る
@@ -930,7 +930,7 @@ namespace basecross {
 		@brief	初期化
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化時のパラメータを得る
@@ -984,7 +984,7 @@ namespace basecross {
 		@brief	初期化
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化時のパラメータを得る
@@ -1049,7 +1049,7 @@ namespace basecross {
 		@brief	初期化
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化時のパラメータを得る

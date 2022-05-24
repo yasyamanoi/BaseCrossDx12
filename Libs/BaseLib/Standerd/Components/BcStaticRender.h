@@ -43,7 +43,7 @@ namespace basecross {
 		//ëÄçÏ
 		virtual void OnInitFrame(BaseFrame* pBaseFrame)override;
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame)override;
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		virtual void OnUpdate()override {}
 		virtual void OnDestroy()override {}
 	};

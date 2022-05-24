@@ -5,10 +5,11 @@
 
 #include "INCStructs.hlsli"
 #include "SpINCConstant.hlsli"
+#include "SpINCPixel.hlsli"
 
-//Texture2D<float4> g_texture : register(t0);
 // 深度マップ
-//Texture2D g_DepthMap : register(t1);
+//Texture2D g_DepthMap : register(t0);
+//Texture2D<float4> g_texture : register(t1);
 //SamplerState g_sampler : register(s0);
 //SamplerComparisonState g_SamplerDepthMap : register(s1);
 

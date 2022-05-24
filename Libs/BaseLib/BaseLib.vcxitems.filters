@@ -532,13 +532,16 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\Behavior.h">
       <Filter>Standerd\Objects\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\BehaviorSteering.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\SteeringBehavior.h">
       <Filter>Standerd\Objects\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\Steering.h">
       <Filter>Standerd\Objects\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\Action.h">
+      <Filter>Standerd\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\ExStaticRender.h">
       <Filter>Standerd\Components\Headers</Filter>
     </ClInclude>
   </ItemGroup>
@@ -765,13 +768,16 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\Behavior.cpp">
       <Filter>Standerd\Objects\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\BehaviorSteering.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\SteeringBehavior.cpp">
       <Filter>Standerd\Objects\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\Steering.cpp">
       <Filter>Standerd\Objects\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\Action.cpp">
+      <Filter>Standerd\Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\ExStaticRender.cpp">
       <Filter>Standerd\Components\Sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -801,6 +807,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="$(MSBuildThisFileDirectory)Shaders\INCShadowmap.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\ExINCStructs.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\SpINCPixel.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
@@ -866,6 +878,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPNTStaticShadow.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\ExVSPNTTn.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\ExPSPNTTn.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

@@ -159,7 +159,7 @@ namespace basecross {
 
 	}
 
-	void SpPCSpriteRender::OnInit() {
+	void SpPCSpriteRender::OnCreate() {
 		CreatePipelineStates();
 	}
 
@@ -262,7 +262,7 @@ namespace basecross {
 
 	}
 
-	void SpPTSpriteRender::OnInit() {
+	void SpPTSpriteRender::OnCreate() {
 		CreatePipelineStates();
 	}
 
@@ -389,7 +389,7 @@ namespace basecross {
 
 	}
 
-	void SpPCTSpriteRender::OnInit() {
+	void SpPCTSpriteRender::OnCreate() {
 		CreatePipelineStates();
 	}
 

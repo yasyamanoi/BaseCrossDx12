@@ -13,6 +13,9 @@ namespace basecross {
 	///	操舵行動の親クラス
 	//--------------------------------------------------------------------------------------
 	class SteeringBehavior : public Behavior {
+		float m_Weight;
+		float m_MaxSpeed;
+		float m_MaxForce;
 	protected:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -73,10 +76,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		void SetMaxForce(float f);
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 
@@ -116,6 +115,7 @@ namespace basecross {
 	///	ArriveSteering行動クラス
 	//--------------------------------------------------------------------------------------
 	class ArriveSteering : public SteeringBehavior {
+		float m_Decl;
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -155,10 +155,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		bsm::Vec3 Execute(const bsm::Vec3& Force, const bsm::Vec3& Velocity, const bsm::Vec3& TargetPos);
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 
@@ -299,6 +295,7 @@ namespace basecross {
 	///	WallAvoidanceSteering（壁回避）行動
 	//--------------------------------------------------------------------------------------
 	class WallAvoidanceSteering : public SteeringBehavior {
+		vector<PLANE> m_PlaneVec;//回避すべき面の配列
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -319,7 +316,7 @@ namespace basecross {
 		@return	回避する壁の配列
 		*/
 		//--------------------------------------------------------------------------------------
-		vector<PLANE>& GetPlaneVec() const;
+		vector<PLANE>& GetPlaneVec();
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	回避する壁の配列を設定する
@@ -345,16 +342,15 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		bsm::Vec3 Execute(const bsm::Vec3& Force, const bsm::Vec3& Velocity);
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 	//--------------------------------------------------------------------------------------
 	///	 ObstacleAvoidanceSteering（障害物回避）行動
 	//--------------------------------------------------------------------------------------
 	class ObstacleAvoidanceSteering : public SteeringBehavior {
+		vector<SPHERE> m_ObstacleSphereVec;		//回避すべき障害物のSPHERE配列
+		float m_RoadWidth;
+		float m_RoadHeight;
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -423,10 +419,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		bsm::Vec3 Execute(const bsm::Vec3& Force, const bsm::Vec3& Velocity);
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 
@@ -434,6 +426,9 @@ namespace basecross {
 	///	 FollowPathSteering（経路追従）行動
 	//--------------------------------------------------------------------------------------
 	class FollowPathSteering : public SteeringBehavior {
+		Path m_Path;	//経路をあらわすパス
+		float m_Decl;	//減速値
+		float m_WaypointSpan;	//経路の中心からの距離
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -524,11 +519,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		bsm::Vec3 Execute(const bsm::Vec3& Force, const bsm::Vec3& Velocity);
-
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 #ifdef test
@@ -631,6 +621,7 @@ namespace basecross {
 	///	 SeparationSteering（分離）行動クラス
 	//--------------------------------------------------------------------------------------
 	class SeparationSteering : public SteeringBehavior {
+		weak_ptr<GameObjectGroup> m_Group;
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -669,10 +660,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		bsm::Vec3 Execute(const bsm::Vec3& Force);
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 

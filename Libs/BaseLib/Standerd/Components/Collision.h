@@ -38,6 +38,20 @@ namespace basecross {
 	///	 衝突判定コンポーネントの親クラス
 	//--------------------------------------------------------------------------------------
 	class Collision : public Component {
+		bool m_Fixed;		//静止オブジェクトかどうか
+//		weak_ptr<MeshResource> m_MeshResource;	//メッシュリソース
+		weak_ptr<GameObjectGroup> m_ExcludeCollisionGroup;	//判定から除外するグループ
+		vector<weak_ptr<GameObject>> m_ExcludeCollisionGameObjects; //判定から除外するゲームオブジェクトの配列
+		//判定から除外するタグ
+		set<wstring> m_ExcludeCollisionTags;
+		//衝突後の処理
+		AfterCollision m_AfterCollision;
+		//スリープチェック用
+		bool m_SleepActive;
+		bsm::Mat4x4 m_SleepCheckWorldMatrix;
+		float m_SleepCheckTimer;
+		float m_SleepTime;
+		bool m_IsSleep;
 	protected:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -103,7 +117,7 @@ namespace basecross {
 		@return	 判定から除外するゲームオブジェクトの配列
 		*/
 		//--------------------------------------------------------------------------------------
-		vector<weak_ptr<GameObject>>& GetExcludeCollisionGameObjects() const;
+		vector<weak_ptr<GameObject>>& GetExcludeCollisionGameObjects();
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief 判定から除外するゲームオブジェクトの追加。
@@ -361,7 +375,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnRender()override {}
+		virtual void OnDraw()override {}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief 破棄処理。デフォルトは何も行わない
@@ -369,11 +383,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void OnDestroy()override {}
-
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
 	};
 
 
@@ -382,6 +391,10 @@ namespace basecross {
 	//	用途: 球衝突判定コンポーネント
 	//--------------------------------------------------------------------------------------
 	class CollisionSphere : public Collision {
+		float m_MakedDiameter;					//作成時の直径
+		//配列ボリュームと衝突時に衝突した配列を特定するインデックス
+		size_t m_IsHitVolumeIndex;
+		CalcScaling m_CalcScaling;
 	protected:
 	public:
 		//--------------------------------------------------------------------------------------
@@ -403,7 +416,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit() override;
+		virtual void OnCreate() override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	作成時の直径を得る
@@ -568,11 +581,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnRender()override;
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
+		virtual void OnDraw()override;
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -580,6 +589,10 @@ namespace basecross {
 	//	用途: カプセル衝突判定コンポーネント
 	//--------------------------------------------------------------------------------------
 	class CollisionCapsule : public Collision {
+		float m_MakedDiameter;			//作成時の直径
+		float m_MakedHeight;			//作成時高さ
+		//配列ボリュームと衝突時に衝突した配列を特定するインデックス
+		size_t m_IsHitVolumeIndex;
 	protected:
 	public:
 		//--------------------------------------------------------------------------------------
@@ -601,7 +614,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit() override;
+		virtual void OnCreate() override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	作成時の直径を得る
@@ -766,11 +779,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnRender()override;
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
+		virtual void OnDraw()override;
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -778,6 +787,8 @@ namespace basecross {
 	//	用途: Obb衝突判定コンポーネント
 	//--------------------------------------------------------------------------------------
 	class CollisionObb : public Collision {
+		float m_Size;					//作成時のサイズ
+		float m_ChkOnUnderLaySize;
 	protected:
 	public:
 		//--------------------------------------------------------------------------------------
@@ -799,7 +810,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit() override;
+		virtual void OnCreate() override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	作成時の1辺の長さを得る
@@ -934,11 +945,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnRender()override;
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
+		virtual void OnDraw()override;
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -946,6 +953,7 @@ namespace basecross {
 	//	用途: Rect(矩形)衝突判定コンポーネント
 	//--------------------------------------------------------------------------------------
 	class CollisionRect : public Collision {
+		float m_Size;				//作成時のサイズ
 	protected:
 	public:
 		//--------------------------------------------------------------------------------------
@@ -967,7 +975,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit() override;
+		virtual void OnCreate() override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	固定衝突オブジェクトかどうかを設定する
@@ -1046,11 +1054,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnRender()override;
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
+		virtual void OnDraw()override;
 	};
 
 

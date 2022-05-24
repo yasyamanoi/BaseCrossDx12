@@ -69,7 +69,7 @@ namespace basecross {
 		virtual ~Player() {}
 		//アクセサ
 		//初期化
-		virtual void OnInit() override;
+		virtual void OnCreate() override;
 		//更新
 		virtual void OnUpdate() override;
 		virtual void OnUpdate2() override;
