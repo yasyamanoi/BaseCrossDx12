@@ -343,14 +343,6 @@ namespace basecross {
 
 		//--------------------------------------------------------------------------------------
 		/*!
-		@brief	このオブジェクトを2D描画するための射影行列を得る（デフォルトはステージのビューから取得）
-		@return	ProjMatrix	射影行列
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual Mat4x4 Get2DDrawProjMatrix() const;
-
-		//--------------------------------------------------------------------------------------
-		/*!
 		@brief	このオブジェクトを描画するためのカメラを得る（デフォルトはステージから取得）
 		@return	カメラのshared_ptr
 		*/
@@ -416,7 +408,7 @@ namespace basecross {
 		virtual void OnPreCreate() override;
 		virtual void OnUpdate()override {}
 		virtual void OnUpdate2()override {}
-		virtual void OnShadowmapRender();
+		virtual void OnShadowmapDraw();
 		virtual void OnDraw()override;
 		virtual void OnInitFrame(BaseFrame* pBaseFrame);
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame);

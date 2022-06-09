@@ -303,14 +303,6 @@ namespace basecross {
 
 
 
-	void Stage::OnShadowmapRender() {
-		for (auto& v : m_gameObjectVec) {
-			if (v->IsRenderActive()) {
-				v->OnShadowmapRender();
-			}
-		}
-	}
-
 	void Stage::OnPreCreate() {
 		//ƒRƒŠƒWƒ‡ƒ“ŠÇ—Ò‚Ìì¬
 		m_collisionManager = ObjectFactory::Create<CollisionManager>(GetThis<Stage>());
@@ -326,6 +318,15 @@ namespace basecross {
 			}
 		}
 	}
+
+	void Stage::OnShadowmapDraw() {
+		for (auto& v : m_gameObjectVec) {
+			if (v->IsRenderActive()) {
+				v->OnShadowmapDraw();
+			}
+		}
+	}
+
 
 
 	void Stage::OnDestroy() {

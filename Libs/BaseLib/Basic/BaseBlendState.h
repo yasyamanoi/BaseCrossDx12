@@ -1,6 +1,6 @@
 /*!
-@file BaseRenderState.h
-@brief レンダリングステートまとめ
+@file BaseBlendState.h
+@brief ブレンンドステートまとめ
 @copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
 */
 
@@ -11,9 +11,9 @@
 namespace basecross {
 
 	//--------------------------------------------------------------------------------------
-	///	レンダリングステートクラス(static呼び出しをする)
+	///	ブレンドステートクラス(static呼び出しをする)
 	//--------------------------------------------------------------------------------------
-	struct BaseRenderState {
+	struct BaseBlendState {
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	塗りつぶしのブレンド定義の取得
@@ -59,6 +59,7 @@ namespace basecross {
 
 
 	};
+
 
 }
 // end namespace basecross

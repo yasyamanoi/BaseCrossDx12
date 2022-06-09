@@ -1,6 +1,6 @@
 /*!
-@file BaseRenderState.cpp
-@brief レンダリングステートまとめ
+@file BaseBlendState.cpp
+@brief ブレンンドステートまとめ
 @copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
 */
 
@@ -11,7 +11,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	///	レンダリングステートクラス
 	//--------------------------------------------------------------------------------------
-	D3D12_BLEND_DESC BaseRenderState::GetOpaqueBlend() {
+	D3D12_BLEND_DESC BaseBlendState::GetOpaqueBlend() {
 		D3D12_BLEND_DESC brendDesk{};
 		brendDesk.AlphaToCoverageEnable = FALSE;
 		brendDesk.IndependentBlendEnable = FALSE;
@@ -38,7 +38,7 @@ namespace basecross {
 	@return	ブレンド定義
 	*/
 	//--------------------------------------------------------------------------------------
-	D3D12_BLEND_DESC BaseRenderState::GetAlphaBlend() {
+	D3D12_BLEND_DESC BaseBlendState::GetAlphaBlend() {
 		D3D12_BLEND_DESC brendDesk{};
 		brendDesk.AlphaToCoverageEnable = FALSE;
 		brendDesk.IndependentBlendEnable = FALSE;
@@ -65,7 +65,7 @@ namespace basecross {
 	@return	ブレンド定義
 	*/
 	//--------------------------------------------------------------------------------------
-	D3D12_BLEND_DESC BaseRenderState::GetAlphaBlendEx(){
+	D3D12_BLEND_DESC BaseBlendState::GetAlphaBlendEx() {
 		D3D12_BLEND_DESC brendDesk{};
 
 		brendDesk.AlphaToCoverageEnable = FALSE;
@@ -94,7 +94,7 @@ namespace basecross {
 	@return	ブレンド定義
 	*/
 	//--------------------------------------------------------------------------------------
-	D3D12_BLEND_DESC BaseRenderState::GetAdditiveBlend() {
+	D3D12_BLEND_DESC BaseBlendState::GetAdditiveBlend() {
 		D3D12_BLEND_DESC brendDesk = {};
 
 		return brendDesk;
@@ -105,7 +105,7 @@ namespace basecross {
 	@return	ブレンド定義
 	*/
 	//--------------------------------------------------------------------------------------
-	D3D12_BLEND_DESC BaseRenderState::GetNonPremultipliedBlend() {
+	D3D12_BLEND_DESC BaseBlendState::GetNonPremultipliedBlend() {
 		D3D12_BLEND_DESC brendDesk = {};
 
 		return brendDesk;
@@ -116,7 +116,7 @@ namespace basecross {
 	@return	ブレンドステートインターフェイスのポインタ
 	*/
 	//--------------------------------------------------------------------------------------
-	D3D12_BLEND_DESC BaseRenderState::GetAlphaToCoverageBlend() {
+	D3D12_BLEND_DESC BaseBlendState::GetAlphaToCoverageBlend() {
 		D3D12_BLEND_DESC brendDesk = {};
 
 		return brendDesk;

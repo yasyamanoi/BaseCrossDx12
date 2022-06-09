@@ -5,7 +5,7 @@
 */
 
 // 深度マップ
-Texture2D g_DepthMap : register(t1);
+Texture2D g_DepthMap : register(t0);
 SamplerComparisonState g_SamplerDepthMap : register(s1);
 
 float3 DplusS(float3 N, float3 L, float NdotL, float3 view)

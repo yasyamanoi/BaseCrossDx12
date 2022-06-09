@@ -9,7 +9,6 @@
 
 namespace basecross {
 
-
 	//--------------------------------------------------------------------------------------
 	//	MyCameraカメラ（コンポーネントではない）
 	//--------------------------------------------------------------------------------------
@@ -176,8 +175,8 @@ namespace basecross {
 
 	void MyCamera::OnUpdate() {
 		auto cntlVec = App::GetInputDevice().GetControlerVec();
-//		auto keyData = App::GetInputDevice().GetKeyState();
-		//前回のターンからの時間
+		//		auto keyData = App::GetInputDevice().GetKeyState();
+				//前回のターンからの時間
 		float elapsedTime = App::GetElapsedTime();
 		Vec3 newEye = GetEye();
 		Vec3 newAt = GetAt();

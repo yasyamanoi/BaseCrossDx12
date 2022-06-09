@@ -42,39 +42,7 @@ namespace basecross {
 		return nullptr;
 	}
 
-	void GameObject::WriteConstantBuffers(BaseFrame* pBaseFrame) {
-		//Transformがなければ例外
-		auto transptr = GetComponent<Transform>();
-		//マップを検証してRender
-		list<type_index>::iterator it = m_compOrder.begin();
-		while (it != m_compOrder.end()) {
-			map<type_index, shared_ptr<Component> >::const_iterator it2;
-			it2 = m_compMap.find(*it);
-			//指定の型のコンポーネントが見つかった
-			if (it2 != m_compMap.end()) {
-				it2->second->WriteConstantBuffers(pBaseFrame);
-			}
-			it++;
-		}
-	}
-
-	void GameObject::OnInitFrame(BaseFrame* pBaseFrame) {
-		//Transformがなければ例外
-		auto transptr = GetComponent<Transform>();
-		//マップを検証してRender
-		list<type_index>::iterator it = m_compOrder.begin();
-		while (it != m_compOrder.end()) {
-			map<type_index, shared_ptr<Component> >::const_iterator it2;
-			it2 = m_compMap.find(*it);
-			//指定の型のコンポーネントが見つかった
-			if (it2 != m_compMap.end()) {
-				it2->second->OnInitFrame(pBaseFrame);
-			}
-			it++;
-		}
-	}
-
-	void GameObject::OnShadowmapRender() {
+	void GameObject::OnShadowmapDraw() {
 		ComponentShadowmapRender();
 	}
 
@@ -122,51 +90,63 @@ namespace basecross {
 		}
 	}
 
-	/*
-		void GameObject::ComponentRender() {
-			//Transformがなければ例外
-			auto transptr = GetComponent<Transform>();
-	//		auto RightPtr = GetComponent<Rigidbody>(false);
-			//マップを検証してDraw
-			list<type_index>::iterator it = m_compOrder.begin();
-			while (it != m_compOrder.end()) {
-				map<type_index, shared_ptr<Component> >::const_iterator it2;
-				it2 = m_compMap.find(*it);
-				//指定の型のコンポーネントが見つかった
-				if (it2 != m_compMap.end()) {
-					if (it2->second->IsRenderActive()
-						&& (it2->second != transptr)
-	//					&& (it2->second != RightPtr)
-						) {
-						it2->second->OnRender();
-					}
-				}
-				it++;
-			}
-	//		if (RightPtr && RightPtr->IsDrawActive()) {
-				//RigidbodyがあればDraw()
-	//			RightPtr->OnDraw();
-	//		}
-			if (transptr->IsRenderActive()) {
-				transptr->OnRender();
-			}
-
-		}
-
-	*/
-
 	void GameObject::ComponentShadowmapRender() {
 		//Transformがなければ例外
 		auto transptr = GetComponent<Transform>();
 		auto shadowmapPtr = GetComponent<Shadowmap>(false);
 		if (shadowmapPtr) {
-			if (shadowmapPtr->IsRenderActive()) {
+			if (shadowmapPtr->IsDrawActive()) {
 				shadowmapPtr->OnDraw();
 			}
 		}
 	}
 
+
 	void GameObject::ComponentRender() {
+
+		//Transformがなければ例外
+		auto Transptr = GetComponent<Transform>();
+//		auto RightPtr = GetComponent<Rigidbody>(false);
+		auto CollisionPtr = GetComponent<Collision>(false);
+//		auto StringSpritePtr = GetComponent<StringSprite>(false);
+
+		//マップを検証してDraw
+		list<type_index>::iterator it = m_compOrder.begin();
+		while (it != m_compOrder.end()) {
+			map<type_index, shared_ptr<Component> >::const_iterator it2;
+			it2 = m_compMap.find(*it);
+			//指定の型のコンポーネントが見つかった
+			if (it2 != m_compMap.end() && !dynamic_pointer_cast<Shadowmap>(it2->second)) {
+				//シャドウマップ以外なら実行
+				//そのコンポーネントの子コンポーネントの描画
+				if (it2->second->IsDrawActive()
+					&& (it2->second != Transptr)
+//					&& (it2->second != RightPtr)
+					&& (it2->second != CollisionPtr)
+//					&& (it2->second != StringSpritePtr)
+				) {
+					it2->second->OnDraw();
+				}
+			}
+			it++;
+		}
+		//if (RightPtr && RightPtr->IsDrawActive()) {
+		//	//RigidbodyがあればDraw()
+		//	RightPtr->OnDraw();
+		//}
+		if (CollisionPtr && CollisionPtr->IsDrawActive()) {
+			//CollisionがあればDraw()
+			CollisionPtr->OnDraw();
+		}
+		if (Transptr->IsDrawActive()) {
+			Transptr->OnDraw();
+		}
+		//if (StringSpritePtr && StringSpritePtr->IsDrawActive()) {
+		//	//StringSpriteのDraw()
+		//	StringSpritePtr->OnDraw();
+		//}
+
+/*
 		//Transformがなければ例外
 		auto transptr = GetComponent<Transform>();
 		//マップを検証してRender
@@ -175,16 +155,48 @@ namespace basecross {
 			map<type_index, shared_ptr<Component> >::const_iterator it2;
 			it2 = m_compMap.find(*it);
 			//指定の型のコンポーネントが見つかった
-			if (it2 != m_compMap.end() && !dynamic_pointer_cast<Shadowmap>(it2->second)) {
-
-//			if (it2 != m_compMap.end()) {
-				if (it2->second->IsRenderActive()) {
+			if (it2 != m_compMap.end()) {
+				if (it2->second->IsDrawActive()) {
 					it2->second->OnDraw();
 				}
 			}
 			it++;
 		}
+*/
 	}
+
+	void GameObject::WriteConstantBuffers(BaseFrame* pBaseFrame) {
+		//Transformがなければ例外
+		auto transptr = GetComponent<Transform>();
+		//マップを検証してRender
+		list<type_index>::iterator it = m_compOrder.begin();
+		while (it != m_compOrder.end()) {
+			map<type_index, shared_ptr<Component> >::const_iterator it2;
+			it2 = m_compMap.find(*it);
+			//指定の型のコンポーネントが見つかった
+			if (it2 != m_compMap.end()) {
+				it2->second->WriteConstantBuffers(pBaseFrame);
+			}
+			it++;
+		}
+	}
+
+	void GameObject::OnInitFrame(BaseFrame* pBaseFrame) {
+		//Transformがなければ例外
+		auto transptr = GetComponent<Transform>();
+		//マップを検証してRender
+		list<type_index>::iterator it = m_compOrder.begin();
+		while (it != m_compOrder.end()) {
+			map<type_index, shared_ptr<Component> >::const_iterator it2;
+			it2 = m_compMap.find(*it);
+			//指定の型のコンポーネントが見つかった
+			if (it2 != m_compMap.end()) {
+				it2->second->OnInitFrame(pBaseFrame);
+			}
+			it++;
+		}
+	}
+
 
 
 	void GameObject::ComponentDestroy() {
@@ -207,13 +219,6 @@ namespace basecross {
 		transptr->OnDestroy();
 	}
 
-	Mat4x4 GameObject::Get2DDrawProjMatrix() const {
-		auto pDevice = App::GetBaseDevice();
-		auto viewport = pDevice->GetViewport();
-		float w = static_cast<float>(viewport.Width);
-		float h = static_cast<float>(viewport.Height);
-		return (Mat4x4)XMMatrixOrthographicLH(w, h, viewport.MinDepth, viewport.MaxDepth);
-	}
 
 	shared_ptr<BaseCamera> GameObject::GetActiveCamera()const {
 		return GetStage()->GetActiveCamera();

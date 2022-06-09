@@ -10,7 +10,6 @@ namespace basecross {
 	HWND App::m_hwnd = nullptr;
 
 	BaseScene* App::m_pBaseScene = nullptr;
-	shared_ptr<EventDispatcher> App::m_eventDispatcher(nullptr);	///< イベント送信オブジェクト
 
 	InputDevice App::m_inputDevice;
 
@@ -98,8 +97,6 @@ namespace basecross {
 			//成功した
 			m_wstrRelativeAssetsDir += L"\\";
 		}
-		//イベント配送クラス
-		m_eventDispatcher = make_shared<EventDispatcher>();
 		//乱数の初期化
 		srand((unsigned)time(nullptr));
 
@@ -173,6 +170,7 @@ namespace basecross {
 					TranslateMessage(&msg);
 					DispatchMessage(&msg);
 				}
+
 			}
 			pBaseDevice->OnDestroy();
 			retCode = static_cast<char>(msg.wParam);

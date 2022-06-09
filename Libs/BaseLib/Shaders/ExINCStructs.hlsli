@@ -21,12 +21,20 @@ cbuffer SceneConstantBuffer : register(b0)
 	LightState lights[NUM_LIGHTS];
 };
 
-struct PSInput
+struct VSPNTInput
+{
+	float3 position : POSITION;
+	float3 norm : NORMAL;
+	float2 tex : TEXCOORD;
+};
+
+struct PSPNTInput
 {
 	float4 position : SV_POSITION;
 	float4 worldpos : POSITION;
 	float2 uv : TEXCOORD0;
 	float3 normal : NORMAL;
-	float3 tangent : TANGENT;
 };
+
+
 

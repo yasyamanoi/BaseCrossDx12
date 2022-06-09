@@ -9,7 +9,7 @@ namespace basecross {
 
 	class GameStage : public Stage {
 		//カメラ
-		shared_ptr<MyCamera> m_camera;
+		shared_ptr<BaseCamera> m_camera;
 		//ライト
 		shared_ptr<LightSet> m_lightSet;
 		//固定のボックスの作成
@@ -39,8 +39,6 @@ namespace basecross {
 		virtual void OnUpdateLightCamera() override {
 			m_camera->OnUpdate();
 		}
-
-//		virtual void OnUpdate()override;
 
 	};
 

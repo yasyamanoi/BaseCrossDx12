@@ -47,9 +47,8 @@ namespace basecross {
 		};
 		//オブジェクトの作成
 		for (auto v : vec) {
-			AddGameObject<FixedBox>(v[0], v[1], v[2],true);
+			AddGameObject<FixedBox>(v[0], v[1], v[2]);
 		}
-
 	}
 
 	void GameStage::CreateFixedSphere() {

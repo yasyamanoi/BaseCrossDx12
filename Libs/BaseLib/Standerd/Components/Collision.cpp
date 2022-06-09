@@ -218,7 +218,7 @@ namespace basecross {
 	CollisionSphere::~CollisionSphere() {}
 
 	void CollisionSphere::OnCreate() {
-		SetRenderActive(false);
+		SetDrawActive(false);
 	}
 
 	//アクセサ
@@ -574,7 +574,7 @@ namespace basecross {
 
 	//初期化
 	void CollisionCapsule::OnCreate() {
-		SetRenderActive(false);
+		SetDrawActive(false);
 	}
 
 	//アクセサ
@@ -892,7 +892,7 @@ namespace basecross {
 
 	//初期化
 	void CollisionObb::OnCreate() {
-		SetRenderActive(false);
+		SetDrawActive(false);
 	}
 
 
@@ -1195,7 +1195,7 @@ namespace basecross {
 	//初期化
 	void CollisionRect::OnCreate() {
 		SetFixed(true),
-		SetRenderActive(false);
+		SetDrawActive(false);
 	}
 
 	//アクセサ

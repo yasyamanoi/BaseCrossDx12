@@ -51,7 +51,6 @@ namespace basecross {
 		};
 	};
 
-
 	//--------------------------------------------------------------------------------------
 	///	SimpleConstantコンスタントバッファ構造体
 	//--------------------------------------------------------------------------------------
@@ -145,18 +144,17 @@ namespace basecross {
 	};
 
 
-
 	//--------------------------------------------------------------------------------------
 	///	コンポーネント親クラス
 	//--------------------------------------------------------------------------------------
 	class Component :public ObjectInterface {
 		weak_ptr<GameObject> m_gameObject;
 		bool m_updateActive;
-		bool m_renderActive;
+		bool m_drawActive;
 		wstring m_samplerKey;
 	protected:
-		//フレームパラメータのインデックス(コンスタントバッファで使う)
-		size_t m_frameParamIndex;
+		//コンスタントバッファパラメータのインデックス
+		size_t m_constBuffParamIndex;
 		explicit Component(const shared_ptr<GameObject>& gameObjectPtr);
 		virtual ~Component() {}
 		shared_ptr<BaseMesh> m_baseMesh;
@@ -202,7 +200,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		template<typename T>
-		void UpdateVertices( const vector<T>& vertices) {
+		void UpdateVertices(const vector<T>& vertices) {
 			if (!m_baseMesh) {
 				throw BaseException(
 					L"メッシュが有効ではありません",
@@ -340,22 +338,22 @@ namespace basecross {
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
-		@brief	renderが有効かどうか
+		@brief	drawが有効かどうか
 		@return	有効ならtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		bool IsRenderActive() const {
-			return m_renderActive;
+		bool IsDrawActive() const {
+			return m_drawActive;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
-		@brief	renderが有効かどうかの設定
+		@brief	drawが有効かどうかの設定
 		@param[in]	b	trueかfalse
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SetRenderActive(bool b) {
-			m_renderActive = b;
+		void SetDrawActive(bool b) {
+			m_drawActive = b;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -363,8 +361,8 @@ namespace basecross {
 		@return	フレームパラメータのインデックス
 		*/
 		//--------------------------------------------------------------------------------------
-		size_t GetFrameParamIndex() const {
-			return m_frameParamIndex;
+		size_t GetConstBuffParamIndex() const {
+			return m_constBuffParamIndex;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -376,7 +374,7 @@ namespace basecross {
 		void AttachGameObject(const shared_ptr<GameObject>& GameObjectPtr);
 
 		virtual void OnInitFrame(BaseFrame* pBaseFrame) {}
-		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame){}
+		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame) {}
 		virtual void OnDraw()override;
 	};
 

@@ -15,8 +15,7 @@ namespace basecross {
 	public:
 		Scene() : BaseScene() {}
 		virtual ~Scene() {}
-		virtual void OnInit() override;
-		virtual void OnEvent(const shared_ptr<SceneEvent>& event) override;
+		virtual void OnCreate() override;
 	};
 }
 //end basecross

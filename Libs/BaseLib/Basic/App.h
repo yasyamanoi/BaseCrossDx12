@@ -17,7 +17,6 @@ namespace basecross {
 	{
 		static HWND m_hwnd;
 		static BaseScene* m_pBaseScene;
-		static shared_ptr<EventDispatcher> m_eventDispatcher;	///< イベント送信オブジェクト
 		static InputDevice m_inputDevice;
 
 
@@ -85,15 +84,6 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		static float GetElapsedTime() {
 			return (float)GetBaseDevice()->GetElapsedTime();
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	イベント配送オブジェクトを得る
-		@return イベント配送オブジェクト
-		*/
-		//--------------------------------------------------------------------------------------
-		static shared_ptr<EventDispatcher> GetEventDispatcher() {
-			return m_eventDispatcher;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!

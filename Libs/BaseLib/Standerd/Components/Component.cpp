@@ -10,11 +10,11 @@
 namespace basecross {
 
 	Component::Component(const shared_ptr<GameObject>& gameObjectPtr) :
-		m_gameObject(gameObjectPtr), 
-		m_updateActive(true), 
-		m_renderActive(false),
+		m_gameObject(gameObjectPtr),
+		m_updateActive(true),
+		m_drawActive(false),
 		m_samplerKey(L"LinearClamp"),
-		m_frameParamIndex(0),
+		m_constBuffParamIndex(0),
 		m_baseMesh(nullptr),
 		m_baseTexture(nullptr),
 		m_baseTexture2(nullptr)
@@ -34,6 +34,8 @@ namespace basecross {
 		auto pFrame = pDefaultDev->GetCurrentBaseFrame();
 		PopulateCommandList(pFrame);
 	}
+
+
 
 
 

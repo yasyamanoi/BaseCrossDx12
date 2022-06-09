@@ -9,7 +9,7 @@
 
 namespace basecross {
 
-	void Scene::OnInit() {
+	void Scene::OnCreate() {
 		//テクスチャ
 		auto texFile = App::GetRelativeAssetsDir() + L"wall.jpg";
 		auto texture = BaseTexture::CreateTextureFlomFile(texFile);
@@ -37,14 +37,9 @@ namespace basecross {
 		RegisterTexture(L"NUMBER_TX", texture);
 
 		ResetActiveStage<GameStage>();
+
 	}
 
-	void Scene::OnEvent(const shared_ptr<SceneEvent>& event) {
-		if (event->m_msgStr == L"ToGameStage") {
-			//最初のアクティブステージの設定
-			ResetActiveStage<GameStage>();
-		}
-	}
 
 }
 // end namespace basecross

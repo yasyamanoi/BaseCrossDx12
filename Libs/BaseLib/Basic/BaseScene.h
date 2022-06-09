@@ -14,40 +14,11 @@ namespace basecross {
 	class Stage;
 
 	//--------------------------------------------------------------------------------------
-	///	シーン特有のイベント構造体
-	//--------------------------------------------------------------------------------------
-	struct SceneEvent {
-		///	遅延時間（SendEventの場合は常に0）
-		float m_dispatchTime;
-		///	メッセージ文字列
-		wstring m_msgStr;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	コンストラクタ
-		@param[in]	dispatchTime	配送までの時間
-		@param[in]	msgStr	メッセージ文字列
-		*/
-		//--------------------------------------------------------------------------------------
-		SceneEvent(float dispatchTime,const wstring& msgStr) :
-			m_dispatchTime(dispatchTime),
-			m_msgStr(msgStr)
-		{}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デストラクタ
-		*/
-		//--------------------------------------------------------------------------------------
-		~SceneEvent() {}
-	};
-
-
-	//--------------------------------------------------------------------------------------
 	///	シーン親クラス
 	//--------------------------------------------------------------------------------------
 	class BaseScene {
 		map<wstring, shared_ptr<BaseMesh>> m_meshMap;
 		map<wstring, shared_ptr<BaseTexture>> m_textureMap;
-		vector<shared_ptr<SceneEvent>> m_eventVec;
 		shared_ptr<Stage> m_activeStage;
 		void CreateDefaultMeshes();
 		void ConvertVertex(const vector<VertexPositionNormalTexture>& vertices,
@@ -56,10 +27,8 @@ namespace basecross {
 			vector<VertexPositionTexture>& new_pt_vertices,
 			vector<VertexPositionNormalTangentTexture>& new_pntnt_vertices
 		);
-		void DispatchDelayedEvent();
 	protected:
 		BaseScene():
-			m_eventVec(),
 			m_activeStage(nullptr)
 		{}
 		virtual ~BaseScene() {}
@@ -172,31 +141,14 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		shared_ptr<BaseTexture> GetTexture(const wstring& key);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	シーンへのイベントのPOST（キューに入れる）
-		@param[in]	dispatchTime	遅延時間
-		@param[in]	msgStr	メッセージ
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void PostSceneEvent(float dispatchTime, const wstring& msgStr);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	イベントを受け取る
-		@param[in]	sceneEvent	シーンイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnEvent(const shared_ptr<SceneEvent>& sceneEvent) {}
 
 
-		virtual void OnInitScene();
-		virtual void OnInit(){}
+		virtual void OnPreCreate();
+		virtual void OnCreate(){}
 		virtual void OnInitFrame(BaseFrame* pBaseFrame);
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame);
 		virtual void OnUpdate();
-		virtual void OnRender() {}
+		virtual void OnDraw() {}
 		virtual void OnDestroy();
 		virtual void OnKeyDown(UINT8 key);
 		virtual void OnKeyUp(UINT8 key);

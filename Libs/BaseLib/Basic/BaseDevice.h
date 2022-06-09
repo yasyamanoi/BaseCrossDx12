@@ -10,19 +10,34 @@
 
 namespace basecross {
 
+	class BaseMesh;
+	class BaseTexture;
+	struct BaseFrame;
+
 	//--------------------------------------------------------------------------------------
-	///	ダミーシェーダー
+	///	シェーダー
 	//--------------------------------------------------------------------------------------
 	DECLARE_DX12SHADER(VSPNTStaticInit)
 	DECLARE_DX12SHADER(PSPNTStaticInit)
-
-	struct BaseFrame;
 
 	//--------------------------------------------------------------------------------------
 	///	デバイスクラス
 	//--------------------------------------------------------------------------------------
 	class BaseDevice
 	{
+	public:
+		//フレーム数
+		static const UINT m_frameCount = 3;
+		//ライト数
+		static const UINT m_numLights = 3;
+		static const UINT m_numContexts = 1;
+
+		static const int m_commandListCount = 3;
+		static const int m_commandListPre = 0;
+		static const int m_commandListMid = 1;
+		static const int m_commandListPost = 2;
+
+	private:
 		//幅
 		UINT m_width;
 		//高さ
@@ -35,37 +50,36 @@ namespace basecross {
 		bool m_useWarpDevice;
 		//ウインドウタイトル
 		wstring m_title;
-		//フレーム数
-		static const UINT m_frameCount = 3;
+
+
+		//フレームのインデックス
+		UINT m_frameIndex;
+		//フェンス関連
+		HANDLE m_fenceEvent;
+		ComPtr<ID3D12Fence> m_fence;
+		UINT64 m_fenceValue;
 
 		//クリアする色
 		Col4 m_clearColor;
-
-		// Pipeline objects.
+		// ビューポートとシザー矩形
 		CD3DX12_VIEWPORT m_viewport;
 		CD3DX12_RECT m_scissorRect;
 
+
+		//パイプラインオブジェクト
 		ComPtr<ID3D12Device> m_device;
 		ComPtr<ID3D12CommandQueue> m_commandQueue;
 		ComPtr<IDXGISwapChain3> m_swapChain;
+		//ディスクプリタヒープ
 		ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
 		ComPtr<ID3D12DescriptorHeap> m_dsvHeap;
 		ComPtr<ID3D12DescriptorHeap> m_cbvSrvUavHeap;
 		ComPtr<ID3D12DescriptorHeap> m_samplerHeap;
-		//null用のGPUハンドル
-		D3D12_GPU_DESCRIPTOR_HANDLE m_nullSrvGpuHandle;
 
-
-		ComPtr<ID3D12RootSignature> m_rootSignature;
-		ComPtr<ID3D12Resource> m_renderTargets[m_frameCount];
-		ComPtr<ID3D12Resource> m_depthStencil;
-		//初期化用のパイプライステート
-		ComPtr<ID3D12PipelineState> m_initPipelineState;
-		//汎用的なコマンドリスト
-		ComPtr<ID3D12GraphicsCommandList> m_initCommandList;
-
+		//コマンドアロケーター
 		ComPtr<ID3D12CommandAllocator> m_commandAllocator;
-		ComPtr<ID3D12PipelineState> m_pipelineStateShadowMap;
+		//初期化用のコマンドリスト
+		ComPtr<ID3D12GraphicsCommandList> m_initCommandList;
 
 		//rtv管理用
 		UINT m_rtvDescriptorIncrementSize;
@@ -79,69 +93,68 @@ namespace basecross {
 		//cbvSrvUav管理用
 		UINT m_cbvSrvUavDescriptorIncrementSize;
 		const UINT m_cbvSrvUavMax = 4096;
-		const UINT m_srvStartIndex = 0;
+		const UINT m_srvStartIndex = 2;
 		const UINT m_srvMax = 1024;
 		UINT m_srvSendIndex;
 		const UINT m_cbvUavStartIndex = 1024;
 		const UINT m_cbvUavMax = 4096;
 		UINT m_cbvUavSendIndex;
 
-		//同期オブジェクト
-		ComPtr<ID3D12Fence> m_fence;
-		UINT m_frameIndex;
-		HANDLE m_fenceEvent;
-		UINT64 m_fenceValue;
-
-		//初期化処理が終わったかどうか
-		bool m_isInited;
-
-		//処理のenum
-		enum class process {
-			init,
-			update,
-			begin,
-			shadowmap,
-			render,
-			end
-		};
-		process m_process;
-
-		// フレーム
-		BaseFrame* m_baseFrame[m_frameCount];
-		int m_currentBaseFrameIndex;
-
+		//アプリケーションリソース
+		//タイマー
+		BaseTimer m_timer;
+		ComPtr<ID3D12RootSignature> m_rootSignature;
 		//ルートシグネチャで設定されるGPUスロットのマップ
 		map<wstring, UINT> m_gpuSlotMap;
 
-		//アプリケーションリソース
-		BaseTimer m_timer;
+		ComPtr<ID3D12PipelineState> m_pipelineState;
+		ComPtr<ID3D12PipelineState> m_pipelineStateShadowMap;
 
+		ComPtr<ID3D12Resource> m_renderTargets[m_frameCount];
+		ComPtr<ID3D12Resource> m_depthStencil;
+
+		//フレームリソース
+		BaseFrame* m_baseFrames[m_frameCount];
+		BaseFrame* m_pCurrentBaseFrame;
+		int m_currentBaseFrameIndex;
+
+		//処理のenum
+		enum class process {
+			pipelineInit,
+			update,
+			begin,
+			shadowmap,
+			scene,
+			mid,
+			end
+		};
+		process m_process;
+		//パイプラインオブジェクトの作成
+		void LoadPipeline();
+		//アセットオブジェクトの作成
+		void LoadAssets();
 		//ハードウェアアダプターを得る
 		void GetHardwareAdapter(
 			_In_ IDXGIFactory1* pFactory,
 			_Outptr_result_maybenull_ IDXGIAdapter1** ppAdapter,
 			bool requestHighPerformanceAdapter = false);
-		//パイプラインオブジェクトの作成
-		void LoadPipeline();
-		//アセットオブジェクトの作成
-		void LoadAssets();
 		//ルート署名の作成
 		void CreateRootSignature();
-		//レンダリングターゲットビューの作成
+		void CreatePipelineStates();
 		void CreateRenderTargetViews();
-		//デプスステンシルビューの作成
-		void CreateDepthStencilView();
-		//サンプラーの作成
+		void CreateDepthStencil();
 		void CreateSamplers();
-		//構築用のパイプラインの作成
-		void CreateInitPipelineState();
-		//フレームの作成
-		void CreateBaseFrame();
-		//コマンドリストを集める
-		void PopulateCommandList(BaseFrame* pBaseFrame);
-		//同期オブジェクトの作成
+		void CreateFrameResources();
 		void CreateSynchronizationObjects();
+
+		void BeginFrame();
+		void MidFrame();
+		void EndFrame();
+		void WorkerThread();
+		void SetCommonPipelineState(ID3D12GraphicsCommandList* pCommandList);
+
 	public:
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	コンストラクタ
@@ -159,55 +172,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual ~BaseDevice();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デバイスの初期化時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnCreate();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デバイスの更新描画時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnUpdateDraw();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デバイスの更新時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnUpdate();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デバイスの描画時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnDraw();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デバイスの破棄時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnDestroy();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	キーが押された時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnKeyDown(UINT8 key);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	キーが離された時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnKeyUp(UINT8 key);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	ゲーム幅の取得
@@ -249,7 +213,7 @@ namespace basecross {
 		@return	画面をクリアする色
 		*/
 		//--------------------------------------------------------------------------------------
-		Col4 GetClearColor() const{
+		Col4 GetClearColor() const {
 			return m_clearColor;
 		}
 		//--------------------------------------------------------------------------------------
@@ -306,12 +270,21 @@ namespace basecross {
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
-		@brief	ルート認証の取得
-		@return	ルート認証のComPtr
+		@brief	Rtvディスクリプタヒープの取得
+		@return	RtvディスクリプタヒープのComPtr
 		*/
 		//--------------------------------------------------------------------------------------
-		ComPtr<ID3D12RootSignature> GetRootSignature() const {
-			return m_rootSignature;
+		ComPtr<ID3D12DescriptorHeap> GetRtvDescriptorHeap() const {
+			return m_rtvHeap;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	Dsvディスクリプタヒープの取得
+		@return	DsvディスクリプタヒープのComPtr
+		*/
+		//--------------------------------------------------------------------------------------
+		ComPtr<ID3D12DescriptorHeap> GetDsvDescriptorHeap() const {
+			return m_dsvHeap;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -321,15 +294,6 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		ComPtr<ID3D12DescriptorHeap> GetCbvSrvUavDescriptorHeap() const {
 			return m_cbvSrvUavHeap;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	Null用のCbvSrvUavディスクリプタヒープのハンドルを得る
-		@return	Null用のCbvSrvUavディスクリプタヒープのハンドル
-		*/
-		//--------------------------------------------------------------------------------------
-		D3D12_GPU_DESCRIPTOR_HANDLE GetNullSrvGpuHandle() {
-			return m_nullSrvGpuHandle;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -381,24 +345,6 @@ namespace basecross {
 		UINT GetSamplerNextIndex();
 		//--------------------------------------------------------------------------------------
 		/*!
-		@brief	DSVディスクリプタヒープの取得
-		@return DSVディスクリプタヒープのComPtr
-		*/
-		//--------------------------------------------------------------------------------------
-		ComPtr<ID3D12DescriptorHeap> GetDsvDescriptorHeap() const {
-			return m_dsvHeap;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	DSVディスクリプタヒープのインクリメントサイズの取得
-		@return	DSVディスクリプタヒープのインクリメントサイズ
-		*/
-		//--------------------------------------------------------------------------------------
-		UINT GetDsvDescriptorHandleIncrementSize() const {
-			return m_dsvDescriptorIncrementSize;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
 		@brief	指定したサンプラーのインデックスの取得
 		@param[in]	key	LinearWrapなどのキー
 		@return	指定したサンプラーのインデックス（存在しなかったらしたらUINT_MAXを返す）
@@ -407,11 +353,13 @@ namespace basecross {
 		UINT GetSamplerIndex(const wstring& key);
 		//--------------------------------------------------------------------------------------
 		/*!
-		@brief	汎用的なコマンドリストの取得
-		@return	汎用的コマンドリストのComPtr
+		@brief	ルート認証の取得
+		@return	ルート認証のComPtr
 		*/
 		//--------------------------------------------------------------------------------------
-		ComPtr<ID3D12GraphicsCommandList> GetComandList()const;
+		ComPtr<ID3D12RootSignature> GetRootSignature() const {
+			return m_rootSignature;
+		}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	GPUのスロットIDの設定
@@ -461,8 +409,65 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		BaseFrame* GetCurrentBaseFrame() const {
-			return m_baseFrame[m_currentBaseFrameIndex];
+			return m_baseFrames[m_currentBaseFrameIndex];
 		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	汎用的なコマンドリストの取得
+		@return	汎用的コマンドリストのComPtr
+		*/
+		//--------------------------------------------------------------------------------------
+		ComPtr<ID3D12GraphicsCommandList> GetComandList()const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	デバイスの初期化時に呼ばれるイベント
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void OnCreate();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	デバイスの更新描画時に呼ばれるイベント
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void OnUpdateDraw();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	デバイスの更新時に呼ばれるイベント
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void OnUpdate();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	デバイスの描画時に呼ばれるイベント
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void OnDraw();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	デバイスの破棄時に呼ばれるイベント
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void OnDestroy();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	キーが押された時に呼ばれるイベント
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void OnKeyDown(UINT8 key);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	キーが離された時に呼ばれるイベント
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void OnKeyUp(UINT8 key);
 	};
+
 }
 // end namespace basecross

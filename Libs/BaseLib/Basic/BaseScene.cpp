@@ -7,7 +7,6 @@
 
 namespace basecross {
 
-
 	void BaseScene::ConvertVertex(const vector<VertexPositionNormalTexture>& vertices,
 		vector<VertexPositionColor>& new_pc_vertices,
 		vector<VertexPositionNormal>& new_pn_vertices,
@@ -189,6 +188,8 @@ namespace basecross {
 
 	}
 
+
+
 	shared_ptr<Stage> BaseScene::GetActiveStage(bool ExceptionActive) const {
 		if (!m_activeStage) {
 			//アクティブなステージが無効なら
@@ -247,6 +248,9 @@ namespace basecross {
 			}
 		}
 		m_textureMap[key] = texture;
+		//textureに名前を付ける
+		auto texRes = texture->GetTexture();
+		texRes->SetName(key.c_str());
 	}
 
 	shared_ptr<BaseTexture> BaseScene::GetTexture(const wstring& key) {
@@ -264,38 +268,8 @@ namespace basecross {
 		return nullptr;
 	}
 
-	void BaseScene::PostSceneEvent(float dispatchTime, const wstring& msgStr) {
-		//イベントの作成 
-		auto ptr = make_shared<SceneEvent>(dispatchTime, msgStr);
-		m_eventVec.push_back(ptr);
-	}
 
-	void BaseScene::DispatchDelayedEvent() {
-		//前回のターンからの時間
-		float elapsedTime = App::GetElapsedTime();
-		auto it = m_eventVec.begin();
-		while (it != m_eventVec.end()) {
-			(*it)->m_dispatchTime -= elapsedTime;
-			if ((*it)->m_dispatchTime <= 0.0f) {
-				(*it)->m_dispatchTime = 0.0f;
-				//メッセージの送信
-				OnEvent(*it);
-				//キューから削除
-				it = m_eventVec.erase(it);
-				//削除後のイテレータが「最後」の
-				//ときはループを抜ける
-				if (it == m_eventVec.end()) {
-					break;
-				}
-			}
-			else {
-				it++;
-			}
-		}
-	}
-
-
-	void BaseScene::OnInitScene() {
+	void BaseScene::OnPreCreate() {
 		//デフォルトのメッシュ群の作成
 		CreateDefaultMeshes();
 	}
@@ -312,11 +286,9 @@ namespace basecross {
 	void BaseScene::PopulateShadowmapCommandList(BaseFrame* pBaseFrame) {
 		auto stagePtr = GetActiveStage();
 		if (stagePtr) {
-			stagePtr->OnShadowmapRender();
+			stagePtr->OnShadowmapDraw();
 		}
 	}
-
-
 	void BaseScene::PopulateCommandList(BaseFrame* pBaseFrame) {
 		auto stagePtr = GetActiveStage();
 		if (stagePtr) {
@@ -330,30 +302,29 @@ namespace basecross {
 			stagePtr->WriteConstantBuffers(pBaseFrame);
 		}
 	}
+
 	void BaseScene::OnUpdate() {
-		auto stagePtr = GetActiveStage();
+		auto stagePtr = GetActiveStage(false);
 		if (stagePtr) {
-			DispatchDelayedEvent();
-			App::GetEventDispatcher()->DispatchDelayedEvent();
 			stagePtr->UpdateStage();
 		}
 	}
 
 	void BaseScene::OnDestroy() {
-		auto stagePtr = GetActiveStage();
+		auto stagePtr = GetActiveStage(false);
 		if (stagePtr) {
 			stagePtr->OnDestroy();
 		}
 	}
 
 	void BaseScene::OnKeyDown(UINT8 key) {
-		auto stagePtr = GetActiveStage();
+		auto stagePtr = GetActiveStage(false);
 		if (stagePtr) {
 			stagePtr->OnKeyDown(key);
 		}
 	}
 	void BaseScene::OnKeyUp(UINT8 key) {
-		auto stagePtr = GetActiveStage();
+		auto stagePtr = GetActiveStage(false);
 		if (stagePtr) {
 			stagePtr->OnKeyUp(key);
 		}
