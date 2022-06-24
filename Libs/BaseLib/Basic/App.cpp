@@ -10,6 +10,8 @@ namespace basecross {
 	HWND App::m_hwnd = nullptr;
 
 	BaseScene* App::m_pBaseScene = nullptr;
+	shared_ptr<EventDispatcher> App::m_EventDispatcher = nullptr;	///< イベント送信オブジェクト
+
 
 	InputDevice App::m_inputDevice;
 
@@ -110,6 +112,7 @@ namespace basecross {
 		setlocale(LC_ALL, "JPN");
 
 		m_pBaseScene = pBaseScene;
+		m_EventDispatcher = shared_ptr<EventDispatcher>(new EventDispatcher);
 
 		// Parse the command line parameters
 		int argc;

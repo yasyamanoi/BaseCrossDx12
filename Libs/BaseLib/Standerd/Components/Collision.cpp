@@ -97,7 +97,7 @@ namespace basecross {
 			//‹ó”’‚È‚ç—áŠO
 			throw BaseException(
 				L"İ’è‚·‚éƒ^ƒO‚ª‹ó‚Å‚·",
-				L"if (tagstr == L"")",
+				L"if (tagstr == L\"\")",
 				L"Collision::AddExcludeCollisionTag()"
 			);
 		}

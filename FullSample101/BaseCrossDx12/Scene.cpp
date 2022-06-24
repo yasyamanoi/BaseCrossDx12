@@ -40,6 +40,13 @@ namespace basecross {
 
 	}
 
+	void Scene::OnEvent(const shared_ptr<SceneEvent>& event) {
+		//if (event->m_msgStr == L"ToGameStage") {
+		//	//最初のアクティブステージの設定
+		//	ResetActiveStage<GameStage>();
+		//}
+	}
+
 
 }
 // end namespace basecross

@@ -56,8 +56,14 @@ namespace basecross {
 		}
 		m_waitRemoveObjectVec.clear();
 		if (!m_waitAddObjectVec.empty()) {
+			auto baseDevice = App::GetBaseDevice();
+			auto frames = baseDevice->GetBaseFrames();
 			for (auto Ptr : m_waitAddObjectVec) {
 				m_gameObjectVec.push_back(Ptr);
+				for (UINT i = 0; i < baseDevice->m_frameCount; i++) {
+					Ptr->OnInitFrame(frames[i]);
+					Ptr->WriteConstantBuffers(frames[i]);
+				}
 			}
 		}
 		m_waitAddObjectVec.clear();

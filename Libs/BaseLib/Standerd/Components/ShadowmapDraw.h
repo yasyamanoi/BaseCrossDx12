@@ -17,7 +17,7 @@ namespace basecross {
 
 	class Shadowmap : public Component {
 		void CreatePipelineStates();
-		ComPtr<ID3D12PipelineState> m_PNTPipelineState;
+//		ComPtr<ID3D12PipelineState> m_PNTPipelineState;
 
 		static float m_lightHeight;
 		static float m_lightNear;

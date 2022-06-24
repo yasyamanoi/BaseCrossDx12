@@ -88,6 +88,10 @@ namespace basecross {
 		ptrDraw->SetFogEnabled(true);
 		ptrDraw->SetOwnShadowActive(true);
 
+		auto ptrDraw2 = AddComponent<SpWireframeDraw>();
+		ptrDraw2->SetMesh(L"DEFAULT_PC_SPHERE");
+
+
 	}
 
 

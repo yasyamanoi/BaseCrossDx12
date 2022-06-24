@@ -104,7 +104,7 @@ namespace basecross {
 		@return	物理計算オブジェクト
 		*/
 		//--------------------------------------------------------------------------------------
-		const BasePhysics& GetBasePhysics() const {
+		BasePhysics& GetBasePhysics(){
 			if (!IsPhysicsActive()) {
 				throw BaseException(
 					L"物理演算が無効になっています。有効にしてから取得してください。",
@@ -114,6 +114,7 @@ namespace basecross {
 			}
 			return m_basePhysics;
 		}
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	物理計算が有効かどうかを得る

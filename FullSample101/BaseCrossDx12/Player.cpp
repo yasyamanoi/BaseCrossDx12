@@ -164,6 +164,9 @@ namespace basecross {
 		grav->StartJump(Vec3(0, 4.0f, 0));
 	}
 
+	//Bƒ{ƒ^ƒ“
+	void Player::OnPushB() {
+	}
 
 }
 // end namespace basecross

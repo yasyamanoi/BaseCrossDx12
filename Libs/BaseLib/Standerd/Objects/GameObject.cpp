@@ -30,7 +30,7 @@ namespace basecross {
 				throw BaseException(
 					L"所属ステージがnullです。自分自身がステージではありませんか？",
 					L"if (!shptr)",
-					L"GameObject::GetStage()"
+					L"GameObject::GetStage()const"
 				);
 			}
 			else {

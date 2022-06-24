@@ -813,91 +813,6 @@ namespace basecross {
 		return pImpl->m_PsCylinderParam;
 	}
 
-#ifdef test
-	//--------------------------------------------------------------------------------------
-	//	PsConvexMeshResource　Implイディオム
-	//--------------------------------------------------------------------------------------
-	struct PsConvexMeshResource::Impl {
-		uint32_t m_Index;
-		//バックアップ用の頂点(VertexPositionNormalTexture)とインデックス
-		vector<VertexPositionNormalTexture> m_Vertices;
-		vector<uint16_t> m_Indices;
-		Impl(vector<VertexPositionNormalTexture>& vertices, vector<uint16_t>& indices):
-			m_Index(0)
-		{
-			try {
-				m_Vertices = vertices;
-				m_Indices = indices;
-
-				PfxCreateConvexMeshParam param;
-				vector<float> vertFloat;
-				for (auto& v : vertices) {
-					vertFloat.push_back(v.position.x);
-					vertFloat.push_back(v.position.y);
-					vertFloat.push_back(v.position.z);
-					vertFloat.push_back(v.normal.x);
-					vertFloat.push_back(v.normal.y);
-					vertFloat.push_back(v.normal.z);
-				}
-
-				param.verts = &vertFloat.front();
-				param.numVerts = (UINT)vertices.size();
-				param.vertexStrideBytes = sizeof(float) * 6;
-				param.triangles = &indices.front();
-				param.numTriangles = (UINT)(indices.size() / 3);
-				param.triangleStrideBytes = sizeof(uint16_t) * 3;
-				//numConvexMeshes
-				//convexMeshes
-				m_Index = ps::getNextConvexMesheIndex();
-				PfxInt32 ret = pfxCreateConvexMesh(ps::convexMeshes[m_Index], param);
-				if (ret != SCE_PFX_OK) {
-					throw BaseException(
-						L"ConvexMeshResourceの作成に失敗しました。",
-						L"if (ret != SCE_PFX_OK)",
-						L"PsConvexMeshResource::Impl::Impl()"
-					);
-				}
-			}
-			catch (...) {
-				throw;
-			}
-		}
-		~Impl() {
-			ps::rereaseConvexMesheIndex(m_Index);
-		}
-	};
-
-	//--------------------------------------------------------------------------------------
-	///	ConvexMeshリソース
-	//--------------------------------------------------------------------------------------
-	PsConvexMeshResource::PsConvexMeshResource(vector<VertexPositionNormalTexture>& vertices, vector<uint16_t>& indices):
-		BaseMesh(),
-		pImpl(new Impl(vertices, indices))
-	{}
-
-	shared_ptr<PsConvexMeshResource> PsConvexMeshResource::CreateMeshResource(vector<VertexPositionNormalTexture>& vertices, vector<uint16_t>& indices) {
-		try {
-			return ObjectFactory::Create<PsConvexMeshResource>(vertices, indices);
-		}
-		catch (...) {
-			throw;
-		}
-	}
-
-
-	PsConvexMeshResource::~PsConvexMeshResource() {}
-	uint32_t PsConvexMeshResource::GetMeshIndex() const {
-		return pImpl->m_Index;
-	}
-
-	const vector<VertexPositionNormalTexture>& PsConvexMeshResource::GetVertices() const {
-		return pImpl->m_Vertices;
-	}
-
-	const vector<uint16_t>& PsConvexMeshResource::GetIndices() const {
-		return pImpl->m_Indices;
-	}
-
 
 
 
@@ -926,19 +841,11 @@ namespace basecross {
 	}
 	PsConvex::~PsConvex() {}
 
-	void PsConvex::OnInit() {
-		if (!pImpl->m_PsConvexParam.m_ConvexMeshResource) {
-			throw BaseException(
-				L"ConvexMeshResourceが見つかりません",
-				L"if (!pImpl->m_PsConvexParam.m_ConvexMeshResource)",
-				L"PhysicsConvexMesh::OnCreate()"
-			);
-		}
+	void PsConvex::OnCreate() {
 		PfxShape shape;
 		shape.reset();
 		shape.setOffsetOrientation((PfxQuat)pImpl->m_PsConvexParam.m_OffsetOrientation);
 		shape.setOffsetPosition((PfxVector3)pImpl->m_PsConvexParam.m_OffsetPosition);
-		shape.setConvexMesh(&ps::convexMeshes[pImpl->m_PsConvexParam.m_ConvexMeshResource->GetMeshIndex()]);
 		ps::collidables[m_Index].reset();
 		ps::collidables[m_Index].addShape(shape);
 		ps::collidables[m_Index].finish();
@@ -953,7 +860,7 @@ namespace basecross {
 	const PsConvexParam& PsConvex::GetParam() const {
 		return pImpl->m_PsConvexParam;
 	}
-#endif
+
 
 	//--------------------------------------------------------------------------------------
 	//	PhysicsCombined　Implイディオム
@@ -1036,22 +943,14 @@ namespace basecross {
 					ps::collidables[m_Index].addShape(shape);
 				}
 				break;
-				//case PsCombinedType::TypeConvex:
-				//{
-				//	if (!v.m_ConvexMeshResource) {
-				//		throw BaseException(
-				//			L"ConvexMeshResourceが見つかりません",
-				//			L"if (!v.m_ConvexMeshResource)",
-				//			L"PsCombined::OnCreate()"
-				//		);
-				//	}
-				//	PfxShape shape;
-				//	shape.reset();
-				//	shape.setConvexMesh(&ps::convexMeshes[v.m_ConvexMeshResource->GetMeshIndex()]);
-				//	shape.setOffsetOrientation((PfxQuat)v.m_OffsetOrientation);
-				//	shape.setOffsetPosition((PfxVector3)v.m_OffsetPosition);
-				//	ps::collidables[m_Index].addShape(shape);
-				//}
+				case PsCombinedType::TypeConvex:
+				{
+					PfxShape shape;
+					shape.reset();
+					shape.setOffsetOrientation((PfxQuat)v.m_OffsetOrientation);
+					shape.setOffsetPosition((PfxVector3)v.m_OffsetPosition);
+					ps::collidables[m_Index].addShape(shape);
+				}
 				break;
 			}
 
@@ -1520,19 +1419,19 @@ namespace basecross {
 		return ObjectFactory::Create<PsCylinder>(param, index);
 	}
 
-	//shared_ptr<PsConvex> BasePhysics::AddConvex(const PsConvexParam& param, uint16_t index) {
-	//	if (ps::numRigidBodies >= NUM_RIGIDBODIES) {
-	//		throw BaseException(
-	//			L"これ以上物理オブジェクトを増やせません",
-	//			L"if (ps::numRigidBodies >= ps::NUM_RIGIDBODIES)",
-	//			L"BasePhysics::AddConvex()"
-	//		);
-	//	}
-	//	if (index >= ps::numRigidBodies) {
-	//		index = ps::numRigidBodies++;
-	//	}
-	//	return ObjectFactory::Create<PsConvex>(param, index);
-	//}
+	shared_ptr<PsConvex> BasePhysics::AddConvex(const PsConvexParam& param, uint16_t index) {
+		if (ps::numRigidBodies >= NUM_RIGIDBODIES) {
+			throw BaseException(
+				L"これ以上物理オブジェクトを増やせません",
+				L"if (ps::numRigidBodies >= ps::NUM_RIGIDBODIES)",
+				L"BasePhysics::AddConvex()"
+			);
+		}
+		if (index >= ps::numRigidBodies) {
+			index = ps::numRigidBodies++;
+		}
+		return ObjectFactory::Create<PsConvex>(param, index);
+	}
 
 	shared_ptr<PsCombined> BasePhysics::AddCombined(const PsCombinedParam& param, uint16_t index) {
 		if (ps::numRigidBodies >= NUM_RIGIDBODIES) {

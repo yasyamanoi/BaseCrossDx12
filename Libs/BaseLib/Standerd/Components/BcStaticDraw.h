@@ -78,10 +78,10 @@ namespace basecross {
 
 	class BcPNTStaticDraw : public BcStaticDraw {
 		void CreatePipelineStates();
-		ComPtr<ID3D12PipelineState> m_defaultPipelineState;
-		ComPtr<ID3D12PipelineState> m_defaultShadowPipelineState;
-		ComPtr<ID3D12PipelineState> m_alphaPipelineState;
-		ComPtr<ID3D12PipelineState> m_alphaShadowPipelineState;
+//		ComPtr<ID3D12PipelineState> m_defaultPipelineState;
+//		ComPtr<ID3D12PipelineState> m_defaultShadowPipelineState;
+//		ComPtr<ID3D12PipelineState> m_alphaPipelineState;
+//		ComPtr<ID3D12PipelineState> m_alphaShadowPipelineState;
 	protected:
 		virtual void PopulateCommandList(BaseFrame* pBaseFrame)override;
 	public:

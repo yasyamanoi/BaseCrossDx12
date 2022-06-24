@@ -538,6 +538,15 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\BcStaticDraw.h">
       <Filter>Standerd\Components\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\Rigidbody.h">
+      <Filter>Standerd\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Event.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BasicPipelineState.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseDevice.cpp">
@@ -768,6 +777,15 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\BcStaticDraw.cpp">
       <Filter>Standerd\Components\Sources</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\Rigidbody.cpp">
+      <Filter>Standerd\Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Event.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BasicPipelineState.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)Shaders\INCStructs.hlsli">
@@ -800,6 +818,9 @@
     <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCStructs.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\SpINC2dConstant.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPNTStatic.hlsl">
@@ -830,6 +851,48 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTStaticPLShadow.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCTSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCTStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPNStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPTSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPTStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPCSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPCStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPCTSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPCTStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPNStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPTSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPTStatic.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

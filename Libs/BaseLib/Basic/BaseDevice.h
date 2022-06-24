@@ -107,11 +107,11 @@ namespace basecross {
 		//ルートシグネチャで設定されるGPUスロットのマップ
 		map<wstring, UINT> m_gpuSlotMap;
 
-		ComPtr<ID3D12PipelineState> m_pipelineState;
-		ComPtr<ID3D12PipelineState> m_pipelineStateShadowMap;
-
 		ComPtr<ID3D12Resource> m_renderTargets[m_frameCount];
 		ComPtr<ID3D12Resource> m_depthStencil;
+
+		//ステージが再構築されたかどうか
+		bool m_stageReCreated;
 
 		//フレームリソース
 		BaseFrame* m_baseFrames[m_frameCount];
@@ -411,6 +411,32 @@ namespace basecross {
 		BaseFrame* GetCurrentBaseFrame() const {
 			return m_baseFrames[m_currentBaseFrameIndex];
 		}
+
+		BaseFrame** GetBaseFrames() {
+			return m_baseFrames;
+		}
+
+
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	ステージが再構築されたかどうか
+		@return	再構築されたらtrue
+		*/
+		//--------------------------------------------------------------------------------------
+		bool IsStageReCreated() const {
+			return m_stageReCreated;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	Gステージが再構築されたかどうか設定
+		@param[in]	b　フラグ
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetStageReCreated(bool b) {
+			m_stageReCreated = b;
+		}
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	汎用的なコマンドリストの取得

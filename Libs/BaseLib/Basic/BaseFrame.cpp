@@ -10,17 +10,34 @@
 namespace basecross {
 
 	BaseFrame::BaseFrame(ID3D12Device* pDevice, ID3D12PipelineState* pPso, ID3D12PipelineState* pShadowMapPso, ID3D12DescriptorHeap* pDsvHeap, ID3D12DescriptorHeap* pCbvSrvHeap, D3D12_VIEWPORT* pViewport, UINT frameResourceIndex) :
-		m_fenceValue(0),
-		m_pipelineState(pPso),
-		m_pipelineStateShadowMap(pShadowMapPso)
+		m_fenceValue(0)
+		//m_pipelineState(pPso),
+		//m_pipelineStateShadowMap(pShadowMapPso)
 	{
 		auto pBaseDev = App::GetBaseDevice();
+
+		auto pipelineState = BasicPipelineStatePool::GetPipelineState(L"initPipelineState");
+		if (!pipelineState) {
+			throw BaseException(
+				L"初期化用のパイプラインステートが取得できません",
+				L"BaseFrame::BaseFrame()"
+			);
+		}
+		auto pipelineStateShadowMap = BasicPipelineStatePool::GetPipelineState(L"shadowMapPipelineState");
+		if (!pipelineStateShadowMap) {
+			throw BaseException(
+				L"シャドウマップ用のパイプラインステートが取得できません",
+				L"BaseFrame::BaseFrame()"
+			);
+		}
+
+
 
 		//stateごとのコマンドリスト
 		for (UINT i = 0; i < BaseDevice::m_commandListCount; i++)
 		{
 			ThrowIfFailed(pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators[i])));
-			ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocators[i].Get(), m_pipelineState.Get(), IID_PPV_ARGS(&m_commandLists[i])));
+			ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocators[i].Get(), pipelineState.Get(), IID_PPV_ARGS(&m_commandLists[i])));
 
 			NAME_D3D12_OBJECT_INDEXED(m_commandLists, i);
 
@@ -32,7 +49,7 @@ namespace basecross {
 		ThrowIfFailed(pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
 			IID_PPV_ARGS(&m_updateCommandAllocator)));
 		ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
-			m_updateCommandAllocator.Get(), m_pipelineState.Get(), IID_PPV_ARGS(&m_updateCommandList)));
+			m_updateCommandAllocator.Get(), pipelineState.Get(), IID_PPV_ARGS(&m_updateCommandList)));
 		NAME_D3D12_OBJECT(m_updateCommandList);
 		ThrowIfFailed(m_updateCommandList->Close());
 
@@ -40,7 +57,7 @@ namespace basecross {
 		ThrowIfFailed(pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
 			IID_PPV_ARGS(&m_shadowCommandAllocator)));
 		ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
-			m_shadowCommandAllocator.Get(), m_pipelineStateShadowMap.Get(), IID_PPV_ARGS(&m_shadowCommandList)));
+			m_shadowCommandAllocator.Get(), pipelineStateShadowMap.Get(), IID_PPV_ARGS(&m_shadowCommandList)));
 		NAME_D3D12_OBJECT(m_shadowCommandList);
 		ThrowIfFailed(m_shadowCommandList->Close());
 
@@ -48,7 +65,7 @@ namespace basecross {
 		ThrowIfFailed(pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, 
 			IID_PPV_ARGS(&m_sceneCommandAllocator)));
 		ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
-			m_sceneCommandAllocator.Get(), m_pipelineState.Get(), IID_PPV_ARGS(&m_sceneCommandList)));
+			m_sceneCommandAllocator.Get(), pipelineState.Get(), IID_PPV_ARGS(&m_sceneCommandList)));
 		NAME_D3D12_OBJECT(m_sceneCommandList);
 		ThrowIfFailed(m_sceneCommandList->Close());
 
@@ -151,21 +168,36 @@ namespace basecross {
 
 	void BaseFrame::Init()
 	{
+		auto pipelineState = BasicPipelineStatePool::GetPipelineState(L"initPipelineState");
+		if (!pipelineState) {
+			throw BaseException(
+				L"初期化用のパイプラインステートが取得できません",
+				L"BaseFrame::Init()"
+			);
+		}
+		auto pipelineStateShadowMap = BasicPipelineStatePool::GetPipelineState(L"shadowMapPipelineState");
+		if (!pipelineStateShadowMap) {
+			throw BaseException(
+				L"シャドウマップ用のパイプラインステートが取得できません",
+				L"BaseFrame::Init()"
+			);
+		}
+
 		// Reset the command allocators and lists for the main thread.
 		for (int i = 0; i < BaseDevice::m_commandListCount; i++)
 		{
 			ThrowIfFailed(m_commandAllocators[i]->Reset());
-			ThrowIfFailed(m_commandLists[i]->Reset(m_commandAllocators[i].Get(), m_pipelineState.Get()));
+			ThrowIfFailed(m_commandLists[i]->Reset(m_commandAllocators[i].Get(), pipelineState.Get()));
 		}
 
 		// Clear the depth stencil buffer in preparation for rendering the shadow map.
 		m_commandLists[BaseDevice::m_commandListPre]->ClearDepthStencilView(m_shadowDepthView, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 		ThrowIfFailed(m_shadowCommandAllocator->Reset());
-		ThrowIfFailed(m_shadowCommandList->Reset(m_shadowCommandAllocator.Get(), m_pipelineStateShadowMap.Get()));
+		ThrowIfFailed(m_shadowCommandList->Reset(m_shadowCommandAllocator.Get(), pipelineStateShadowMap.Get()));
 
 		ThrowIfFailed(m_sceneCommandAllocator->Reset());
-		ThrowIfFailed(m_sceneCommandList->Reset(m_sceneCommandAllocator.Get(), m_pipelineState.Get()));
+		ThrowIfFailed(m_sceneCommandList->Reset(m_sceneCommandAllocator.Get(), pipelineState.Get()));
 	}
 
 	void BaseFrame::SwapBarriers()

@@ -303,9 +303,43 @@ namespace basecross {
 		}
 	}
 
+	void BaseScene::PostSceneEvent(float dispatchTime, const wstring& msgStr) {
+		//イベントの作成 
+		auto ptr = make_shared<SceneEvent>(dispatchTime, msgStr);
+		m_eventVec.push_back(ptr);
+	}
+
+	void BaseScene::DispatchDelayedEvent() {
+		//前回のターンからの時間
+		float elapsedTime = App::GetElapsedTime();
+		auto it = m_eventVec.begin();
+		while (it != m_eventVec.end()) {
+			(*it)->m_dispatchTime -= elapsedTime;
+			if ((*it)->m_dispatchTime <= 0.0f) {
+				(*it)->m_dispatchTime = 0.0f;
+				//メッセージの送信
+				OnEvent(*it);
+				//キューから削除
+				it = m_eventVec.erase(it);
+				//削除後のイテレータが「最後」の
+				//ときはループを抜ける
+				if (it == m_eventVec.end()) {
+					break;
+				}
+			}
+			else {
+				it++;
+			}
+		}
+	}
+
+
+
 	void BaseScene::OnUpdate() {
 		auto stagePtr = GetActiveStage(false);
 		if (stagePtr) {
+//			DispatchDelayedEvent();
+//			App::GetEventDispatcher()->DispatchDelayedEvent();
 			stagePtr->UpdateStage();
 		}
 	}

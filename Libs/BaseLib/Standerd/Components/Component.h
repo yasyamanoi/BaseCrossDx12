@@ -292,7 +292,7 @@ namespace basecross {
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
-		@brief	ゲームオブジェクトを得る
+		@brief	ゲームオブジェクトを得る(const)
 		@return	ゲームオブジェクト
 		*/
 		//--------------------------------------------------------------------------------------
@@ -302,7 +302,7 @@ namespace basecross {
 				throw BaseException(
 					L"GameObjectは有効ではありません",
 					L"if (!shptr)",
-					L"Component::GetGameObject()"
+					L"Component::GetGameObject()const"
 				);
 			}
 			else {
@@ -310,6 +310,7 @@ namespace basecross {
 			}
 			return nullptr;
 		}
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	ステージを得る

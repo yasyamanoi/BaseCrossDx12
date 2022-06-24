@@ -29,7 +29,8 @@ namespace basecross {
 		m_samplerSendIndex(0),
 		m_srvSendIndex(m_srvStartIndex),
 		m_cbvUavSendIndex(m_cbvUavStartIndex),
-		m_process(process::pipelineInit)
+		m_process(process::pipelineInit),
+		m_stageReCreated(false)
 	{
 		m_aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 		ThrowIfFailed(DXGIDeclareAdapterRemovalSupport());
@@ -336,7 +337,14 @@ namespace basecross {
 		// Create the pipeline state, which includes loading shaders.
 		CreatePipelineStates();
 		// Create temporary command list for initial GPU setup.
-		ThrowIfFailed(m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator.Get(), m_pipelineState.Get(), IID_PPV_ARGS(&m_initCommandList)));
+		auto pipeState = BasicPipelineStatePool::GetPipelineState(L"initPipelineState");
+		if (!pipeState) {
+			throw BaseException(
+				L"初期化用のパイプラインステートが取得できません",
+				L"BaseDevice::LoadAssets()"
+			);
+		}
+		ThrowIfFailed(m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator.Get(), pipeState.Get(), IID_PPV_ARGS(&m_initCommandList)));
 		m_process = process::pipelineInit;
 		// Create render target views (RTVs).
 		CreateRenderTargetViews();
@@ -370,7 +378,7 @@ namespace basecross {
 			featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
 		}
 
-		CD3DX12_DESCRIPTOR_RANGE1 ranges[6]; // Perfomance TIP: Order from most frequent to least frequent.
+		CD3DX12_DESCRIPTOR_RANGE1 ranges[12]; // Perfomance TIP: Order from most frequent to least frequent.
 
 		//ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);	// 1 frequently changed diffuse texture using register t1.
 		//ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);	// 1 frequently changed normal texture using register t2.
@@ -380,29 +388,54 @@ namespace basecross {
 		//ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 1);						// 1 static samplers.
 
 
-		ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// 1 frequently changed diffuse texture using register t1.
-		ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// 1 frequently changed normal texture using register t2.
-		ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// 1 frequently changed constant buffer.
-		ranges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);												// 1 infrequently changed shadow texture - starting in register t0.
-		ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);						// 1 static samplers.
-		ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);						// 1 static samplers.
+		//ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// 1 frequently changed diffuse texture using register t1.
+		//ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// 1 frequently changed normal texture using register t2.
+		//ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// 1 frequently changed constant buffer.
+		//ranges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);												// 1 infrequently changed shadow texture - starting in register t0.
+		//ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);						// 1 static samplers.
+		//ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);						// 1 static samplers.
 
-		CD3DX12_ROOT_PARAMETER1 rootParameters[6];
+		ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// t1.
+		ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// t2.
+		ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// t3.
+		ranges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// t4.
+		ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	//b0
+		ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	//b1
+		ranges[6].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	//  t0.
+		ranges[7].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// s0
+		ranges[8].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// s1
+		ranges[9].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 2, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// s2
+		ranges[10].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 3, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE); // s3
+		ranges[11].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 4, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE); // s4
+
+		CD3DX12_ROOT_PARAMETER1 rootParameters[12];
 
 
-		rootParameters[0].InitAsDescriptorTable(1, &ranges[0], D3D12_SHADER_VISIBILITY_PIXEL);
-		rootParameters[1].InitAsDescriptorTable(1, &ranges[1], D3D12_SHADER_VISIBILITY_PIXEL);
-		rootParameters[2].InitAsDescriptorTable(1, &ranges[2], D3D12_SHADER_VISIBILITY_ALL);
-		rootParameters[3].InitAsDescriptorTable(1, &ranges[3], D3D12_SHADER_VISIBILITY_PIXEL);
-		rootParameters[4].InitAsDescriptorTable(1, &ranges[4], D3D12_SHADER_VISIBILITY_PIXEL);
-		rootParameters[5].InitAsDescriptorTable(1, &ranges[5], D3D12_SHADER_VISIBILITY_PIXEL);
+		rootParameters[0].InitAsDescriptorTable(1, &ranges[0], D3D12_SHADER_VISIBILITY_PIXEL); //t1
+		rootParameters[1].InitAsDescriptorTable(1, &ranges[1], D3D12_SHADER_VISIBILITY_PIXEL); //t2
+		rootParameters[2].InitAsDescriptorTable(1, &ranges[2], D3D12_SHADER_VISIBILITY_PIXEL); //t3
+		rootParameters[3].InitAsDescriptorTable(1, &ranges[3], D3D12_SHADER_VISIBILITY_PIXEL); //t4
+		rootParameters[4].InitAsDescriptorTable(1, &ranges[4], D3D12_SHADER_VISIBILITY_ALL); //b0
+		rootParameters[5].InitAsDescriptorTable(1, &ranges[5], D3D12_SHADER_VISIBILITY_ALL); //b1
+		rootParameters[6].InitAsDescriptorTable(1, &ranges[6], D3D12_SHADER_VISIBILITY_PIXEL); //t0
+		rootParameters[7].InitAsDescriptorTable(1, &ranges[7], D3D12_SHADER_VISIBILITY_PIXEL); //s0
+		rootParameters[8].InitAsDescriptorTable(1, &ranges[8], D3D12_SHADER_VISIBILITY_PIXEL); //s1
+		rootParameters[9].InitAsDescriptorTable(1, &ranges[9], D3D12_SHADER_VISIBILITY_PIXEL); //s2
+		rootParameters[10].InitAsDescriptorTable(1, &ranges[10], D3D12_SHADER_VISIBILITY_PIXEL); //s3
+		rootParameters[11].InitAsDescriptorTable(1, &ranges[11], D3D12_SHADER_VISIBILITY_PIXEL); //s4
 
-		SetGpuSlot(L"t0", 3);
+		SetGpuSlot(L"t0", 6);
 		SetGpuSlot(L"t1", 0);
 		SetGpuSlot(L"t2", 1);
-		SetGpuSlot(L"s0", 4);
-		SetGpuSlot(L"s1", 5);
-		SetGpuSlot(L"b0", 2);
+		SetGpuSlot(L"t3", 2);
+		SetGpuSlot(L"t4", 3);
+		SetGpuSlot(L"s0", 7);
+		SetGpuSlot(L"s1", 8);
+		SetGpuSlot(L"s2", 9);
+		SetGpuSlot(L"s3", 10);
+		SetGpuSlot(L"s4", 11);
+		SetGpuSlot(L"b0", 4);
+		SetGpuSlot(L"b1", 5);
 
 		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
 		//HULL_SHADERとDOMAIN_SHADERとGEOMETRY_SHADERをアクセスできない設定
@@ -427,6 +460,11 @@ namespace basecross {
 	}
 
 	void BaseDevice::CreatePipelineStates() {
+
+		ComPtr<ID3D12PipelineState> initPipelineState;
+		ComPtr<ID3D12PipelineState> shadowMapPipelineState;
+
+
 		CD3DX12_DEPTH_STENCIL_DESC depthStencilDesc(D3D12_DEFAULT);
 		depthStencilDesc.DepthEnable = true;
 		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
@@ -457,8 +495,11 @@ namespace basecross {
 		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		psoDesc.SampleDesc.Count = 1;
 
-		ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
-		NAME_D3D12_OBJECT(m_pipelineState);
+		ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&initPipelineState)));
+		NAME_D3D12_OBJECT(initPipelineState);
+		//保存するパイプ来ステートに追加
+		BasicPipelineStatePool::AddPipelineState(L"initPipelineState", initPipelineState);
+
 
 		// Alter the description and create the PSO for rendering
 		// the shadow map.  The shadow map does not use a pixel
@@ -467,8 +508,11 @@ namespace basecross {
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
 		psoDesc.NumRenderTargets = 0;
 
-		ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineStateShadowMap)));
-		NAME_D3D12_OBJECT(m_pipelineStateShadowMap);
+		ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&shadowMapPipelineState)));
+		NAME_D3D12_OBJECT(shadowMapPipelineState);
+
+		//保存するパイプ来ステートに追加
+		BasicPipelineStatePool::AddPipelineState(L"shadowMapPipelineState", shadowMapPipelineState);
 
 	}
 
@@ -628,9 +672,23 @@ namespace basecross {
 	}
 
 	void BaseDevice::CreateFrameResources() {
+		auto pipeState = BasicPipelineStatePool::GetPipelineState(L"initPipelineState");
+		if (!pipeState) {
+			throw BaseException(
+				L"初期化用のパイプラインステートが取得できません",
+				L"BaseDevice::CreateFrameResources()"
+			);
+		}
+		auto shadowPipeState = BasicPipelineStatePool::GetPipelineState(L"shadowMapPipelineState");
+		if (!shadowPipeState) {
+			throw BaseException(
+				L"シャドウマップ用のパイプラインステートが取得できません",
+				L"BaseDevice::CreateFrameResources()"
+			);
+		}
 		for (int i = 0; i < m_frameCount; i++)
 		{
-			m_baseFrames[i] = new BaseFrame(m_device.Get(), m_pipelineState.Get(), m_pipelineStateShadowMap.Get(), m_dsvHeap.Get(), m_cbvSrvUavHeap.Get(), &m_viewport, i);
+			m_baseFrames[i] = new BaseFrame(m_device.Get(), pipeState.Get(), shadowPipeState.Get(), m_dsvHeap.Get(), m_cbvSrvUavHeap.Get(), &m_viewport, i);
 			App::GetBaseScene()->OnInitFrame(m_baseFrames[i]);
 			App::GetBaseScene()->WriteConstantBuffers(m_baseFrames[i]);
 		}
@@ -690,12 +748,14 @@ namespace basecross {
 
 		int retCode = 0;
 		try {
+#if defined(_DEBUG)
 			static bool loopStart = false;
 			if (!loopStart) {
 				OutputDebugStringA("loopStart\n");
 				loopStart = true;
 
 			}
+#endif
 			App::GetInputDevice().ResetControlerState();
 			OnUpdate();
 			OnDraw();
@@ -774,10 +834,31 @@ namespace basecross {
 			}
 		}
 
+		auto pipelineState = BasicPipelineStatePool::GetPipelineState(L"initPipelineState");
+		if (!pipelineState) {
+			throw BaseException(
+				L"初期化更新用のパイプラインステートが取得できません",
+				L"BaseDevice::OnUpdate()"
+			);
+		}
+
 		//コマンドリスト開始。
 		ThrowIfFailed(GetCurrentBaseFrame()->m_updateCommandAllocator->Reset());
-		ThrowIfFailed(GetCurrentBaseFrame()->m_updateCommandList->Reset(GetCurrentBaseFrame()->m_updateCommandAllocator.Get(), GetCurrentBaseFrame()->m_pipelineState.Get()));
+		ThrowIfFailed(GetCurrentBaseFrame()->m_updateCommandList->Reset(GetCurrentBaseFrame()->m_updateCommandAllocator.Get(), pipelineState.Get()));
 		m_process = process::update;
+		//シーンのイベントを実行
+		App::GetBaseScene()->DispatchDelayedEvent();
+		if (IsStageReCreated()) {
+			//コンスタンとバッファ領域を初期化
+			m_cbvUavSendIndex = m_cbvUavStartIndex;
+
+			for (int i = 0; i < m_frameCount; i++)
+			{
+				App::GetBaseScene()->OnInitFrame(m_baseFrames[i]);
+				App::GetBaseScene()->WriteConstantBuffers(m_baseFrames[i]);
+			}
+			SetStageReCreated(false);
+		}
 		//シーンのOnUpdate
 		App::GetBaseScene()->OnUpdate();
 		App::GetBaseScene()->WriteConstantBuffers(GetCurrentBaseFrame());
@@ -905,8 +986,9 @@ namespace basecross {
 		m_fenceValue++;
 	}
 	void BaseDevice::OnDestroy() {
-
+#if defined(_DEBUG)
 		OutputDebugStringA("deviceDestroyStart\n");
+#endif
 		//シーンの開放
 		App::GetBaseScene()->OnDestroy();
 		// GPUリソースの開放
@@ -929,8 +1011,9 @@ namespace basecross {
 		{
 			delete m_baseFrames[i];
 		}
-
-		OutputDebugStringA("deviceDestroy\n");
+#if defined(_DEBUG)
+		OutputDebugStringA("deviceDestroyEnd\n");
+#endif
 
 	}
 	void BaseDevice::OnKeyDown(UINT8 key) {

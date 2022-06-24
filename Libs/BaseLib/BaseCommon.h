@@ -93,6 +93,7 @@ using Microsoft::WRL::ComPtr;
 
 #include "Basic/BaseMath.h"
 using namespace basecross::bsm;
+#include "Basic/Event.h"
 #include "Basic/BaseHelper.h"
 #include "Basic/VertexHelper.h"
 #include "Basic/MeshHelper.h"
@@ -100,6 +101,7 @@ using namespace basecross::bsm;
 #include "Basic/TransHelper.h"
 #include "Basic/InputDevice.h"
 #include "Basic/BaseBlendState.h"
+#include "Basic/BasicPipelineState.h"
 #include "Basic/BaseCamera.h"
 #include "Basic/BaseLight.h"
 #include "Basic/BaseTimer.h"
@@ -122,6 +124,7 @@ using namespace basecross::bsm;
 #include "Standerd/Components/Action.h"
 #include "Standerd/Components/Collision.h"
 #include "Standerd/Objects/CollisionManager.h"
+#include "Standerd/Components/Rigidbody.h"
 #include "Standerd/Components/ShadowmapDraw.h"
 #include "Standerd/Components/SpStaticDraw.h"
 #include "Standerd/Components/BcStaticDraw.h"

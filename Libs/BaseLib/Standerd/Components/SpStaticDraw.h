@@ -63,6 +63,48 @@ namespace basecross {
 	};
 
 	//--------------------------------------------------------------------------------------
+	///	SpPCStatic描画コンポーネント
+	//--------------------------------------------------------------------------------------
+
+	DECLARE_DX12SHADER(SpVSPCStatic)
+	DECLARE_DX12SHADER(SpPSPCStatic)
+
+	class SpPCStaticDraw : public SpStaticDraw {
+		void CreatePipelineStates();
+	protected:
+		virtual void PopulateCommandList(BaseFrame* pBaseFrame)override;
+	public:
+		explicit SpPCStaticDraw(const shared_ptr<GameObject>& gameObjectPtr);
+		SpPCStaticDraw(const shared_ptr<GameObject>& gameObjectPtr,
+			vector<VertexPositionColor>& vertices, vector<uint32_t>& indices);
+		virtual ~SpPCStaticDraw() {}
+		//操作
+		virtual void OnCreate()override;
+		virtual void OnUpdate()override {}
+		virtual void OnDestroy()override {}
+	};
+
+	//--------------------------------------------------------------------------------------
+	///	SpWireframeDraw描画コンポーネント(ワイヤフレーム)
+	//--------------------------------------------------------------------------------------
+	class SpWireframeDraw : public SpStaticDraw {
+		void CreatePipelineStates();
+	protected:
+		virtual void PopulateCommandList(BaseFrame* pBaseFrame)override;
+	public:
+		explicit SpWireframeDraw(const shared_ptr<GameObject>& gameObjectPtr);
+		SpWireframeDraw(const shared_ptr<GameObject>& gameObjectPtr,
+			vector<VertexPositionColor>& vertices, vector<uint32_t>& indices);
+		virtual ~SpWireframeDraw() {}
+		//操作
+		virtual void OnCreate()override;
+		virtual void OnUpdate()override {}
+		virtual void OnDestroy()override {}
+	};
+
+
+
+	//--------------------------------------------------------------------------------------
 	///	SpPNTStatic描画コンポーネント
 	//--------------------------------------------------------------------------------------
 
@@ -74,10 +116,6 @@ namespace basecross {
 
 	class SpPNTStaticDraw : public SpStaticDraw {
 		void CreatePipelineStates();
-		ComPtr<ID3D12PipelineState> m_defaultPipelineState;
-		ComPtr<ID3D12PipelineState> m_defaultShadowPipelineState;
-		ComPtr<ID3D12PipelineState> m_alphaPipelineState;
-		ComPtr<ID3D12PipelineState> m_alphaShadowPipelineState;
 	protected:
 		virtual void PopulateCommandList(BaseFrame* pBaseFrame)override;
 	public:

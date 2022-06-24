@@ -208,6 +208,7 @@ namespace basecross {
 
 
 		shared_ptr<Stage> GetStage(bool exceptionActive = true) const;
+
 		template<typename T, typename... Ts>
 		shared_ptr<T> AddComponent(Ts&&... params) {
 			type_index t_index = type_index(typeid(T));

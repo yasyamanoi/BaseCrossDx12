@@ -14,12 +14,41 @@ namespace basecross {
 	class Stage;
 
 	//--------------------------------------------------------------------------------------
+	///	シーン特有のイベント構造体
+	//--------------------------------------------------------------------------------------
+	struct SceneEvent {
+		///	遅延時間（SendEventの場合は常に0）
+		float m_dispatchTime;
+		///	メッセージ文字列
+		wstring m_msgStr;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンストラクタ
+		@param[in]	dispatchTime	配送までの時間
+		@param[in]	msgStr	メッセージ文字列
+		*/
+		//--------------------------------------------------------------------------------------
+		SceneEvent(float dispatchTime, const wstring& msgStr) :
+			m_dispatchTime(dispatchTime),
+			m_msgStr(msgStr)
+		{}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	デストラクタ
+		*/
+		//--------------------------------------------------------------------------------------
+		~SceneEvent() {}
+	};
+
+
+	//--------------------------------------------------------------------------------------
 	///	シーン親クラス
 	//--------------------------------------------------------------------------------------
 	class BaseScene {
 		map<wstring, shared_ptr<BaseMesh>> m_meshMap;
 		map<wstring, shared_ptr<BaseTexture>> m_textureMap;
 		shared_ptr<Stage> m_activeStage;
+		vector<shared_ptr<SceneEvent>> m_eventVec;
 		void CreateDefaultMeshes();
 		void ConvertVertex(const vector<VertexPositionNormalTexture>& vertices,
 			vector<VertexPositionColor>& new_pc_vertices,
@@ -29,13 +58,13 @@ namespace basecross {
 		);
 	protected:
 		BaseScene():
+			m_eventVec(),
 			m_activeStage(nullptr)
 		{}
 		virtual ~BaseScene() {}
 		void SetActiveStage(const shared_ptr<Stage>& stage) {
 			m_activeStage = stage;
 		}
-
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -52,6 +81,8 @@ namespace basecross {
 			if (ActStagePtr) {
 				//破棄を伝える
 				ActStagePtr->OnDestroy();
+				ActStagePtr = nullptr;
+				App::GetBaseDevice()->SetStageReCreated(true);
 			}
 			auto Ptr = ObjectFactory::Create<T>(params...);
 			auto StagePtr = dynamic_pointer_cast<Stage>(Ptr);
@@ -141,6 +172,25 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		shared_ptr<BaseTexture> GetTexture(const wstring& key);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	シーンへのイベントのPOST（キューに入れる）
+		@param[in]	dispatchTime	遅延時間
+		@param[in]	msgStr	メッセージ
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void PostSceneEvent(float dispatchTime, const wstring& msgStr);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントを受け取る
+		@param[in]	sceneEvent	シーンイベント
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void OnEvent(const shared_ptr<SceneEvent>& sceneEvent) {}
+
+		void DispatchDelayedEvent();
 
 
 		virtual void OnPreCreate();

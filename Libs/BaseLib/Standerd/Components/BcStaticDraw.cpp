@@ -178,6 +178,17 @@ namespace basecross {
 
 	void BcPNTStaticDraw::CreatePipelineStates() {
 		auto pDevice = App::GetBaseDevice();
+
+		ComPtr<ID3D12PipelineState> defaultPipelineState 
+			= BasicPipelineStatePool::GetPipelineState(L"BcPNTStaticDefault");
+		ComPtr<ID3D12PipelineState> defaultShadowPipelineState
+			= BasicPipelineStatePool::GetPipelineState(L"BcPNTStaticDefaultShadow");
+		ComPtr<ID3D12PipelineState> alphaPipelineState
+			= BasicPipelineStatePool::GetPipelineState(L"BcPNTStaticAlpha");
+		ComPtr<ID3D12PipelineState> alphaShadowPipelineState
+			= BasicPipelineStatePool::GetPipelineState(L"BcPNTStaticAlphaShadow");
+
+
 		CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
 		//カリング
 		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
@@ -206,12 +217,18 @@ namespace basecross {
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		psoDesc.SampleDesc.Count = 1;
 		//デフォルト影無し
-		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultPipelineState)));
-		NAME_D3D12_OBJECT(m_defaultPipelineState);
+		if (!defaultPipelineState) {
+			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&defaultPipelineState)));
+			NAME_D3D12_OBJECT(defaultPipelineState);
+			BasicPipelineStatePool::AddPipelineState(L"BcPNTStaticDefault", defaultPipelineState);
+		}
 		//アルファ影なし
 		psoDesc.BlendState = BaseBlendState::GetAlphaBlendEx();
-		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaPipelineState)));
-		NAME_D3D12_OBJECT(m_alphaPipelineState);
+		if (!alphaPipelineState) {
+			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&alphaPipelineState)));
+			NAME_D3D12_OBJECT(alphaPipelineState);
+			BasicPipelineStatePool::AddPipelineState(L"BcPNTStaticAlpha", alphaPipelineState);
+		}
 		//デフォルト影あり
 		psoDesc.BlendState = BaseBlendState::GetOpaqueBlend();
 		psoDesc.VS =
@@ -224,12 +241,18 @@ namespace basecross {
 			reinterpret_cast<UINT8*>(BcPSPNTPLShadow::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
 			BcPSPNTPLShadow::GetPtr()->GetShaderComPtr()->GetBufferSize()
 		};
-		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_defaultShadowPipelineState)));
-		NAME_D3D12_OBJECT(m_defaultShadowPipelineState);
-		//アルファ影あり
+		if (!defaultShadowPipelineState) {
+			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&defaultShadowPipelineState)));
+			NAME_D3D12_OBJECT(defaultShadowPipelineState);
+			BasicPipelineStatePool::AddPipelineState(L"BcPNTStaticDefaultShadow", defaultShadowPipelineState);
+		}
 		psoDesc.BlendState = BaseBlendState::GetAlphaBlendEx();
-		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_alphaShadowPipelineState)));
-		NAME_D3D12_OBJECT(m_alphaShadowPipelineState);
+		//アルファ影あり
+		if (!alphaShadowPipelineState) {
+			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&alphaShadowPipelineState)));
+			NAME_D3D12_OBJECT(alphaShadowPipelineState);
+			BasicPipelineStatePool::AddPipelineState(L"BcPNTStaticAlphaShadow", alphaShadowPipelineState);
+		}
 	}
 
 
@@ -240,24 +263,34 @@ namespace basecross {
 
 	void BcPNTStaticDraw::PopulateCommandList(BaseFrame* pBaseFrame) {
 		auto pDevice = App::GetBaseDevice();
+		ComPtr<ID3D12PipelineState> defaultPipelineState
+			= BasicPipelineStatePool::GetPipelineState(L"BcPNTStaticDefault",true);
+		ComPtr<ID3D12PipelineState> defaultShadowPipelineState
+			= BasicPipelineStatePool::GetPipelineState(L"BcPNTStaticDefaultShadow", true);
+		ComPtr<ID3D12PipelineState> alphaPipelineState
+			= BasicPipelineStatePool::GetPipelineState(L"BcPNTStaticAlpha", true);
+		ComPtr<ID3D12PipelineState> alphaShadowPipelineState
+			= BasicPipelineStatePool::GetPipelineState(L"BcPNTStaticAlphaShadow", true);
+
+
 		auto pCommandList = pDevice->GetComandList().Get();
 		if (GetGameObject()->IsAlphaActive()) {
 			if (IsOwnShadowActive()) {
-				pCommandList->SetPipelineState(m_alphaShadowPipelineState.Get());
+				pCommandList->SetPipelineState(alphaShadowPipelineState.Get());
 				pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"t0"), pBaseFrame->m_shadowDepthHandle);        // Set the shadow texture as an SRV.
 			}
 			else {
-				pCommandList->SetPipelineState(m_alphaPipelineState.Get());
+				pCommandList->SetPipelineState(alphaPipelineState.Get());
 				pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"t0"), pBaseFrame->m_nullSrvHandle0);        // Set the shadow texture as an SRV.
 			}
 		}
 		else {
 			if (IsOwnShadowActive()) {
-				pCommandList->SetPipelineState(m_defaultShadowPipelineState.Get());
+				pCommandList->SetPipelineState(defaultShadowPipelineState.Get());
 				pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"t0"), pBaseFrame->m_shadowDepthHandle);        // Set the shadow texture as an SRV.
 			}
 			else {
-				pCommandList->SetPipelineState(m_defaultPipelineState.Get());
+				pCommandList->SetPipelineState(defaultPipelineState.Get());
 				pCommandList->SetGraphicsRootDescriptorTable(pDevice->GetGpuSlotID(L"t0"), pBaseFrame->m_nullSrvHandle0);        // Set the shadow texture as an SRV.
 			}
 

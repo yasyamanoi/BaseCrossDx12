@@ -25,6 +25,10 @@ namespace basecross {
 
 	void Shadowmap::CreatePipelineStates() {
 		auto pDevice = App::GetBaseDevice();
+
+		ComPtr<ID3D12PipelineState> PNTShadowmapPipelineState
+			= BasicPipelineStatePool::GetPipelineState(L"PNTShadowmap");
+
 		// シャドウマップ用
 		CD3DX12_DEPTH_STENCIL_DESC depthStencilDesc(D3D12_DEFAULT);
 		depthStencilDesc.DepthEnable = TRUE;
@@ -54,9 +58,13 @@ namespace basecross {
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
 		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		psoDesc.SampleDesc.Count = 1;
+		if (!PNTShadowmapPipelineState) {
+			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&PNTShadowmapPipelineState)));
+			NAME_D3D12_OBJECT(PNTShadowmapPipelineState);
+			BasicPipelineStatePool::AddPipelineState(L"PNTShadowmap", PNTShadowmapPipelineState);
 
-		ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_PNTPipelineState)));
-		NAME_D3D12_OBJECT(m_PNTPipelineState);
+		}
+
 	}
 
 	//コンスタントバッファの登録
@@ -97,8 +105,12 @@ namespace basecross {
 
 	void Shadowmap::PopulateCommandList(BaseFrame* pBaseFrame) {
 		auto pDevice = App::GetBaseDevice();
+
+		ComPtr<ID3D12PipelineState> PNTShadowmapPipelineState
+			= BasicPipelineStatePool::GetPipelineState(L"PNTShadowmap",true);
+
 		auto pCommandList = pDevice->GetComandList().Get();
-		pCommandList->SetPipelineState(m_PNTPipelineState.Get());
+		pCommandList->SetPipelineState(PNTShadowmapPipelineState.Get());
 		pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		auto paramIndex = GetConstBuffParamIndex();
 		//Cbv

@@ -91,7 +91,7 @@ namespace basecross {
 		bsm::Vec3	m_Torque;
 		bsm::Vec3	m_LinearVelocity;
 		bsm::Vec3	m_AngularVelocity;
-		PsBodyUpdateStatus() :
+		PsBodyUpdateStatus():
 			m_Force(0.0f),
 			m_Torque(0.0f),
 			m_LinearVelocity(0.0f),
@@ -172,9 +172,12 @@ namespace basecross {
 		const sce::PhysicsEffects::PfxRigidBody& getPfxRigidBody() const;
 		sce::PhysicsEffects::PfxRigidBody& getPfxRigidBody();
 
-		virtual void OnUpdate() override {}
-		virtual void OnDraw() override {}
-		virtual void OnDestroy() override {}
+		virtual void OnCreate()override {}
+		virtual void OnUpdate()override {}
+		virtual void OnDraw()override {}
+		virtual void OnDestroy()override {}
+
+
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -230,6 +233,8 @@ namespace basecross {
 		virtual PsShapeType GetShapeType() const override {
 			return PsShapeType::Box;
 		}
+
+
 	private:
 		// pImplイディオム
 		struct Impl;
@@ -261,7 +266,7 @@ namespace basecross {
 		@param[in]	index	インデックス
 		*/
 		//--------------------------------------------------------------------------------------
-		explicit PsSphere(const PsSphereParam& param, uint16_t index);
+		explicit PsSphere(const PsSphereParam& param,uint16_t index);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	デストラクタ
@@ -415,63 +420,11 @@ namespace basecross {
 		unique_ptr<Impl> pImpl;
 	};
 
-#ifdef test
-
-	//--------------------------------------------------------------------------------------
-	///	ConvexMeshリソース
-	//--------------------------------------------------------------------------------------
-	class PsConvexMeshResource : public BaseMesh {
-		friend class ObjectFactory;
-		//コンストラクタは直接呼び出せない
-		PsConvexMeshResource(vector<VertexPositionNormalTexture>& vertices, vector<uint16_t>& indices);
-	public:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	PsConvexMeshResourceの作成
-		@param[in]	vertices	頂点の配列
-		@param[in]	indices	インデックスの配列
-		@return	作成されたスマートポインタ
-		*/
-		//--------------------------------------------------------------------------------------
-		static shared_ptr<PsConvexMeshResource> CreateMeshResource(vector<VertexPositionNormalTexture>& vertices, vector<uint16_t>& indices);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デストラクタ
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual ~PsConvexMeshResource();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	メッシュインデックスの取得
-		@return	メッシュインデックス
-		*/
-		//--------------------------------------------------------------------------------------
-		uint32_t GetMeshIndex() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	バックアップされている頂点の取得
-		@return	バックアップされている頂点
-		*/
-		//--------------------------------------------------------------------------------------
-		const vector<VertexPositionNormalTexture>& GetVertices() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	バックアップされているインデックスの取得
-		@return	バックアップされているインデックス
-		*/
-		//--------------------------------------------------------------------------------------
-		const vector<uint16_t>& GetIndices() const;
-	private:
-		// pImplイディオム
-		struct Impl;
-		unique_ptr<Impl> pImpl;
-	};
 
 	//--------------------------------------------------------------------------------------
 	///	凸面作成のパラメータ
 	//--------------------------------------------------------------------------------------
 	struct PsConvexParam : public PsParam {
-		shared_ptr<PsConvexMeshResource> m_ConvexMeshResource;
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -498,7 +451,7 @@ namespace basecross {
 		@brief	初期化
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnInit()override;
+		virtual void OnCreate()override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	初期化時のパラメータを得る
@@ -520,8 +473,6 @@ namespace basecross {
 		struct Impl;
 		unique_ptr<Impl> pImpl;
 	};
-#endif
-
 
 	//--------------------------------------------------------------------------------------
 	///	プリミティブ合成作成のタイプ
@@ -546,18 +497,15 @@ namespace basecross {
 		float m_Radius;
 		//Capsule,Cylinderで使う半分の長さ
 		float m_HalfLen;
-		//Convexで使うリソース
-//		shared_ptr<PsConvexMeshResource> m_ConvexMeshResource;
 		//オフセット回転
 		bsm::Quat m_OffsetOrientation;
 		//オフセット位置
 		bsm::Vec3 m_OffsetPosition;
-		PsCombinedPrimitive() :
+		PsCombinedPrimitive():
 			m_CombinedType(PsCombinedType::TypeSphere),
-			m_HalfSize(bsm::Vec3(0.5f, 0.5f, 0.5f)),
+			m_HalfSize(bsm::Vec3(0.5f,0.5f,0.5f)),
 			m_Radius(0.5f),
 			m_HalfLen(0.5f),
-			//			m_ConvexMeshResource(nullptr),
 			m_OffsetOrientation(bsm::Quat()),
 			m_OffsetPosition(0.0f)
 		{}
@@ -566,7 +514,6 @@ namespace basecross {
 			m_HalfSize = bsm::Vec3(0.5f, 0.5f, 0.5f);
 			m_Radius = 0.5f;
 			m_HalfLen = 0.5f;
-			//			m_ConvexMeshResource = nullptr;
 			m_OffsetOrientation = bsm::Quat();
 			m_OffsetPosition = bsm::Vec3(0.0f);
 		}
@@ -632,7 +579,6 @@ namespace basecross {
 		unique_ptr<Impl> pImpl;
 	};
 
-
 	//--------------------------------------------------------------------------------------
 	///	ジョイントパラメータの親
 	//--------------------------------------------------------------------------------------
@@ -640,7 +586,7 @@ namespace basecross {
 		bsm::Vec3 m_AnchorPoint;
 		uint16_t m_IndexA;
 		uint16_t m_IndexB;
-		PsJointParam() :
+		PsJointParam():
 			m_AnchorPoint(0.0f),
 			m_IndexA(0),
 			m_IndexB(0)
@@ -709,9 +655,11 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		virtual void SetActive(bool b) = 0;
 
-		virtual void OnUpdate() override {}
-		virtual void OnDraw() override {}
-		virtual void OnDestroy() override {}
+		virtual void OnCreate()override {}
+		virtual void OnUpdate()override {}
+		virtual void OnDraw()override {}
+		virtual void OnDestroy()override {}
+
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -1019,7 +967,7 @@ namespace basecross {
 			PsJointParam(),
 			m_Axis(1.0f, 0.0f, 0.0f),
 			m_UpVec(0.0f, 1.0f, 0.0f),
-			m_Swing1LowerAngle(-0.7f),
+			m_Swing1LowerAngle (-0.7f),
 			m_Swing1UpperAngle(0.7f),
 			m_Swing2LowerAngle(-0.7f),
 			m_Swing2UpperAngle(0.7f)
@@ -1075,7 +1023,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	///	物理計算用のインターフェイス
 	//--------------------------------------------------------------------------------------
-	class BasePhysics {
+	class BasePhysics{
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1127,7 +1075,7 @@ namespace basecross {
 		@return	オブジェクトのポインタ（バックアップはしないので呼び出し側で保存すること）
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual shared_ptr<PsSphere> AddSphere(const PsSphereParam& param, uint16_t index = UINT16_MAX);
+		virtual shared_ptr<PsSphere> AddSphere(const PsSphereParam& param,uint16_t index = UINT16_MAX);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	単体のカプセルの追加
@@ -1155,7 +1103,7 @@ namespace basecross {
 		@return	オブジェクトのポインタ（バックアップはしないので呼び出し側で保存すること）
 		*/
 		//--------------------------------------------------------------------------------------
-//		virtual shared_ptr<PsConvex> AddConvex(const PsConvexParam& param, uint16_t index = UINT16_MAX);
+		virtual shared_ptr<PsConvex> AddConvex(const PsConvexParam& param, uint16_t index = UINT16_MAX);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	プリミティブ合成物理オブジェクトの追加
@@ -1237,7 +1185,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SetBodyStatus(uint16_t body_index, const PsBodyUpdateStatus& st);
+		void SetBodyStatus(uint16_t body_index,const PsBodyUpdateStatus& st);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	剛体を起こす（sleepが有効の場合）
@@ -1262,7 +1210,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SetAutoGravity(uint16_t body_index, bool b);
+		void SetAutoGravity(uint16_t body_index,bool b);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	剛体の位置を得る
@@ -1340,7 +1288,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void MoveBodyPosition(uint16_t body_index, const bsm::Vec3& pos, float timeStep);
+		void MoveBodyPosition(uint16_t body_index, const bsm::Vec3 &pos, float timeStep);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	剛体の回転速度をtimeStepでqtになるよう設定する
@@ -1473,7 +1421,7 @@ namespace basecross {
 		@return	慣性行列
 		*/
 		//--------------------------------------------------------------------------------------
-		static bsm::Mat3x3 CalcInertiaBox(const bsm::Vec3& halfExtent, float mass);
+		static bsm::Mat3x3 CalcInertiaBox(const bsm::Vec3& halfExtent,float mass);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	球型の慣性を返す

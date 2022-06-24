@@ -1052,6 +1052,66 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void OnKeyUp(UINT8 /*key*/) {}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントのPOST（キューに入れる）
+		@param[in]	DispatchTime	POSTする時間（0で次のターン）
+		@param[in]	Sender	イベント送信者（nullptr可）
+		@param[in]	Receiver	イベント受信者（nullptr不可）
+		@param[in]	MsgStr	メッセージ
+		@param[in,out]	Info	追加情報
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
+			const wstring& MsgStr, const shared_ptr<void>& Info = shared_ptr<void>());
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントのPOST（キューに入れる）
+		@param[in]	DispatchTime	POSTする時間（0で次のターン）
+		@param[in]	Sender	イベント送信者（nullptr可）
+		@param[in]	ReceiverKey	受け手側オブジェクトを判別するキー
+		@param[in]	MsgStr	メッセージ
+		@param[in,out]	Info	追加情報
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
+			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントのSEND（キューに入れずにそのまま送る）
+		@param[in]	Sender	イベント送信者（nullptr可）
+		@param[in]	ReceiverKey	受け手側オブジェクトを判別するキー
+		@param[in]	MsgStr	メッセージ
+		@param[in,out]	Info	追加情報
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
+			const wstring& MsgStr, const shared_ptr<void>& Info = shared_ptr<void>());
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントのSEND（キューに入れずにそのまま送る）
+		@param[in]	Sender	イベント送信者（nullptr可）
+		@param[in]	Receiver	イベント受信者（nullptr不可）
+		@param[in]	MsgStr	メッセージ
+		@param[in,out]	Info	追加情報
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
+			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントを受け取る
+		@param[in]	event	イベント
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void OnEvent(const shared_ptr<Event>& event) {}
+
 	private:
 		//コピー禁止
 		ObjectInterface(const ObjectInterface&) = delete;

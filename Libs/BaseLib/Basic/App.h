@@ -18,6 +18,7 @@ namespace basecross {
 		static HWND m_hwnd;
 		static BaseScene* m_pBaseScene;
 		static InputDevice m_inputDevice;
+		static shared_ptr<EventDispatcher> m_EventDispatcher;	///< イベント送信オブジェクト
 
 
 		static wstring m_wstrModulePath;		///< モジュール名フルパス
@@ -93,6 +94,16 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		static InputDevice& GetInputDevice() {
 			return m_inputDevice;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	イベントディスパッチャーを得る
+		@return イベントディスパッチャー
+		*/
+		//--------------------------------------------------------------------------------------
+		static shared_ptr<EventDispatcher> GetEventDispatcher(){
+			return m_EventDispatcher;
+
 		}
 		//--------------------------------------------------------------------------------------
 		/*!

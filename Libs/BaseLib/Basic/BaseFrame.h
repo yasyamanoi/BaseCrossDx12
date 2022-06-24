@@ -38,8 +38,6 @@ namespace basecross {
 
 		UINT64 m_fenceValue;
 
-		ComPtr<ID3D12PipelineState> m_pipelineState;
-		ComPtr<ID3D12PipelineState> m_pipelineStateShadowMap;
 		ComPtr<ID3D12Resource> m_shadowTexture;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_shadowDepthView;
 		//NULLのシェーダーリソースのハンドル（2つ）
