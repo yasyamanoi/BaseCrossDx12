@@ -244,11 +244,11 @@ namespace basecross {
 					PfxRigidState &stateB = states[pfxGetObjectIdB(outNewPairs[i])];
 					if (stateA.isAsleep()) {
 						stateA.wakeup();
-						SCE_PFX_PRINTF("wakeup %u\n", stateA.getRigidBodyId());
+						//SCE_PFX_PRINTF("wakeup %u\n", stateA.getRigidBodyId());
 					}
 					if (stateB.isAsleep()) {
 						stateB.wakeup();
-						SCE_PFX_PRINTF("wakeup %u\n", stateB.getRigidBodyId());
+						//SCE_PFX_PRINTF("wakeup %u\n", stateB.getRigidBodyId());
 					}
 				}
 
