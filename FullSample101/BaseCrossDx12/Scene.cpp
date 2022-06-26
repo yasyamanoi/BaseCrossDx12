@@ -35,16 +35,13 @@ namespace basecross {
 		texFile = App::GetRelativeAssetsDir() + L"number.png";
 		texture = BaseTexture::CreateTextureFlomFile(texFile);
 		RegisterTexture(L"NUMBER_TX", texture);
-
+		//最初のアクティブなステージの設定
 		ResetActiveStage<GameStage>();
 
 	}
 
 	void Scene::OnEvent(const shared_ptr<SceneEvent>& event) {
-		//if (event->m_msgStr == L"ToGameStage") {
-		//	//最初のアクティブステージの設定
-		//	ResetActiveStage<GameStage>();
-		//}
+		//ステージの切り替えなどの時に記述する
 	}
 
 

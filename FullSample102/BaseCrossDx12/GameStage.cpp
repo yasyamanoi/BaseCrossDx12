@@ -50,8 +50,8 @@ namespace basecross {
 		m_camera = ObjectFactory::Create<MyCamera>();
 		m_camera->SetEye(Vec3(0, 3.43f, -6.37f));
 		m_camera->SetAt(Vec3(0, 0.125f, 0));
+		m_lightSet = ObjectFactory::Create<LightSet>(); 
 
-		m_lightSet = LightSet::CreateDefaultLights();
 		//物理計算オブジェクトの作成
 		CreatePhysicsObjects();
 		//プレーヤーの作成

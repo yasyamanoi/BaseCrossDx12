@@ -1,6 +1,6 @@
 /*!
-@file ProjectBehavior.h
-@brief プロジェク定義の行動クラス
+@file ProjectUtil.h
+@brief プロジェク定義のユーティリティクラス
 */
 
 #pragma once

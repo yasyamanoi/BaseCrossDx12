@@ -188,13 +188,13 @@ namespace basecross {
 		@return	‚È‚µ
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnEvent(const shared_ptr<SceneEvent>& sceneEvent) {}
+		virtual void OnEvent(const shared_ptr<SceneEvent>& sceneEvent) = 0;
 
 		void DispatchDelayedEvent();
 
 
 		virtual void OnPreCreate();
-		virtual void OnCreate(){}
+		virtual void OnCreate() = 0;
 		virtual void OnInitFrame(BaseFrame* pBaseFrame);
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame);
 		virtual void OnUpdate();
