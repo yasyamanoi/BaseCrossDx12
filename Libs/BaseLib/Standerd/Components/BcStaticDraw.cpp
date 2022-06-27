@@ -19,8 +19,8 @@ namespace basecross {
 		constants.activeFlg.y = 1;
 		auto stage = GetStage();
 		auto world = transform->GetWorldMatrix();
-		auto view = stage->GetActiveCamera()->GetViewMatrix();
-		auto proj = stage->GetActiveCamera()->GetProjMatrix();
+		auto view = GetGameObject()->GetActiveCamera()->GetViewMatrix();
+		auto proj = GetGameObject()->GetActiveCamera()->GetProjMatrix();
 		auto worldView = world * view;
 		constants.worldViewProj = XMMatrixTranspose(XMMatrixMultiply(worldView, proj));
 		//ƒtƒHƒO‚ÌÝ’è
@@ -80,7 +80,7 @@ namespace basecross {
 		constants.diffuseColor = XMVectorSelect(alphaVector, diffuse * alphaVector, g_XMSelect1110);
 
 		if (IsOwnShadowActive()) {
-			auto camaraPtr = stage->GetActiveCamera();
+			auto camaraPtr = GetGameObject()->GetActiveCamera();
 			auto mainLight = lightSet->GetMainBaseLight();
 			bsm::Vec3 calcLightDir(mainLight.m_directional * -1.0);
 			bsm::Vec3 lightAt(camaraPtr->GetAt());

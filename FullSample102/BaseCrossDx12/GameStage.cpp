@@ -45,12 +45,11 @@ namespace basecross {
 	void GameStage::OnCreate() {
 		//物理計算有効
 		SetPhysicsActive(true);
-
 		//カメラとライトの設定
-		m_camera = ObjectFactory::Create<MyCamera>();
+		m_camera = AddGameObject<MyCamera>();
 		m_camera->SetEye(Vec3(0, 3.43f, -6.37f));
 		m_camera->SetAt(Vec3(0, 0.125f, 0));
-		m_lightSet = ObjectFactory::Create<LightSet>(); 
+		m_lightSet = AddGameObject<LightSet>();
 
 		//物理計算オブジェクトの作成
 		CreatePhysicsObjects();

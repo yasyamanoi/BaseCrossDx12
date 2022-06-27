@@ -220,9 +220,14 @@ namespace basecross {
 	}
 
 
-	shared_ptr<BaseCamera> GameObject::GetActiveCamera()const {
+	//shared_ptr<BaseCamera> GameObject::GetActiveCamera()const {
+	//	return GetStage()->GetActiveCamera();
+	//}
+
+	shared_ptr<Camera> GameObject::GetActiveCamera()const {
 		return GetStage()->GetActiveCamera();
 	}
+
 
 	shared_ptr<LightSet> GameObject::GetActiveLightSet() const {
 		return GetStage()->GetActiveLightSet();
@@ -271,6 +276,7 @@ namespace basecross {
 	void GameObjectGroup::AllClear() {
 		m_Group.clear();
 	}
+
 
 
 }

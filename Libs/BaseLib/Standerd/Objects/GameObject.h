@@ -14,7 +14,10 @@ namespace basecross {
 	class Stage;
 	class Component;
 	class Transform;
+	class Camera;
+	class LightSet;
 	struct CollisionPair;
+
 
 	//--------------------------------------------------------------------------------------
 	// 配置されるオブジェクト
@@ -348,7 +351,8 @@ namespace basecross {
 		@return	カメラのshared_ptr
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual shared_ptr<BaseCamera> GetActiveCamera() const;
+		virtual shared_ptr<Camera> GetActiveCamera() const;
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	このオブジェクトを照らすライトセットを得る（デフォルトはステージから取得）
@@ -486,7 +490,6 @@ namespace basecross {
 		virtual void OnDraw() override {}
 		virtual void OnDestroy() override {}
 	};
-
 
 
 }

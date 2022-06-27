@@ -29,7 +29,8 @@ namespace basecross {
 	public:
 		GameStage() :Stage() {}
 		virtual ~GameStage() {}
-		virtual shared_ptr<BaseCamera> GetActiveCamera() const override {
+
+		virtual shared_ptr<Camera> GetActiveCamera() const override {
 			return m_camera;
 		}
 		virtual shared_ptr<LightSet> GetActiveLightSet() const override {

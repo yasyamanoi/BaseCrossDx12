@@ -10,7 +10,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	//	MyCameraカメラ（コンポーネントではない）
 	//--------------------------------------------------------------------------------------
-	class MyCamera : public BaseCamera {
+	class MyCamera : public PerspecCamera {
 		weak_ptr<GameObject> m_TargetObject;	//目標となるオブジェクト
 		float m_ToTargetLerp;	//目標を追いかける際の補間値
 		bsm::Vec3 m_TargetToAt;	//目標から視点を調整する位置ベクトル
@@ -38,14 +38,14 @@ namespace basecross {
 		@brief	コンストラクタ
 		*/
 		//--------------------------------------------------------------------------------------
-		MyCamera();
+		MyCamera(const shared_ptr<Stage>& StagePtr);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	コンストラクタ
 		@param[in]	ArmLen	最初のArmの長さ
 		*/
 		//--------------------------------------------------------------------------------------
-		MyCamera(float ArmLen);
+		MyCamera(const shared_ptr<Stage>& StagePtr,float ArmLen);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	デストラクタ

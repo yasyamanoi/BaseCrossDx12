@@ -17,11 +17,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)BaseCommon.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\App.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseBlendState.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseCamera.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseDevice.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseFrame.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseHelper.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseLight.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMath.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMathInc.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMesh.h" />
@@ -151,6 +149,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\SpStaticDraw.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\Transform.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\Behavior.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\Camera.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\Light.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\SteeringBehavior.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\CollisionManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\GameObject.h" />
@@ -161,11 +161,9 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\App.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseBlendState.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseCamera.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseFrame.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseHelper.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseLight.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseMesh.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BasePhysics.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseScene.cpp" />
@@ -233,6 +231,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\SpStaticDraw.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\Transform.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\Behavior.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\Camera.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\Light.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\SteeringBehavior.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\CollisionManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\GameObject.cpp" />

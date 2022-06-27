@@ -382,7 +382,8 @@ namespace basecross {
 		@return	アクティブなカメラ
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual shared_ptr<BaseCamera> GetActiveCamera() const = 0;
+		virtual shared_ptr<Camera> GetActiveCamera() const = 0;
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	アクティブなライトセットを返す（純粋仮想関数）

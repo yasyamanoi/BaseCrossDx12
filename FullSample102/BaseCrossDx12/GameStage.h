@@ -9,7 +9,7 @@ namespace basecross {
 
 	class GameStage : public Stage {
 		//カメラ
-		shared_ptr<BaseCamera> m_camera;
+		shared_ptr<MyCamera> m_camera;
 		//ライト
 		shared_ptr<LightSet> m_lightSet;
 		//物理計算オブジェクトの作成
@@ -20,7 +20,7 @@ namespace basecross {
 	public:
 		GameStage() :Stage() {}
 		virtual ~GameStage() {}
-		virtual shared_ptr<BaseCamera> GetActiveCamera() const override {
+		virtual shared_ptr<Camera> GetActiveCamera() const override {
 			return m_camera;
 		}
 		virtual shared_ptr<LightSet> GetActiveLightSet() const override {

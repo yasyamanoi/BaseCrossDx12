@@ -13,8 +13,8 @@ namespace basecross {
 	//	MyCameraカメラ（コンポーネントではない）
 	//--------------------------------------------------------------------------------------
 	//構築と破棄
-	MyCamera::MyCamera() :
-		BaseCamera(),
+	MyCamera::MyCamera(const shared_ptr<Stage>& StagePtr) :
+		PerspecCamera(StagePtr),
 		m_ToTargetLerp(1.0f),
 		m_TargetToAt(0, 0, 0),
 		m_RadY(0.5f),
@@ -30,8 +30,8 @@ namespace basecross {
 		m_UDBaseMode(true)
 	{}
 
-	MyCamera::MyCamera(float ArmLen) :
-		BaseCamera(),
+	MyCamera::MyCamera(const shared_ptr<Stage>& StagePtr,float ArmLen) :
+		PerspecCamera(StagePtr),
 		m_ToTargetLerp(1.0f),
 		m_TargetToAt(0, 0, 0),
 		m_RadY(0.5f),
@@ -56,11 +56,11 @@ namespace basecross {
 	//アクセサ
 
 	void MyCamera::SetEye(const bsm::Vec3& Eye) {
-		BaseCamera::SetEye(Eye);
+		PerspecCamera::SetEye(Eye);
 		UpdateArmLengh();
 	}
 	void MyCamera::SetEye(float x, float y, float z) {
-		BaseCamera::SetEye(x, y, z);
+		PerspecCamera::SetEye(x, y, z);
 		UpdateArmLengh();
 	}
 
@@ -155,20 +155,20 @@ namespace basecross {
 
 
 	void MyCamera::SetAt(const bsm::Vec3& At) {
-		BaseCamera::SetAt(At);
+		PerspecCamera::SetAt(At);
 		Vec3 armVec = GetEye() - GetAt();
 		armVec.normalize();
 		armVec *= m_ArmLen;
 		Vec3 newEye = GetAt() + armVec;
-		BaseCamera::SetEye(newEye);
+		PerspecCamera::SetEye(newEye);
 	}
 	void MyCamera::SetAt(float x, float y, float z) {
-		BaseCamera::SetAt(x, y, z);
+		PerspecCamera::SetAt(x, y, z);
 		Vec3 armVec = GetEye() - GetAt();
 		armVec.normalize();
 		armVec *= m_ArmLen;
 		Vec3 newEye = GetAt() + armVec;
-		BaseCamera::SetEye(newEye);
+		PerspecCamera::SetEye(newEye);
 
 	}
 
@@ -286,7 +286,7 @@ namespace basecross {
 		SetAt(newAt);
 		SetEye(newEye);
 		UpdateArmLengh();
-		BaseCamera::OnUpdate();
+		PerspecCamera::OnUpdate();
 	}
 
 

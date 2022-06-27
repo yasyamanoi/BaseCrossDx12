@@ -148,12 +148,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseCamera.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseLight.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseTimer.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
@@ -547,6 +541,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BasicPipelineState.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\Camera.h">
+      <Filter>Standerd\Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\Light.h">
+      <Filter>Standerd\Objects\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseDevice.cpp">
@@ -565,12 +565,6 @@
       <Filter>Basic\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseCamera.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseLight.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\Component.cpp">
@@ -785,6 +779,12 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BasicPipelineState.cpp">
       <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\Camera.cpp">
+      <Filter>Standerd\Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\Light.cpp">
+      <Filter>Standerd\Objects\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

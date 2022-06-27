@@ -1,26 +1,26 @@
 /*!
-@file BaseLight.h
+@file Light.h
 @brief ライトクラス
 @copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
 */
 
+
 #pragma once
 #include "stdafx.h"
-
 
 namespace basecross {
 
 	//--------------------------------------------------------------------------------------
 	//	ライト
 	//--------------------------------------------------------------------------------------
-	struct BaseLight {
+	struct Light {
 		Vec3 m_directional;	//ライトの向き
 		Vec4 m_diffuseColor;	//ディフィーズ色
 		Vec4 m_specularColor;	//スペキュラー色
 		Vec3 m_position;	//位置（使用しない場合あり）
 		Vec3 m_at;		//指している場所（使用しない場合あり）
 
-		BaseLight() :
+		Light() :
 			m_directional(0, -1.0f, 0),
 			m_diffuseColor(1.0f, 1.0f, 1.0f, 1.0f),
 			m_specularColor(0.2f, 0.2f, 0.2f, 1.0f),
@@ -28,7 +28,7 @@ namespace basecross {
 			m_at(0.0f)
 		{
 		}
-		BaseLight(const Vec3& dir, const Vec4& def, const Vec4& sp) :
+		Light(const Vec3& dir, const Vec4& def, const Vec4& sp) :
 			m_directional(dir),
 			m_diffuseColor(def),
 			m_specularColor(sp),
@@ -36,7 +36,7 @@ namespace basecross {
 			m_at(0.0f)
 		{
 		}
-		BaseLight(const BaseLight& other) :
+		Light(const Light& other) :
 			m_directional(other.m_directional),
 			m_diffuseColor(other.m_diffuseColor),
 			m_specularColor(other.m_specularColor),
@@ -44,7 +44,7 @@ namespace basecross {
 			m_at(other.m_at)
 		{
 		}
-		BaseLight& operator=(const BaseLight& other) {
+		Light& operator=(const Light& other) {
 			if (this != &other) {
 				m_directional = other.m_directional;
 				m_diffuseColor = other.m_diffuseColor;
@@ -54,7 +54,7 @@ namespace basecross {
 			}
 			return *this;
 		}
-		~BaseLight() {}
+		~Light() {}
 		void SetPositionToDirectional(const Vec3& pos, const Vec3& at) {
 			m_position = pos;
 			m_at = at;
@@ -67,13 +67,13 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	//	ライトのセット
 	//--------------------------------------------------------------------------------------
-	class LightSet :public ObjectInterface {
+	class LightSet :public GameObject{
 		const size_t m_maxLights = 3;
-		vector<BaseLight> m_lights;
+		vector<Light> m_lights;
 		Vec4 m_ambient;
 		size_t m_mainIndex;
 	public:
-		LightSet() :m_mainIndex(0) {}
+		LightSet(const shared_ptr<Stage>& StagePtr);
 		virtual ~LightSet() {}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -82,14 +82,14 @@ namespace basecross {
 		@return	指定のインデックスのライトを返す
 		*/
 		//--------------------------------------------------------------------------------------
-		BaseLight GetLight(size_t index) const;
+		virtual Light GetLight(size_t index) const;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief ライト数の取得
 		@return	ライト数
 		*/
 		//--------------------------------------------------------------------------------------
-		size_t GetNumLights() const {
+		virtual size_t GetNumLights() const {
 			return m_lights.size();
 		}
 		//--------------------------------------------------------------------------------------
@@ -100,7 +100,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SetLight(size_t index, const BaseLight& light);
+		virtual void SetLight(size_t index, const Light& light);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief ライトの追加
@@ -108,14 +108,14 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void AddLight(const BaseLight& light);
+		virtual void AddLight(const Light& light);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief アンビエントの取得
 		@return	アンビエント
 		*/
 		//--------------------------------------------------------------------------------------
-		Vec4 GetAmbient() const { return m_ambient; }
+		virtual Vec4 GetAmbient() const { return m_ambient; }
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief アンビエントの設定
@@ -123,14 +123,14 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SetAmbient(const Vec4& a) { m_ambient = a; }
+		virtual void SetAmbient(const Vec4& a) { m_ambient = a; }
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief メインライトインデックスの取得
 		@return	メインライトインデックス
 		*/
 		//--------------------------------------------------------------------------------------
-		size_t GetMainIndex() const { return m_mainIndex; }
+		virtual size_t GetMainIndex() const { return m_mainIndex; }
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief メインライトインデックスの設定
@@ -138,14 +138,14 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SetMainIndex(size_t index) { m_mainIndex = index; }
+		virtual void SetMainIndex(size_t index) { m_mainIndex = index; }
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief メインライトの取得
 		@return	メインライト
 		*/
 		//--------------------------------------------------------------------------------------
-		BaseLight GetMainBaseLight() const {
+		virtual Light GetMainBaseLight() const {
 			return GetLight(GetMainIndex());
 		}
 		//--------------------------------------------------------------------------------------
@@ -161,7 +161,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnUpdate()override{}
+		virtual void OnUpdate()override {}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	描画処理。デフォルトは何も行わない
@@ -176,17 +176,10 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void OnDestroy()override {}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief デフォルトのライティングをしたライトセットの取得
-		@return	ライトセットのポインタ
-		*/
-		//--------------------------------------------------------------------------------------
-		//static shared_ptr<LightSet>
-		//	CreateDefaultLights();
 	};
 
 
 
+
 }
-// end basecross
+// end namespace basecross
