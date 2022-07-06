@@ -9,8 +9,9 @@
 
 namespace basecross {
 
-	BaseFrame::BaseFrame(ID3D12Device* pDevice, ID3D12PipelineState* pPso, ID3D12PipelineState* pShadowMapPso, ID3D12DescriptorHeap* pDsvHeap, ID3D12DescriptorHeap* pCbvSrvHeap, D3D12_VIEWPORT* pViewport, UINT frameResourceIndex) :
-		m_fenceValue(0)
+	BaseFrame::BaseFrame(ID3D12Device* pDevice, ID3D12PipelineState* pPso, ID3D12PipelineState* pShadowMapPso, ID3D12DescriptorHeap* pDsvHeap, ID3D12DescriptorHeap* pCbvSrvHeap, D3D12_VIEWPORT* pViewport, UINT frameIndex) :
+		m_fenceValue(0),
+		m_frameIndex(frameIndex)
 		//m_pipelineState(pPso),
 		//m_pipelineStateShadowMap(pShadowMapPso)
 	{
@@ -101,7 +102,7 @@ namespace basecross {
 		// Get a handle to the start of the descriptor heap then offset 
 		// it based on the frame resource index.
 		const UINT dsvDescriptorSize = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-		CD3DX12_CPU_DESCRIPTOR_HANDLE depthHandle(pDsvHeap->GetCPUDescriptorHandleForHeapStart(), 1 + frameResourceIndex, dsvDescriptorSize); // + 1 for the shadow map.
+		CD3DX12_CPU_DESCRIPTOR_HANDLE depthHandle(pDsvHeap->GetCPUDescriptorHandleForHeapStart(), 1 + frameIndex, dsvDescriptorSize); // + 1 for the shadow map.
 
 		// Describe and create the shadow depth view and cache the CPU 
 		// descriptor handle.

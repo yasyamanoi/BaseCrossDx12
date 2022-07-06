@@ -172,6 +172,7 @@ namespace basecross {
 		const sce::PhysicsEffects::PfxRigidBody& getPfxRigidBody() const;
 		sce::PhysicsEffects::PfxRigidBody& getPfxRigidBody();
 
+
 		virtual void OnCreate()override {}
 		virtual void OnUpdate()override {}
 		virtual void OnDraw()override {}
@@ -1058,6 +1059,13 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		void Reset();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	タイムステップを得る
+		@return	タイムステップ
+		*/
+		//--------------------------------------------------------------------------------------
+		float GetTimeStep() const;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	単体のボックスの追加

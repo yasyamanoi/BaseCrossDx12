@@ -13,8 +13,8 @@ namespace basecross {
 	//	class Camera;
 	//--------------------------------------------------------------------------------------
 
-	Camera::Camera(const shared_ptr<Stage>& StagePtr) :
-		GameObject(StagePtr),
+	Camera::Camera() :
+		ObjectInterface(),
 		m_eye(0, 0.0f, -20.0f),	//デフォルトは後方
 		m_at(0, 0, 0),
 		m_up(0, 1.0f, 0),
@@ -82,8 +82,8 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	//	class PerspecCamera;
 	//--------------------------------------------------------------------------------------
-	PerspecCamera::PerspecCamera(const shared_ptr<Stage>& StagePtr) :
-		Camera(StagePtr),
+	PerspecCamera::PerspecCamera() :
+		Camera(),
 		m_fovY(XM_PIDIV4)
 
 	{
@@ -118,8 +118,8 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	//	class OrthoCamera;
 	//--------------------------------------------------------------------------------------
-	OrthoCamera::OrthoCamera(const shared_ptr<Stage>& StagePtr) :
-		Camera(StagePtr),
+	OrthoCamera::OrthoCamera() :
+		Camera(),
 		m_width(0),
 		m_height(0)
 	{

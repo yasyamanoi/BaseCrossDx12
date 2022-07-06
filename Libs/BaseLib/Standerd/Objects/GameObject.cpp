@@ -12,7 +12,7 @@ namespace basecross {
 	GameObject::GameObject(const shared_ptr<Stage>& stage) :
 		m_stage(stage),
 		m_updateActive(true),
-		m_renderActive(true),
+		m_drawActive(true),
 		m_alphaActive(false)
 	{}
 
@@ -62,9 +62,9 @@ namespace basecross {
 	}
 
 
-	void GameObject::ComponentUpdate() {
+	void GameObject::ComponentUpdate(bool physicsFlg) {
 		auto transPtr = GetComponent<Transform>();
-		//		auto RightPtr = GetComponent<Rigidbody>(false);
+		auto rigidPtr = GetComponent<Rigidbody>(false);
 				//マップを検証してUpdate
 		list<type_index>::iterator it = m_compOrder.begin();
 		while (it != m_compOrder.end()) {
@@ -74,16 +74,16 @@ namespace basecross {
 				//指定の型のコンポーネントが見つかった
 				if (it2->second->IsUpdateActive()
 					&& (it2->second != transPtr)
-					//	&& (it2->second != RightPtr)
+						&& (it2->second != rigidPtr)
 					) {
 					it2->second->OnUpdate();
 				}
 			}
 			it++;
 		}
-		//		if (RightPtr && RightPtr->IsUpdateActive()) {
-		//			RightPtr->OnUpdate();
-		//		}
+		if (rigidPtr && physicsFlg && rigidPtr->IsUpdateActive()) {
+			rigidPtr->OnUpdate();
+		}
 		//TransformのUpdate
 		if (transPtr->IsUpdateActive()) {
 			transPtr->OnUpdate();
@@ -181,6 +181,8 @@ namespace basecross {
 		}
 	}
 
+
+
 	void GameObject::OnInitFrame(BaseFrame* pBaseFrame) {
 		//Transformがなければ例外
 		auto transptr = GetComponent<Transform>();
@@ -196,8 +198,6 @@ namespace basecross {
 			it++;
 		}
 	}
-
-
 
 	void GameObject::ComponentDestroy() {
 		auto transptr = GetComponent<Transform>();

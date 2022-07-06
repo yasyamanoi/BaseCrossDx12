@@ -13,8 +13,8 @@ namespace basecross {
 	//	MyCameraカメラ（コンポーネントではない）
 	//--------------------------------------------------------------------------------------
 	//構築と破棄
-	MyCamera::MyCamera(const shared_ptr<Stage>& StagePtr) :
-		PerspecCamera(StagePtr),
+	MyCamera::MyCamera() :
+		PerspecCamera(),
 		m_ToTargetLerp(1.0f),
 		m_TargetToAt(0, 0, 0),
 		m_RadY(0.5f),
@@ -30,8 +30,8 @@ namespace basecross {
 		m_UDBaseMode(true)
 	{}
 
-	MyCamera::MyCamera(const shared_ptr<Stage>& StagePtr,float ArmLen) :
-		PerspecCamera(StagePtr),
+	MyCamera::MyCamera(float ArmLen) :
+		PerspecCamera(),
 		m_ToTargetLerp(1.0f),
 		m_TargetToAt(0, 0, 0),
 		m_RadY(0.5f),

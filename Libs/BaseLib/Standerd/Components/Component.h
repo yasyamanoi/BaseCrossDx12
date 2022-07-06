@@ -153,8 +153,9 @@ namespace basecross {
 		bool m_drawActive;
 		wstring m_samplerKey;
 	protected:
-		//コンスタントバッファパラメータのインデックス
-		size_t m_constBuffParamIndex;
+		//コンスタントバッファパラメータのインデックスの配列
+		size_t m_constBuffParamIndices[BaseDevice::m_frameCount];
+
 		explicit Component(const shared_ptr<GameObject>& gameObjectPtr);
 		virtual ~Component() {}
 		shared_ptr<BaseMesh> m_baseMesh;
@@ -362,9 +363,9 @@ namespace basecross {
 		@return	フレームパラメータのインデックス
 		*/
 		//--------------------------------------------------------------------------------------
-		size_t GetConstBuffParamIndex() const {
-			return m_constBuffParamIndex;
-		}
+		//size_t GetConstBuffParamIndex() const {
+		//	return m_constBuffParamIndex;
+		//}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	ゲームオブジェクトの設定
@@ -375,7 +376,10 @@ namespace basecross {
 		void AttachGameObject(const shared_ptr<GameObject>& GameObjectPtr);
 
 		virtual void OnInitFrame(BaseFrame* pBaseFrame) {}
+
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame) {}
+
+
 		virtual void OnDraw()override;
 	};
 

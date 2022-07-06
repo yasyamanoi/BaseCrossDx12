@@ -67,13 +67,13 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	//	ライトのセット
 	//--------------------------------------------------------------------------------------
-	class LightSet :public GameObject{
+	class LightSet :public ObjectInterface {
 		const size_t m_maxLights = 3;
 		vector<Light> m_lights;
 		Vec4 m_ambient;
 		size_t m_mainIndex;
 	public:
-		LightSet(const shared_ptr<Stage>& StagePtr);
+		LightSet();
 		virtual ~LightSet() {}
 		//--------------------------------------------------------------------------------------
 		/*!

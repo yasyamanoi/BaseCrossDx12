@@ -224,6 +224,8 @@ namespace basecross {
 			v->OnInitFrame(pBaseFrame);
 		}
 	}
+
+
 	void Stage::WriteConstantBuffers(BaseFrame* pBaseFrame) {
 		for (auto& v : m_gameObjectVec) {
 			v->WriteConstantBuffers(pBaseFrame);
@@ -233,6 +235,15 @@ namespace basecross {
 
 	//ステージ内の更新（シーンからよばれる）
 	void Stage::UpdateStage() {
+		bool physicsFlg = false;
+		static float timeStep = 0.0f;
+		timeStep += App::GetElapsedTime();
+		
+		if (timeStep >= m_basePhysics.GetTimeStep() * 0.5f) {
+			physicsFlg = true;
+			timeStep = 0.0f;
+		}
+
 		if (IsUpdatePerformanceActive()) {
 			m_updatePerformance.Start();
 		}
@@ -247,7 +258,9 @@ namespace basecross {
 		}
 		//物理オブジェクトのフォースの初期化
 		if (IsPhysicsActive()) {
-			m_basePhysics.InitForce();
+			if (physicsFlg) {
+				m_basePhysics.InitForce();
+			}
 		}
 
 		//配置オブジェクトの更新処理
@@ -263,12 +276,14 @@ namespace basecross {
 		}
 		//物理オブジェクトの更新
 		if (IsPhysicsActive()) {
-			m_basePhysics.Update(false);
+			if (physicsFlg) {
+				m_basePhysics.Update(false);
+			}
 		}
 		//配置オブジェクトのコンポーネント更新
 		for (auto& ptr : GetGameObjectVec()) {
 			if (ptr->IsUpdateActive()) {
-				ptr->ComponentUpdate();
+				ptr->ComponentUpdate(physicsFlg);
 			}
 		}
 
@@ -284,7 +299,7 @@ namespace basecross {
 		if (IsUpdateActive()) {
 			OnUpdate2();
 		}
-		//カメラ
+		//カメラとライト
 		OnUpdateLightCamera();
 		if (IsUpdatePerformanceActive()) {
 			m_updatePerformance.End();
@@ -319,7 +334,7 @@ namespace basecross {
 
 	void Stage::OnDraw() {
 		for (auto& v : m_gameObjectVec) {
-			if (v->IsRenderActive()) {
+			if (v->IsDrawActive()) {
 				v->OnDraw();
 			}
 		}
@@ -327,7 +342,7 @@ namespace basecross {
 
 	void Stage::OnShadowmapDraw() {
 		for (auto& v : m_gameObjectVec) {
-			if (v->IsRenderActive()) {
+			if (v->IsDrawActive()) {
 				v->OnShadowmapDraw();
 			}
 		}

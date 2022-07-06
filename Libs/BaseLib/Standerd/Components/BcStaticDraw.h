@@ -69,6 +69,7 @@ namespace basecross {
 		}
 		virtual void OnInitFrame(BaseFrame* pBaseFrame)override;
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame)override;
+
 	};
 
 	DECLARE_DX12SHADER(BcVSPNTStaticPL)

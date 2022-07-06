@@ -861,6 +861,7 @@ namespace basecross {
 		}
 		//ƒV[ƒ“‚ÌOnUpdate
 		App::GetBaseScene()->OnUpdate();
+
 		App::GetBaseScene()->WriteConstantBuffers(GetCurrentBaseFrame());
 		ThrowIfFailed(GetCurrentBaseFrame()->m_updateCommandList->Close());
 

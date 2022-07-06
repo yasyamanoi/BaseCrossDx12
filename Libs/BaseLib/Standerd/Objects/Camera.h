@@ -13,7 +13,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	//	class Camera;
 	//--------------------------------------------------------------------------------------
-	class Camera : public GameObject {
+	class Camera : public ObjectInterface {
 		bsm::Vec3 m_eye;	//カメラ位置　
 		bsm::Vec3 m_at;	//注目点
 		bsm::Vec3 m_up;   //カメラの傾き（アップ）
@@ -28,7 +28,7 @@ namespace basecross {
 		@brief	プロテクトコンストラクタ
 		*/
 		//--------------------------------------------------------------------------------------
-		Camera(const shared_ptr<Stage>& StagePtr);
+		Camera();
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	プロテクトデストラクタ
@@ -201,7 +201,7 @@ namespace basecross {
 		float m_fovY;   //射影角度
 		float m_aspect;	//アスペクト比
 	public:
-		PerspecCamera(const shared_ptr<Stage>& StagePtr);
+		PerspecCamera();
 		virtual ~PerspecCamera() {}
 
 		//--------------------------------------------------------------------------------------
@@ -250,7 +250,7 @@ namespace basecross {
 		float m_width;	//遠近法を使わない場合（正射影）の幅
 		float m_height;	//遠近法を使わない場合（正射影）の高さ
 	public:
-		OrthoCamera(const shared_ptr<Stage>& StagePtr);
+		OrthoCamera();
 		virtual ~OrthoCamera() {}
 
 		//--------------------------------------------------------------------------------------

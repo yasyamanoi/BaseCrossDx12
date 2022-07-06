@@ -27,8 +27,8 @@ namespace basecross {
 		weak_ptr<Stage> m_stage;
 		//update‚·‚é‚©‚Ç‚¤‚©
 		bool m_updateActive;
-		//Render‚·‚é‚©‚Ç‚¤‚©
-		bool m_renderActive;
+		//draw‚·‚é‚©‚Ç‚¤‚©
+		bool m_drawActive;
 		//“§–¾‚©‚Ç‚¤‚©
 		bool m_alphaActive;
 
@@ -85,11 +85,11 @@ namespace basecross {
 		void SetUpdateActive(bool b) {
 			m_updateActive = b;
 		}
-		bool IsRenderActive() const {
-			return m_renderActive;
+		bool IsDrawActive() const {
+			return m_drawActive;
 		}
-		void SetRenderActive(bool b) {
-			m_renderActive = b;
+		void SetDrawActive(bool b) {
+			m_drawActive = b;
 		}
 		bool IsAlphaActive() const {
 			return m_alphaActive;
@@ -340,7 +340,7 @@ namespace basecross {
 
 
 		void TransformInit();
-		void ComponentUpdate();
+		void ComponentUpdate(bool physicsFlg);
 		void ComponentShadowmapRender();
 		void ComponentRender();
 		void ComponentDestroy();

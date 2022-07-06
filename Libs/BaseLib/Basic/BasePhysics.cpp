@@ -1824,5 +1824,12 @@ namespace basecross {
 //		if (triggerId >= 0) updateTrigger();
 	}
 
+	float BasePhysics::GetTimeStep() const {
+		return ps::timeStep;
+	}
+
+
+
+
 }
 //end basecross

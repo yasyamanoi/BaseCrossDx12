@@ -8,8 +8,8 @@
 
 namespace basecross {
 
-	LightSet::LightSet(const shared_ptr<Stage>& StagePtr) :
-		GameObject(StagePtr),
+	LightSet::LightSet() :
+		ObjectInterface(),
 		m_mainIndex(0)
 	{}
 

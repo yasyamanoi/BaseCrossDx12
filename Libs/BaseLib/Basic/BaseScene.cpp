@@ -283,6 +283,8 @@ namespace basecross {
 		}
 	}
 
+
+
 	void BaseScene::PopulateShadowmapCommandList(BaseFrame* pBaseFrame) {
 		auto stagePtr = GetActiveStage();
 		if (stagePtr) {

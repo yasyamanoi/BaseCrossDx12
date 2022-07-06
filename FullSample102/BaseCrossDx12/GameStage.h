@@ -28,6 +28,7 @@ namespace basecross {
 		}
 		virtual void OnCreate()override;
 		virtual void OnUpdateLightCamera() override {
+			m_lightSet->OnUpdate();
 			m_camera->OnUpdate();
 		}
 

@@ -112,7 +112,7 @@ namespace basecross {
 		auto pCommandList = pDevice->GetComandList().Get();
 		pCommandList->SetPipelineState(PNTShadowmapPipelineState.Get());
 		pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		auto paramIndex = GetConstBuffParamIndex();
+		auto paramIndex = m_constBuffParamIndices[pBaseFrame->m_frameIndex];
 		//Cbv
 		CD3DX12_GPU_DESCRIPTOR_HANDLE cbvGpuHandle(
 			pDevice->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
@@ -163,7 +163,7 @@ namespace basecross {
 		cbvDesc.BufferLocation = param.m_cbvUploadHeap->GetGPUVirtualAddress();
 		cbvDesc.SizeInBytes = constsize;
 		pDevice->CreateConstantBufferView(&cbvDesc, handle);
-		m_constBuffParamIndex = pBaseFrame->m_constBuffParamVec.size();
+		m_constBuffParamIndices[pBaseFrame->m_frameIndex] = pBaseFrame->m_constBuffParamVec.size();
 		pBaseFrame->m_constBuffParamVec.push_back(param);
 
 
@@ -172,7 +172,7 @@ namespace basecross {
 	void Shadowmap::WriteConstantBuffers(BaseFrame* pBaseFrame) {
 		ShadowConstant constants;
 		SetConstant(constants, GetGameObject()->GetComponent<Transform>());
-		memcpy(pBaseFrame->m_constBuffParamVec[m_constBuffParamIndex].m_pConstantBuffer, &constants, sizeof(ShadowConstant));
+		memcpy(pBaseFrame->m_constBuffParamVec[m_constBuffParamIndices[pBaseFrame->m_frameIndex]].m_pConstantBuffer, &constants, sizeof(ShadowConstant));
 
 	}
 

@@ -19,6 +19,7 @@ namespace basecross {
 		//\’z‚Æ”jŠü
 		FallingBall(const shared_ptr<Stage>& StagePtr, const Vec3& Position, const Vec3& Velocity);
 		virtual ~FallingBall();
+		void Reset(const Vec3& Position, const Vec3& Velocity);
 		//‰Šú‰»
 		virtual void OnCreate() override;
 		//‘€ì

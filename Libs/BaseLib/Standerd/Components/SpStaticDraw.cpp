@@ -98,7 +98,7 @@ namespace basecross {
 		cbvDesc.BufferLocation = param.m_cbvUploadHeap->GetGPUVirtualAddress();
 		cbvDesc.SizeInBytes = constsize;
 		pDevice->CreateConstantBufferView(&cbvDesc, handle);
-		m_constBuffParamIndex = pBaseFrame->m_constBuffParamVec.size();
+		m_constBuffParamIndices[pBaseFrame->m_frameIndex] = pBaseFrame->m_constBuffParamVec.size();
 		pBaseFrame->m_constBuffParamVec.push_back(param);
 
 	}
@@ -106,7 +106,7 @@ namespace basecross {
 	void SpStaticDraw::WriteConstantBuffers(BaseFrame* pBaseFrame) {
 		SimpleConstant constants;
 		SetConstant(constants, GetGameObject()->GetComponent<Transform>());
-		memcpy(pBaseFrame->m_constBuffParamVec[m_constBuffParamIndex].m_pConstantBuffer, &constants, sizeof(SimpleConstant));
+		memcpy(pBaseFrame->m_constBuffParamVec[m_constBuffParamIndices[pBaseFrame->m_frameIndex]].m_pConstantBuffer, &constants, sizeof(SimpleConstant));
 	}
 
 
@@ -216,7 +216,7 @@ namespace basecross {
 
 		pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		auto paramIndex = GetConstBuffParamIndex();
+		auto paramIndex = m_constBuffParamIndices[pBaseFrame->m_frameIndex];
 		//Cbv
 		CD3DX12_GPU_DESCRIPTOR_HANDLE cbvGpuHandle(
 			pDevice->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
@@ -334,7 +334,7 @@ namespace basecross {
 
 		pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		auto paramIndex = GetConstBuffParamIndex();
+		auto paramIndex = m_constBuffParamIndices[pBaseFrame->m_frameIndex];
 		//Cbv
 		CD3DX12_GPU_DESCRIPTOR_HANDLE cbvGpuHandle(
 			pDevice->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
@@ -569,7 +569,7 @@ namespace basecross {
 
 		}
 		//Cbv
-		auto paramIndex = GetConstBuffParamIndex();
+		auto paramIndex = m_constBuffParamIndices[pBaseFrame->m_frameIndex];
 		CD3DX12_GPU_DESCRIPTOR_HANDLE skyCbvHandle(
 			pDevice->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
 			pBaseFrame->m_constBuffParamVec[paramIndex].m_constBuffIndex,

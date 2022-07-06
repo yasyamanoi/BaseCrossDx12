@@ -46,15 +46,19 @@ namespace basecross {
 		//物理計算有効
 		SetPhysicsActive(true);
 		//カメラとライトの設定
-		m_camera = AddGameObject<MyCamera>();
+		m_camera = ObjectFactory::Create<MyCamera>();
 		m_camera->SetEye(Vec3(0, 3.43f, -6.37f));
 		m_camera->SetAt(Vec3(0, 0.125f, 0));
-		m_lightSet = AddGameObject<LightSet>();
+		m_lightSet = ObjectFactory::Create<LightSet>();
 
 		//物理計算オブジェクトの作成
 		CreatePhysicsObjects();
 		//プレーヤーの作成
 		CreatePlayer();
+		//
+		//オブジェクトのグループを作成する
+		auto group = CreateSharedObjectGroup(L"FallingBallGroup");
+
 	}
 
 	void GameStage::OnUpdate() {
@@ -64,6 +68,22 @@ namespace basecross {
 			float x = Util::RandZeroToOne() * fullMax - halfMax;
 			float z = Util::RandZeroToOne() * fullMax - halfMax;
 			Vec3 velo(x * 0.5f, 0, z * 0.5f);
+
+			auto group = GetSharedObjectGroup(L"FallingBallGroup");
+			auto& vec = group->GetGroupVector();
+			for (auto& v : vec) {
+				auto shPtr = v.lock();
+				if (shPtr) {
+					if (!shPtr->IsUpdateActive()) {
+						auto shBall = dynamic_pointer_cast<FallingBall>(shPtr);
+						if (shBall) {
+							shBall->Reset(Vec3(x, halfMax, z), velo);
+							return;
+						}
+					}
+				}
+			}
+			//空きがなかった。新規に作る。
 			AddGameObject<FallingBall>(Vec3(x, halfMax, z), velo);
 		}
 	}

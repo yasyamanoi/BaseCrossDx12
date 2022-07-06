@@ -14,16 +14,8 @@ namespace basecross {
 		shared_ptr<LightSet> m_lightSet;
 		//固定のボックスの作成
 		void CreateFixedBox();
-		//固定の球体の作成
-		void CreateFixedSphere();
-		//固定のカプセルの作成
-		void CreateFixedCapsule();
-		//行ったり来たりするボックスの作成
-		void CreateMoveFixedBox();
-		//移動するボックスの作成
-		void CreateMoveBox();
-		//追いかけるオブジェクトの作成
-		void CreateSeekObject();
+		//敵の作成
+		void CreateEnemy();
 		//プレイヤーの作成
 		void CreatePlayer();
 	public:

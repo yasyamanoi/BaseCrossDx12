@@ -19,6 +19,7 @@ namespace basecross {
 	struct BaseFrame
 	{
 		vector<ConstBuffParam> m_constBuffParamVec;
+		UINT m_frameIndex;
 		ID3D12CommandList* m_batchSubmit[BaseDevice::m_numContexts * 2 + BaseDevice::m_commandListCount];
 
 		ComPtr<ID3D12CommandAllocator> m_commandAllocators[BaseDevice::m_commandListCount];
@@ -48,7 +49,7 @@ namespace basecross {
 		D3D12_GPU_DESCRIPTOR_HANDLE m_shadowCbvHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE m_sceneCbvHandle;
 
-		BaseFrame(ID3D12Device* pDevice, ID3D12PipelineState* pPso, ID3D12PipelineState* pShadowMapPso, ID3D12DescriptorHeap* pDsvHeap, ID3D12DescriptorHeap* pCbvSrvHeap, D3D12_VIEWPORT* pViewport, UINT frameResourceIndex);
+		BaseFrame(ID3D12Device* pDevice, ID3D12PipelineState* pPso, ID3D12PipelineState* pShadowMapPso, ID3D12DescriptorHeap* pDsvHeap, ID3D12DescriptorHeap* pCbvSrvHeap, D3D12_VIEWPORT* pViewport, UINT frameIndex);
 		~BaseFrame();
 
 		void Bind(ID3D12GraphicsCommandList* pCommandList, BOOL scenePass, D3D12_CPU_DESCRIPTOR_HANDLE* pRtvHandle, D3D12_CPU_DESCRIPTOR_HANDLE* pDsvHandle);

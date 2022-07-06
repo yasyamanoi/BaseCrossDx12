@@ -244,6 +244,11 @@ namespace basecross {
 		}
 	};
 
+	//各シングルトンインスタンス作成マクロ
+#define DECLARE_SINGLETON_INSTANCE(InsType)	static shared_ptr<InsType> Instance();
+#define IMPLEMENT_SINGLETON_INSTANCE(InsType)	shared_ptr<InsType> InsType::Instance() { \
+	static shared_ptr<InsType> instance; \
+	if(!instance) { instance = shared_ptr<InsType>(new InsType); }return instance;}
 
 
 }

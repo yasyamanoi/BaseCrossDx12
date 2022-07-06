@@ -197,6 +197,7 @@ namespace basecross {
 		virtual void OnCreate() = 0;
 		virtual void OnInitFrame(BaseFrame* pBaseFrame);
 		virtual void WriteConstantBuffers(BaseFrame* pBaseFrame);
+
 		virtual void OnUpdate();
 		virtual void OnDraw() {}
 		virtual void OnDestroy();

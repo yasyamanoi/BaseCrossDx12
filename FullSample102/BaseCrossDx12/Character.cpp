@@ -22,6 +22,28 @@ namespace basecross {
 
 	FallingBall::~FallingBall() {}
 
+	void FallingBall::Reset(const Vec3& Position, const Vec3& Velocity) {
+		m_Pos = Position;
+		m_Velocity = Velocity;
+		auto ptrTransform = GetComponent<Transform>();
+		ptrTransform->SetScale(m_Scale);
+		ptrTransform->SetRotation(0, 0, 0);
+		ptrTransform->SetPosition(m_Pos);
+
+		//WorldMatrixをもとにRigidbodySphereのパラメータを作成
+		PsSphereParam param(ptrTransform->GetWorldMatrix(), 1.0f, false, PsMotionType::MotionTypeActive);
+		auto  ptrRigid = GetComponent<RigidbodySphere>();
+		auto index = ptrRigid->GetIndex();
+		ptrRigid->Reset(param, index);
+		ptrRigid->SetLinearVelocity(m_Velocity);
+
+		SetUpdateActive(true);
+		SetDrawActive(true);
+
+
+	}
+
+
 	//初期化
 	void FallingBall::OnCreate() {
 		auto ptrTransform = GetComponent<Transform>();
@@ -44,6 +66,12 @@ namespace basecross {
 		ptrDraw->SetMesh(L"DEFAULT_SPHERE");
 		ptrDraw->SetTexture(L"WALL_TX");
 
+		//オブジェクトのグループを得る
+		auto group = GetStage()->GetSharedObjectGroup(L"FallingBallGroup");
+		//グループに自分自身を追加
+		group->IntoGroup(GetThis<FallingBall>());
+
+
 	}
 
 	void FallingBall::OnUpdate() {
@@ -51,7 +79,10 @@ namespace basecross {
 		auto PtrTransform = GetComponent<Transform>();
 		if (abs(PtrTransform->GetPosition().y) > activeY) {
 			//範囲外に出たら消す
-			GetStage()->RemoveGameObject(GetThis<GameObject>());
+			SetUpdateActive(false);
+			SetDrawActive(false);
+
+//			GetStage()->RemoveGameObject(GetThis<GameObject>());
 		}
 	}
 

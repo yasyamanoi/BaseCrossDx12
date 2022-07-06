@@ -136,15 +136,17 @@ namespace basecross {
 		cbvDesc.BufferLocation = param.m_cbvUploadHeap->GetGPUVirtualAddress();
 		cbvDesc.SizeInBytes = constsize;
 		pDevice->CreateConstantBufferView(&cbvDesc, handle);
-		m_constBuffParamIndex = pBaseFrame->m_constBuffParamVec.size();
+		m_constBuffParamIndices[pBaseFrame->m_frameIndex] = pBaseFrame->m_constBuffParamVec.size();
 		pBaseFrame->m_constBuffParamVec.push_back(param);
 
 	}
 
+
+
 	void BcStaticDraw::WriteConstantBuffers(BaseFrame* pBaseFrame) {
 		BasicConstants constants;
 		SetConstants(constants, GetGameObject()->GetComponent<Transform>());
-		memcpy(pBaseFrame->m_constBuffParamVec[m_constBuffParamIndex].m_pConstantBuffer, &constants, sizeof(BasicConstants));
+		memcpy(pBaseFrame->m_constBuffParamVec[m_constBuffParamIndices[pBaseFrame->m_frameIndex]].m_pConstantBuffer, &constants, sizeof(BasicConstants));
 	}
 
 	IMPLEMENT_DX12SHADER(BcVSPNTStaticPL, App::GetShadersDir() + L"BcVSPNTStaticPL.cso")
@@ -336,7 +338,7 @@ namespace basecross {
 
 		}
 		//Cbv
-		auto paramIndex = GetConstBuffParamIndex();
+		auto paramIndex = m_constBuffParamIndices[pBaseFrame->m_frameIndex];
 		CD3DX12_GPU_DESCRIPTOR_HANDLE skyCbvHandle(
 			pDevice->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
 			pBaseFrame->m_constBuffParamVec[paramIndex].m_constBuffIndex,
