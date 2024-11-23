@@ -1,7 +1,7 @@
 /*!
 @file MeshHelper.cpp
 @brief メッシュヘルパークラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
 
 #include "stdafx.h"
@@ -13,7 +13,7 @@ namespace basecross {
 	const float MeshUtill::SQRT6(2.44948974278317809820f);
 
 
-	void MeshUtill::CreateCylinderCap(vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices,
+	void MeshUtill::CreateCylinderCap(std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices,
 		size_t tessellation, float height, float radius, bool isTop)
 	{
 		// indices.
@@ -55,7 +55,7 @@ namespace basecross {
 	}
 
 	void  MeshUtill::CreateSquare(float size,
-		vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices) {
+		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices) {
 		try {
 			float HelfSize = size / 2.0f;
 			//頂点配列
@@ -77,7 +77,7 @@ namespace basecross {
 	}
 
 	void MeshUtill::CreateCube(float size,
-		vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices) {
+		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices) {
 		try {
 			//Face数は6
 			const int FaceCount = 6;
@@ -134,11 +134,11 @@ namespace basecross {
 
 
 	void MeshUtill::CreateSphere(float diameter, size_t tessellation,
-		vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices) {
+		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices) {
 		try {
 			if (tessellation < 3) {
 				// 初期化失敗
-				throw runtime_error("分割数は3以上必要です");
+				throw std::runtime_error("分割数は3以上必要です");
 			}
 			float radius = diameter / 2;
 			size_t verticalSegments = tessellation;
@@ -200,12 +200,12 @@ namespace basecross {
 	void MeshUtill::CreateCapsule(float diameter,
 		const bsm::Vec3& PointA, const bsm::Vec3& PointB,
 		size_t tessellation,
-		vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices,
+		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices,
 		bool landscape) {
 		try {
 			if (tessellation < 3) {
 				// 初期化失敗
-				throw runtime_error("分割数は3以上必要です");
+				throw std::runtime_error("分割数は3以上必要です");
 			}
 			float radius = diameter / 2;
 			size_t verticalSegments = tessellation;
@@ -295,14 +295,14 @@ namespace basecross {
 	}
 
 	void MeshUtill::CreateCylinder(float height, float diameter, size_t tessellation,
-		vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices,
+		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices,
 		bool landscape)
 	{
 		try {
 
 			if (tessellation < 3) {
 				// 初期化失敗
-				throw runtime_error("分割数は3以上必要です");
+				throw std::runtime_error("分割数は3以上必要です");
 			}
 
 			height /= 2;
@@ -358,11 +358,11 @@ namespace basecross {
 	}
 
 	void MeshUtill::CreateCone(float diameter, float height, size_t tessellation,
-		vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices) {
+		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices) {
 		try {
 			if (tessellation < 3) {
 				// 初期化失敗
-				throw runtime_error("分割数は3以上必要です");
+				throw std::runtime_error("分割数は3以上必要です");
 			}
 
 			height /= 2;
@@ -407,11 +407,11 @@ namespace basecross {
 	}
 
 	void MeshUtill::CreateTorus(float diameter, float thickness, size_t tessellation,
-		vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices) {
+		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices) {
 		try {
 			if (tessellation < 3) {
 				// 初期化失敗
-				throw runtime_error("分割数は3以上必要です");
+				throw std::runtime_error("分割数は3以上必要です");
 			}
 
 			size_t stride = tessellation + 1;
@@ -466,7 +466,7 @@ namespace basecross {
 	}
 
 	void MeshUtill::CreateTetrahedron(float size,
-		vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices) {
+		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices) {
 		try {
 
 			static const XMVECTORF32 verts[4] =
@@ -512,10 +512,10 @@ namespace basecross {
 			}
 
 			if (vertices.size() != 4 * 3) {
-				throw runtime_error("頂点の数が合いません");
+				throw std::runtime_error("頂点の数が合いません");
 			}
 			if (indices.size() != 4 * 3) {
-				throw runtime_error("インデックスの数が合いません");
+				throw std::runtime_error("インデックスの数が合いません");
 			}
 
 		}
@@ -525,7 +525,7 @@ namespace basecross {
 	}
 
 	void MeshUtill::CreateOctahedron(float size,
-		vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices) {
+		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices) {
 		try {
 
 			static const XMVECTORF32 verts[6] =
@@ -576,10 +576,10 @@ namespace basecross {
 			}
 
 			if (vertices.size() != 8 * 3) {
-				throw runtime_error("頂点の数が合いません");
+				throw std::runtime_error("頂点の数が合いません");
 			}
 			if (indices.size() != 8 * 3) {
-				throw runtime_error("インデックスの数が合いません");
+				throw std::runtime_error("インデックスの数が合いません");
 			}
 
 		}
@@ -589,7 +589,7 @@ namespace basecross {
 	}
 
 	void MeshUtill::CreateDodecahedron(float size,
-		vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices) {
+		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices) {
 		try {
 
 			static const float a = 1.f / SQRT3;
@@ -705,10 +705,10 @@ namespace basecross {
 			}
 
 			if (vertices.size() != 12 * 5) {
-				throw runtime_error("頂点の数が合いません");
+				throw std::runtime_error("頂点の数が合いません");
 			}
 			if (indices.size() != 12 * 3 * 3) {
-				throw runtime_error("インデックスの数が合いません");
+				throw std::runtime_error("インデックスの数が合いません");
 			}
 
 		}
@@ -718,7 +718,7 @@ namespace basecross {
 	}
 
 	void MeshUtill::CreateIcosahedron(float size,
-		vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices) {
+		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices) {
 		try {
 
 			static const float  t = 1.618033988749894848205f; // (1 + sqrt(5)) / 2
@@ -790,10 +790,10 @@ namespace basecross {
 			}
 
 			if (vertices.size() != 20 * 3) {
-				throw runtime_error("頂点の数が合いません");
+				throw std::runtime_error("頂点の数が合いません");
 			}
 			if (indices.size() != 20 * 3) {
-				throw runtime_error("インデックスの数が合いません");
+				throw std::runtime_error("インデックスの数が合いません");
 			}
 
 
@@ -803,7 +803,7 @@ namespace basecross {
 		}
 	}
 
-	void MeshUtill::SetNormalTangent(vector<VertexPositionNormalTangentTexture>& vertices) {
+	void MeshUtill::SetNormalTangent(std::vector<VertexPositionNormalTangentTexture>& vertices) {
 		for (size_t i = 0; i < vertices.size(); i++) {
 			bsm::Vec3 Norm = (bsm::Vec3)vertices[i].normal;
 			Norm.normalize();
@@ -818,7 +818,7 @@ namespace basecross {
 		}
 	}
 
-	void MeshUtill::SetNormalTangent(vector<VertexPositionNormalTangentTextureSkinning>& vertices) {
+	void MeshUtill::SetNormalTangent(std::vector<VertexPositionNormalTangentTextureSkinning>& vertices) {
 		for (size_t i = 0; i < vertices.size(); i++) {
 			bsm::Vec3 Norm = (bsm::Vec3)vertices[i].normal;
 			Norm.normalize();

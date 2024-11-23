@@ -88,14 +88,14 @@ inline Quat::Quat(XMVECTOR vec) {
 	mW = temp.w;
 }
 
-inline Quat::Quat(const basecross::bsm::Quat& qt) {
+inline Quat::Quat(const bsm::Quat& qt) {
 	mX = qt.x;
 	mY = qt.y;
 	mZ = qt.z;
 	mW = qt.w;
 }
 
-inline Quat::Quat(const basecross::bsm::Vec4& vec) {
+inline Quat::Quat(const bsm::Vec4& vec) {
 	mX = vec.x;
 	mY = vec.y;
 	mZ = vec.z;
@@ -178,7 +178,7 @@ inline Quat & Quat::operator =(XMVECTOR vec) {
 	return *this;
 }
 
-inline Quat & Quat::operator =(const basecross::bsm::Quat& qt) {
+inline Quat & Quat::operator =(const bsm::Quat& qt) {
 	mX = qt.x;
 	mY = qt.y;
 	mZ = qt.z;

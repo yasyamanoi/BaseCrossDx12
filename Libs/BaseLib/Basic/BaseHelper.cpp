@@ -1,9 +1,8 @@
 /*!
 @file BaseHelper.cpp
-@brief ヘルパークラス、関数群
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@brief ユーティリティクラス、関数群
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
-
 
 #include "stdafx.h"
 
@@ -20,7 +19,7 @@ namespace basecross {
 		//	);
 		//	用途: CSOデータからシェーダ用のBlobを作成する
 		//--------------------------------------------------------------------------------------
-		void CreateShaderFlomCso(const wstring& fileName, ID3DBlob** pResult) {
+		void CreateShaderFlomCso(const std::wstring& fileName, ID3DBlob** pResult) {
 			try {
 				if (fileName == L"") {
 					throw BaseException(
@@ -38,7 +37,7 @@ namespace basecross {
 						L"\nDx12ShaderResource::CreateShaderFlomCso()"
 					);
 				}
-				ThrowIfFailed(
+				ThrowIfFailedEx(
 					D3DReadFileToBlob(fileName.c_str(), pResult),
 					L"Blpbの作成に失敗しました。\n",
 					fileName,
@@ -62,7 +61,7 @@ namespace basecross {
 
 
 	//シェーダアクセッサ
-	ID3DBlob* Dx12ShaderResource::GetShaderBlob(const wstring& fileName, ComPtr<ID3DBlob>& shaderComPtr) {
+	ID3DBlob* Dx12ShaderResource::GetShaderBlob(const std::wstring& fileName, ComPtr<ID3DBlob>& shaderComPtr) {
 		//ミューテックス
 		std::mutex Mutex;
 		//ラムダ式利用
@@ -72,7 +71,7 @@ namespace basecross {
 			});
 	}
 
-	ComPtr<ID3DBlob>& Dx12ShaderResource::GetShaderBlobComPtr(const wstring& fileName, ComPtr<ID3DBlob>& shaderComPtr) {
+	ComPtr<ID3DBlob>& Dx12ShaderResource::GetShaderBlobComPtr(const std::wstring& fileName, ComPtr<ID3DBlob>& shaderComPtr) {
 		//ミューテックス
 		std::mutex mutex;
 		//ラムダ式利用

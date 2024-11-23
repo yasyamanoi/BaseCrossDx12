@@ -82,7 +82,7 @@ inline Vector3::Vector3(XMVECTOR vec) {
 	mZ = tmp.z;
 }
 
-inline Vector3::Vector3(const basecross::bsm::Vec3& vec) {
+inline Vector3::Vector3(const bsm::Vec3& vec) {
 	mX = vec.x;
 	mY = vec.y;
 	mZ = vec.z;
@@ -230,7 +230,7 @@ inline Vector3 & Vector3::operator =(XMVECTOR vec) {
 	return *this;
 }
 //
-inline Vector3 & Vector3::operator =(const basecross::bsm::Vec3& vec) {
+inline Vector3 & Vector3::operator =(const bsm::Vec3& vec) {
 	mX = vec.x;
 	mY = vec.y;
 	mZ = vec.z;
@@ -631,14 +631,14 @@ inline Vector4::Vector4(XMVECTOR vec) {
 	mW = tmp.w;
 }
 
-inline Vector4::Vector4(const basecross::bsm::Vec3& vec) {
+inline Vector4::Vector4(const bsm::Vec3& vec) {
 	mX = vec.x;
 	mY = vec.y;
 	mZ = vec.z;
 	mW = 0.0f;
 }
 
-inline Vector4::Vector4(const basecross::bsm::Vec4& vec) {
+inline Vector4::Vector4(const bsm::Vec4& vec) {
 	mX = vec.x;
 	mY = vec.y;
 	mZ = vec.z;
@@ -795,7 +795,7 @@ inline Vector4 & Vector4::operator =(XMVECTOR vec) {
 	return *this;
 }
 
-inline Vector4 & Vector4::operator =(const basecross::bsm::Vec4& vec) {
+inline Vector4 & Vector4::operator =(const bsm::Vec4& vec) {
 	mX = vec.x;
 	mY = vec.y;
 	mZ = vec.z;

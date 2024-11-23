@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BaseCrossDx12ドキュメント</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous"><link href="css/style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<!-- container -->
+<div class="container bg-light">
+<h2>BaseCrossDx12ドキュメント</h2>
+<h4>【Sample001】単純な四角形の描画</h4>
+　このサンプルは<strong>Sample001</strong>ディレクトリ内にあります。VisualStdioで該当ソリューション（例えばVS2022なら<strong>BaseCrossDx12VS2022.sln</strong>）を開いてください。<br>
+　ビルド後実行すると、以下の画面が現れます。
+<div class="py-3">
+<img src="img/0001a.png" width="80%" />
+</div>
+　中央に、単純な四角形が描画されています。これは各頂点に<strong>カラー情報</strong>を持たせた四角形です。時間とともに色が変化し、左右に移動します。<br>
+　左上に<strong>FPS: 842.7</strong>などの<strong>デバッグ情報</strong>が表示されています。<br>
+<h5>デバッグ文字列</h5>
+　まずは、この文字列の修正および非表示を説明します<br>
+　プロジェクト内<strong>ヘッダー ファイル</strong>の<strong>Scene.h</strong>を開くと、以下の関数があります。
+<pre class="my-3 p-3">
+//--------------------------------------------------------------------------------------
+// デバッグ文字列の更新
+// 何もしない
+//--------------------------------------------------------------------------------------
+virtual void UpdateUI(std::wstring& uiText)override{}
+</pre>
+　何もしない状態ですと<strong>デバッグ情報</strong>は<strong>FPS値</strong>および<strong>そのマシンに設定されているGPUドライバー名</strong>が表示されます。<br>
+　今、表示されている環境は<strong>FPSは842.7（つまり１秒間に842.7回計算される）</strong>であり、GPUは<strong>NVIDIA GeForce RTX 3070 Ti</strong>と<strong>Microsoft Basic Render Driver</strong>が存在します。<br>
+　この中で使用されているのは最初の<strong>GPUドライバー</strong>です。この環境では<strong>NVIDIA GeForce RTX 3070 Ti</strong>です。<br>
+　この設定を変更することも可能ですが<strong>BaseCrossDx12デフォルト</strong>では実装されていません。（フレームワークとしてはあまり意味があるとは思えないので）<br>
+　さて、FPS値やGPU名も重要かと思いますが、これに、ゲーム作成の上で出力させたい情報もあると思います。例えば、何かのカウンタを表示させるには、
+<pre class="my-3 p-3">
+virtual void UpdateUI(std::wstring& uiText)override{
+	static UINT num = 0;
+	auto wstr = L"ナンバー: " + Util::UintToWStr(num) + L"\n";
+	uiText += wstr;
+	num++;
+}
+</pre>
+　とすると以下のようになります。
+<div class="py-3">
+<img src="img/0001b.png" width="80%" />
+</div>
+<pre class="my-3 p-3">
+virtual void UpdateUI(std::wstring& uiText)override{
+	uiText = L"";
+}
+</pre>
+　とすると、文字列は何も表示されなくなります。
+<div class="py-3">
+<img src="img/0001c.png" width="80%" />
+</div>
+<h5>最低限設定しなければいけないもの</h5>
+　<strong>BaseCrossDx12</strong>は、前バージョンの<strong>BaseCross64（DirectX11版）</strong>に比べ、フレームワークが行う部分が、特に描画処理において、縮小されています。<br>
+　これは、ベースとなっている<strong>DirectX12</strong>が、アプリケーションプログラマがやらなければいけないことが極端に増え、また、その分<strong>自由度</strong>が高まったといえるために、必要とされる<strong>DirectX12リソース</strong>を、できるだけ<strong>フレームワーク側</strong>では<strong>作らない方向</strong>で設計されているからです。<br>
+　作らなくてはいけない<strong>Dx12リソース</strong>は以下です。
+<ul class="list-group py-3">
+<li class="list-group-item base-item">頂点シェーダとピクセルシェーダ</li>
+<li class="list-group-item base-item">パイプラインステート</li>
+<li class="list-group-item base-item">ゲームで使用されるゲームステージとゲームオブジェクト</li>
+</ul>
+<h5>BaseSceneクラスとSceneクラス</h5>
+　<strong>BaseCrossDx12</strong>でゲームを作成するには<strong>BaseSceneクラスとSceneクラス</strong>の関係を理解することが必要不可欠です。<br>
+　<strong>BaseCrossDx12</strong>のライブラリプログラムは<strong>Libs/BaseLib</strong>フォルダに配置され、その中の<strong>Basic</strong>にあります。<br>
+　<strong>Libs/BaseLib/Basic/BaseScene.h</strong>が<strong>BaseSceneクラスのヘッダ</strong>であり<strong>Libs/BaseLib/Basic/BaseScene.cpp</strong>が<strong>BaseSceneクラスの本体</strong>ということになります。このクラスには、Dx12の大部分のリソースを作成、レンダリングなどの処理がかかれていたり、仮想関数が準備されたりしています。<br>
+　コンテンツ側の<strong>ヘッダー ファイル</strong>の中にある<strong>Scene.h</strong>が<strong>BaseSceneクラスを継承したSceneクラスのヘッダ</strong>であり、<strong>ソース ファイル</strong>の中の<strong>Scene.cpp</strong>がその実体となります。<br>
+　以下に親クラスである<strong>BaseSceneクラスの仮想関数群</strong>を紹介します。
+<pre class="my-3 p-3">
+//--------------------------------------------------------------------------------------
+///	ベースシーン（親クラス）
+//--------------------------------------------------------------------------------------
+class BaseScene
+{
+protected:
+	BaseScene(UINT frameCount, PrimDevice* pPrimDevice);
+	virtual ~BaseScene();
+public:
+
+	//中略
+
+	//初期化
+	virtual void Initialize(ID3D12Device* pDevice, ID3D12CommandQueue* pDirectCommandQueue, ID3D12GraphicsCommandList* pCommandList, UINT frameIndex);
+	//更新（純粋仮想関数）
+	virtual void Update(double elapsedTime) = 0;
+	//中略
+
+	//UI文字列の更新
+	virtual void UpdateUI(std::wstring& uiText){}
+protected:
+
+	//中略
+
+	//これよ仮想関数
+	//以下、D3Dリソースの作成
+	virtual void CreateDescriptorHeaps(ID3D12Device* pDevice);
+	virtual void CreateCommandLists(ID3D12Device* pDevice);
+	virtual void CreateRootSignatures(ID3D12Device* pDevice);
+	virtual void CreatePipelineStates(ID3D12Device* pDevice) = 0;
+	virtual void CreateBaseFrames(ID3D12Device* pDevice, ID3D12CommandQueue* pCommandQueue);
+	virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList);
+	virtual void CreateSceneResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) = 0;
+	virtual void CreatePostprocessPassResources(ID3D12Device* pDevice);
+	virtual void CreateSamplers(ID3D12Device* pDevice);
+
+	//フレーム処理の準備
+	virtual void BeginFrame();
+	//フレームのリセット
+	virtual void MidFrame();
+	//フレームの終了
+	virtual void EndFrame(bool setBackbufferReadyForPresent);
+
+	//シャドウとシーンの描画処理
+	virtual void WorkerThread();
+	//描画処理（シャドウ）
+	virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList) = 0;
+	//描画処理（シーン）
+	virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList) = 0;
+	//描画処理（ポストプロセス）
+	virtual void PostprocessPass(ID3D12GraphicsCommandList* pCommandList);
+
+};
+</pre>
+　この中で<strong>= 0;</strong>となっている関数群が<strong>純粋仮想関数</strong>であり、継承するクラスで必ず定義しなければいけない関数です。<br>
+　一方、派生クラスである<strong>Sceneクラス</strong>は、プロジェクト側の<strong>ヘッダーファイル</strong>内に<strong>Scene.h</strong>が、<strong>ソース ファイル</strong>内に<strong>Scene.cpp</strong>があります。<br>
+　実際にファイルがおかれているディレクトリは、どちらも<strong>プロジェクトのディレクトリ</strong>になります。<br>
+　では早速<strong>Sceneクラス</strong>を見ていきましょう。<br>
+　まず、<strong>Scene.h</strong>ですが、以下のようになっています。
+<pre class="my-3 p-3">
+//--------------------------------------------------------------------------------------
+//	シーン
+//--------------------------------------------------------------------------------------
+class Scene : public BaseScene
+{
+	std::shared_ptr&lt;PcSprite> m_pcSprite;
+public:
+	Scene(UINT frameCount, PrimDevice* pPrimDevice);
+	virtual ~Scene();
+	//--------------------------------------------------------------------------------------
+	// 更新処理
+	//--------------------------------------------------------------------------------------
+	virtual void Update(double elapsedTime)override;
+	//--------------------------------------------------------------------------------------
+	// デバッグ文字列の更新
+	// 何もしない
+	//--------------------------------------------------------------------------------------
+	virtual void UpdateUI(std::wstring& uiText)override{}
+protected:
+	//--------------------------------------------------------------------------------------
+	// D3Dリソースの作成
+	//--------------------------------------------------------------------------------------
+	virtual void CreatePipelineStates(ID3D12Device* pDevice)override;
+	virtual void CreateSamplers(ID3D12Device* pDevice)override {}
+	//--------------------------------------------------------------------------------------
+	// オブジェクト作成
+	//--------------------------------------------------------------------------------------
+	virtual void CreateSceneResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)override;
+	//--------------------------------------------------------------------------------------
+	// 描画処理（シャドウ）
+	// 何もしない
+	//--------------------------------------------------------------------------------------
+	virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList)override{}
+	//--------------------------------------------------------------------------------------
+	// 描画処理（シーン）
+	//--------------------------------------------------------------------------------------
+	virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList)override;
+	//--------------------------------------------------------------------------------------
+	//描画処理（ポストプロセス）
+	//何もしない
+	//--------------------------------------------------------------------------------------
+	virtual void PostprocessPass(ID3D12GraphicsCommandList* pCommandList)override{}
+};
+</pre>
+　ここで注目すべきは、何もしない３つの関数です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	// デバッグ文字列の更新
+	// 何もしない
+	//--------------------------------------------------------------------------------------
+	virtual void UpdateUI(std::wstring& uiText)override{}
+	//--------------------------------------------------------------------------------------
+	// 描画処理（シャドウ）
+	// 何もしない
+	//--------------------------------------------------------------------------------------
+	virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList)override{}
+	//--------------------------------------------------------------------------------------
+	//描画処理（ポストプロセス）
+	//何もしない
+	//--------------------------------------------------------------------------------------
+	virtual void PostprocessPass(ID3D12GraphicsCommandList* pCommandList)override{}
+</pre>
+　このサンプルでは、<strong>サンプラー</strong>も使わないし<strong>影（シャドウ）</strong>も使わないし<strong>ポストエフェクト</strong>も使わないので、該当関数を定義しないようにしています。<br>
+　そういう場合は継承したうえで<strong>何もしない処理</strong>を書くと楽ちんです。<br>
+　それでは<strong>Scene.cpp</strong>を見ていきましょう。<br>
+<h5>パイプラインステートの作成</h5>
+　最初は、<strong>Scene::CreatePipelineStates(ID3D12Device* pDevice)関数</strong>です。パイプラインステートを作成します。
+<pre class="my-3 p-3">
+void Scene::CreatePipelineStates(ID3D12Device* pDevice) {
+	// スプライトのパイプラインステートの作成
+	{
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		<span class="red">psoDesc.InputLayout = { VertexPositionColor::GetVertexElement(), VertexPositionColor::GetNumElements() };</span>
+		psoDesc.pRootSignature = m_rootSignatures[RootSignature::SpritePass].Get();
+		psoDesc.VS =
+		{
+			reinterpret_cast&lt;UINT8*>(<span class="red">VSPCSprite</span>::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			<span class="red">VSPCSprite</span>::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.PS =
+		{
+			reinterpret_cast&lt;UINT8*>(<span class="red">PSPCSprite</span>::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+			<span class="red">PSPCSprite</span>::GetPtr()->GetShaderComPtr()->GetBufferSize()
+		};
+		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		psoDesc.DepthStencilState.DepthEnable = FALSE;
+		psoDesc.DepthStencilState.StencilEnable = FALSE;
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.SampleDesc.Count = 1;
+
+		ComPtr&lt;ID3D12PipelineState> pipelineStateSprite;
+		ThrowIfFailed(pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineStateSprite)));
+		BasicPipelineStatePool::AddPipelineState(L"PCSprite", pipelineStateSprite);
+	}
+}
+</pre>
+　パイプラインステートの設定は非常に頭の痛い問題です。その内容は多岐にわたり、細かく設定できるのですが、逆に言えば<strong>細かく設定しなければいけない</strong>ということです。<strong>BaseCrossDx12</strong>では、できるだけ簡略できる処理は、フレームワーク側で選択肢を用意しています。例えば以下の設定ですが
+<pre class="my-3 p-3">
+		<span class="red">psoDesc.InputLayout = { VertexPositionColor::GetVertexElement(), VertexPositionColor::GetNumElements() };</span>
+</pre>
+　では<strong>InputLayout</strong>を設定しています。<strong>VertexPositionColor</strong>などの頂点定義において<strong>GetVertexElement()関数</strong>や<strong>GetNumElements()関数</strong>によって設定値を取得することができます。これはライブラリの<strong>Basic/VertexHelper.h/cpp</strong>で確認することができます。<br>
+　続いて
+<pre class="my-3 p-3">
+		psoDesc.pRootSignature = m_rootSignatures[RootSignature::SpritePass].Get();
+</pre>
+　ですが、ここではデフォルトの<strong>ルートシグネチャ</strong>をいくつか定義呼び出しています。それは<strong>m_rootSignatures配列</strong>に収められ、<strong>RootSignature::SpritePass</strong>などの<strong>enum値</strong>によってアクセスできます。<br>
+　この<strong>enum値</strong>は以下のように定義されています。<strong>BaseScene.h</strong>に定義されています。
+<pre class="my-3 p-3">
+namespace SceneEnums
+{
+	namespace RenderPass {
+		enum Value { Scene = 0, Shadow, Postprocess, Count };
+	}
+
+	namespace DepthGenPass {
+		enum Value { Scene = 0, Shadow, Count };
+	}
+
+	namespace RootSignature {
+		enum { ShadowPass = 0, ScenePass, SpritePass, PostprocessPass, Count };
+	};
+
+	namespace VertexBuffer {
+		enum Value { ScreenQuad = 0, Count };
+	}
+}
+using namespace SceneEnums;
+</pre>
+　のように定義されているので<strong>m_rootSignatures[RootSignature::SpritePass]</strong>はすなわち<strong>m_rootSignatures[2]</strong>ということになります。<br>
+　<strong>BaseCrossDx12</strong>のルートシグネチャは<strong>ShadowPass, ScenePass, SpritePass, PostprocessPass</strong>の４つ定義されています。<strong>BaseScene::CreateRootSignatures(ID3D12Device* pDevice)関数</strong>を<strong>override</strong>することにより、独自の<strong>ルートシグネチャセット</strong>を作ることができます。<br>
+<h5>シェーダーの作成</h5>
+　続いてシェーダーですが、ここでは<strong>頂点シェーダとピクセルシェーダー</strong>を設定します。
+<pre class="my-3 p-3">
+	psoDesc.VS =
+	{
+		reinterpret_cast&lt;UINT8*>(<span class="red">VSPCSprite</span>::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+		<span class="red">VSPCSprite</span>::GetPtr()->GetShaderComPtr()->GetBufferSize()
+	};
+	psoDesc.PS =
+	{
+		reinterpret_cast&lt;UINT8*>(<span class="red">PSPCSprite</span>::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+		<span class="red">PSPCSprite</span>::GetPtr()->GetShaderComPtr()->GetBufferSize()
+	};
+</pre>
+　赤くなっているところは<strong>BaseCrossDx12</strong>特有の仕様で<strong>Scene.h</strong>の上部に記述されている
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	//	シェーダー
+	//--------------------------------------------------------------------------------------
+	DECLARE_DX12SHADER(<span class="red">VSPCSprite</span>)
+	DECLARE_DX12SHADER(<span class="red">PSPCSprite</span>)
+</pre>
+　および、<strong>Scene.cpp</strong>の上部に記述されている
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	///	シェーダー
+	//--------------------------------------------------------------------------------------
+	IMPLEMENT_DX12SHADER(<span class="red">VSPCSprite</span>, App::GetShadersDir() + L"VSPCSprite.cso")
+	IMPLEMENT_DX12SHADER(<span class="red">PSPCSprite</span>, App::GetShadersDir() + L"PSPCSprite.cso")
+</pre>
+　で、作成します。これらはマクロになっており<strong>シェーダークラス</strong>を作り出します。<br>
+　<strong>VSPCSprite.cso、PSPCSprite.cso</strong>は、ビルド時にコンパイルされるシェーダーのバイナリで、<strong>シェーダーファイル</strong>に収められ、元になる<strong>hlslファイル</strong>は、プロジェクトの<strong>Shadersディレクトリ</strong>に入っています。それぞれ<strong>プロパティ</strong>の設定で、<strong>シェーダの種類</strong>や<strong>出力ファイル</strong>などを設定します。<br>
+　以下は<strong>頂点シェーダー（VSPCSprite.hlsl）</strong>です。
+<pre class="my-3 p-3">
+//--------------------------------------------------------------------------------------
+// File: VSPCSprite.hlsl
+//
+//--------------------------------------------------------------------------------------
+#include "INC2dConstant.hlsli"
+#include "INCStructs.hlsli"
+
+PSPCInput main(VSPCInput input)
+{
+	PSPCInput result;
+
+	result.position = mul(input.position, MatrixTransform);
+	result.color = input.color;
+
+	return result;
+}
+</pre>
+　インクルードされている<strong>INCStructs.hlsli</strong>は、構造体の宣言です。ここでは<strong>VSPCInput</strong>や<strong>PSPCInput</strong>が定義されています。こちらは2D、3D関係なく共通で使用します。<br>
+　<strong>INC2dConstant.hlsli</strong>は<strong>定数バッファのシェーダー側定義</strong>です。内容は以下です。
+<pre class="my-3 p-3">
+Texture2D g_texture : register(t0);
+SamplerState g_sampler : register(s0);
+
+cbuffer ConstantBuffer : register(b0)
+{
+	row_major float4x4 MatrixTransform : packoffset(c0);
+	float4 Emissive : packoffset(c4);
+	float4 Diffuse : packoffset(c5);
+};
+</pre>
+　テクスチャとサンプラーも定義されていますが、ここでは使用してません。<strong>MatrixTransform</strong>が<strong>row_major</strong>となっています。<br>
+　これにより、CPU側では<strong>transposeしない</strong>でシェーダに渡します。<br>
+　以下は、<strong>ピクセルシェーダー</strong>です。<strong>PSPCSprite.hlsl</strong>に記述があります。
+<pre class="my-3 p-3">
+//--------------------------------------------------------------------------------------
+// File: PSPCSprite.hlsl
+//
+//--------------------------------------------------------------------------------------
+
+#include "INC2dConstant.hlsli"
+#include "INCStructs.hlsli"
+
+float4 main(PSPCInput input) : SV_TARGET
+{
+	//頂点色からライティングを作成
+	float4 Light = (saturate(input.color) * Diffuse) + Emissive;
+	return Light;
+}
+</pre>
+　ここでは、定数バッファに渡される<strong>Emissive</strong>と<strong>Diffuse</strong>をもとに、出力するピクセル色を計算しています。<br>
+<h5>パイプラインステートオブジェクトの作成</h5>
+　残りのパイプラインステートの設定は、<strong>PositionとColor</strong>を持つ頂点を描画するための、一般的なものです。<br>
+　<strong>D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc</strong>の記述が終わったら
+<pre class="my-3 p-3">
+	ComPtr&lt;ID3D12PipelineState> pipelineStateSprite;
+	ThrowIfFailed(pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineStateSprite)));
+</pre>
+　で<strong>パイプラインステートオブジェクト</strong>を作成します。作成したら<br>
+<pre class="my-3 p-3">
+	BasicPipelineStatePool::AddPipelineState(L"PCSprite", pipelineStateSprite);
+</pre>
+　で、<strong>BasicPipelineStatePool</strong>に登録します。パイプラインステートは、一つのアプリケーションにいくつもある必要がないので、<strong>L"PCSprite"</strong>という名前で登録しておきます。そうすると、使用するときに
+<pre class="my-3 p-3">
+	//パイプラインステート
+	auto scenePipeline = BasicPipelineStatePool::GetPipelineState(L"PCSprite");
+	pCommandList->SetPipelineState(scenePipeline.Get());
+</pre>
+　のように取り出すことができます。この記述は<strong>Character.cpp</strong>にあります。
+<h5>シーン上のオブジェクトの作成</h5>
+　<strong>オブジェクトの作成</strong>は<strong>Scene::CreateSceneResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)関数</strong>で行います。ここでは
+<pre class="my-3 p-3">
+//--------------------------------------------------------------------------------------
+// オブジェクト作成
+//--------------------------------------------------------------------------------------
+void Scene::CreateSceneResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) {
+	auto scale = Vec3(480, 480, 1);
+	auto pos = Vec3(0, 0, 0);
+	m_pcSprite = <span class="red">ObjectFactory::CreateInitParam&lt;PcSprite>(pCommandList, scale, pos)</span>;
+}
+</pre>
+　のように記述されています。<strong>PcSpriteクラス</strong>は<strong>Character.h/cpp</strong>で宣言定義され、<strong>m_pcSprite</strong>という変数がインスタンスです。<br>
+　<strong>BaseCross64</strong>を使ったことがある人はわかると思いますが、<strong>BaseCrossDx12</strong>では、<strong>ステージ</strong>という概念がありません。ですから<strong>GameObject（ゲームオブジェクト）</strong>が<strong>ステージ</strong>に縛られることもありません。<br>
+　<strong>コンポーネント</strong>は存在しますが<strong>Transformが必須</strong>のようなこともありません。例えばこのサンプル（Sample001）では、<strong>コンポーネント</strong>は使っていません。<br>
+　ここで使われている<strong>ObjectFactory::CreateInitParam()関数</strong>は、<strong>OnCreate()関数</strong>にパラメータを渡してくれる関数です。<strong>PcSpriteクラス</strong>ではメッシュを生成するので、その際に<strong>コマンドリスト</strong>を必要とします。<br>
+　コマンドリストのメンバ変数を作って、いったんコピーしてから<strong>OnCreate()関数</strong>で使いまわしもできますが、オブジェクト生成時に使用されるコマンドリストは、このタイミングでしか使わないので<strong>OnCreate()関数</strong>に直接渡されるようにしています。<br>
+　<strong>PcSpriteクラス</strong>のメンバ関数は後ほど説明します。<br>
+<h5>オブジェクトの更新</h5>
+　オブジェクトの更新は<strong>Scene::Update()関数</strong>を使います。引数に<strong>elapsedTime（前のターンからの経過時間）</strong>が渡されます。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	//// オブジェクト更新
+	//--------------------------------------------------------------------------------------
+	void Scene::Update(double elapsedTime) {
+		m_pcSprite->OnUpdate(elapsedTime);
+	}
+</pre>
+　ここでは<strong>m_pcSprite->OnUpdate()関数</strong>を呼び出します。
+<h5>オブジェクトの描画（シーン）</h5>
+　オブジェクトの描画は<strong>Scene::ScenePass()関数</strong>を使います。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	// 描画処理（シーン）
+	//--------------------------------------------------------------------------------------
+	void Scene::ScenePass(ID3D12GraphicsCommandList* pCommandList) {
+		m_pcSprite->OnSceneDraw(pCommandList);
+	}
+</pre>
+　ここでは<strong>m_pcSprite->OnSceneDraw()関数</strong>を呼び出します。
+<h5>ゲームオブジェクト（GameObject）</h5>
+　<strong>Sceneクラス</strong>にメンバ変数として配置されている<strong>m_pcSprite</strong>は<strong>ゲームオブジェクト（GameObject）</strong>を継承したクラスです。<br>
+　<strong>Character.h/cpp</strong>に実装されています。以下がその宣言です。
+<pre class="my-3 p-3">
+//--------------------------------------------------------------------------------------
+//	PcSpriteクラス
+//--------------------------------------------------------------------------------------
+class PcSprite : public GameObject {
+	Vec3 m_scale;
+	Vec3 m_position;
+	double m_totalTime;
+
+	<span class="red">std::shared_ptr&lt;BaseMesh> m_spriteMesh;
+	std::vector&lt;VertexPositionColor> m_backupVertices;
+	std::vector&lt;ConstBuffParam> m_constBuffParamVec;</span>
+public:
+	//構築と破棄
+	PcSprite();
+	virtual ~PcSprite();
+	//初期化（パラメータ付き）
+	void OnCreate(ID3D12GraphicsCommandList* pCommandList,const Vec3& scale,const Vec3& position);
+	//操作
+	virtual void OnUpdate(double elapsedTime) override;
+	virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) override;
+};
+</pre>
+　メンバ変数のうち、赤くなっているところの解説をします。
+<h5>メッシュ</h5>
+　<strong>BaseCrossDx12</strong>では、1つの頂点の塊を<strong>メッシュ</strong>というオブジェクトで管理します。ここで使用しているのは<strong>BaseMesh</strong>という型です。メッシュを作る元になるのは、頂点の配列です。ここでは<strong>std::vector&lt;VertexPositionColor></strong>の配列と<strong>std::vector&lt;uint32_t></strong>の配列です。頂点の変更をしないのであれば、これらは関数のローカル変数として作成できるのですが、このサンプルでは<strong>頂点の配列</strong>を動的に変更するので<strong>std::vector&lt;VertexPositionColor> m_backupVertices</strong>というメンバ変数を持っています。<br>
+　<strong>OnCreate()関数</strong>において、以下のように初期化されます。
+<pre class="my-3 p-3">
+	float helfSize = 0.5f;
+	//頂点配列
+	m_backupVertices = {
+		{ VertexPositionColor(Vec3(-helfSize, helfSize, 0),Col4(1.0f,0.0f,0.0f,0.0f)) },
+		{ VertexPositionColor(Vec3(helfSize, helfSize, 0), Col4(0.0f, 1.0f, 0.0f, 0.0f)) },
+		{ VertexPositionColor(Vec3(-helfSize, -helfSize, 0), Col4(0.0f, 0.0f, 1.0f, 0.0f)) },
+		{ VertexPositionColor(Vec3(helfSize, -helfSize, 0), Col4(0.0f, 0.0f, 0, 0.0f)) },
+	};
+	//インデックス配列
+	std::vector&lt;uint32_t> indices = { 0, 1, 2, 1, 3, 2 };
+	m_spriteMesh = BaseMesh::CreateBaseMesh&lt;VertexPositionColor>(pCommandList, m_backupVertices, indices);
+</pre>
+<h5>定数バッファ（コンスタントバッファ）</h5>
+　<strong>std::vector&lt;ConstBuffParam> m_constBuffParamVec</strong>というのは<strong>定数バッファ（コンスタントバッファ）</strong>を管理する型の配列です。<strong>ConstBuffParam</strong>は構造体ですが、以下が内容です。
+<pre class="my-3 p-3">
+//--------------------------------------------------------------------------------------
+///	定数バッファのパラメータ（構造体）
+//--------------------------------------------------------------------------------------
+struct ConstBuffParam {
+	ComPtr&lt;ID3D12Resource> m_constantBuffer;
+	void* m_pConstantBufferWO;
+	UINT m_constBuffIndex;
+};
+</pre>
+　リソース等、定数バッファへ書き込む情報が入っています。<br>
+　<strong>OnCreate()関数</strong>では、以下のように初期化されます。
+<pre class="my-3 p-3">
+	auto pBaseScene = Scene::Get();
+	UINT frameCount = pBaseScene->GetFrameCount();
+	m_constBuffParamVec.resize(frameCount);
+	for (UINT i = 0; i &lt; frameCount; i++) {
+		m_constBuffParamVec[i] = pBaseScene->GetframeResources()[i]->CreateConstBuffParam&lt;Base2DConstant>();
+	}
+</pre>
+　<strong>Base2DConstant</strong>という型は、２Ｄ専用の定数バッファです。<br>
+　<strong>frameCount</strong>は<strong>バックバッファとフロントバッファ</strong>の総数です。<strong>BaseCrossDx12</strong>では、GPUの機能をなるべく引き出したいので<strong>3</strong>になっています。これらを<strong>フレーム</strong>と称します。定数バッファは、<strong>オブジェクト単位、フレーム単位</strong>でユニークになっています。これにより効率的になるのですが、では、アプリケーション全体では、定数バッファはいくつ作成できるのか、という疑問も出ます。<strong>3072個</strong>となります。これは<strong>約1000個のオブジェクト</strong>を同時に描画できる値です（とはいえ途中でFPSがいっぱいいっぱいになるとは思いますが・・・）。<br>
+　これ以上になる場合は、動的に<strong>解放と取得</strong>を行えばいいのですが、そのサンプルは今後述べます。<br>
+<h5>更新処理</h5>
+　更新処理は以下です。<br>
+<pre class="my-3 p-3">
+void PcSprite::OnUpdate(double elapsedTime) {
+	auto pBaseScene = Scene::Get();
+	//トータル時間の変更
+	m_totalTime += elapsedTime;
+	if (m_totalTime > XM_2PI) {
+		m_totalTime = 0.0;
+	}
+	//バックアップ頂点の変更
+	for (auto& vertex : m_backupVertices) {
+		vertex.color.x += (float)elapsedTime;
+		if (vertex.color.x > 1.0f) {
+			vertex.color.x = 0.0f;
+		}
+	}
+	//コンスタントバッファのUpdate
+	Base2DConstant constantBuffer = {};
+	Mat4x4 worldMat;
+	m_scale.z = 1.0f;
+	m_position.x = (float)sin(m_totalTime) * 200.0f;
+	worldMat.affineTransformation(
+		m_scale,
+		Vec3(0.0f),
+		Vec3(0.0f),
+		m_position
+	);
+	auto w = App::GetWidth();
+	auto h = App::GetHeight();
+	Mat4x4 ProjMatrix = XMMatrixOrthographicLH((float)w, (float)h, 0.0, 1.0);
+	worldMat *= ProjMatrix;
+	//2Dはtransposeしない
+//		worldMat.transpose();
+	constantBuffer.transform = worldMat;
+	constantBuffer.emissive = Col4(0.5f);
+	constantBuffer.diffuse = Col4(1.0f);
+	//コンスタントバッファのコミット
+	auto frameIndex = pBaseScene->GetFrameIndex();
+	memcpy(
+		m_constBuffParamVec[frameIndex].m_pConstantBufferWO,
+		&constantBuffer,
+		sizeof(constantBuffer)
+	);
+}
+</pre>
+　ここでは、まず<strong>m_totalTime</strong>を更新して、<strong>バックアップ頂点と、定数バッファ（コンスタントバッファ）</strong>の変更を行います。<br>
+　頂点の色が変わるのは、動的に頂点情報が変わるためです。その処理を行うための準備を行います。すなわち<strong>バックアップ頂点</strong>を変更します。<br>
+　また、オブジェクトが<strong>行ったり来たり</strong>する処理は、いわゆる<strong>サイン処理</strong>です。三角関数の<strong>sinカーブ</strong>を利用して移動させています。<br>
+　<strong>Mat4x4 worldMat（ワールド行列）</strong>を変更したら、射影行列を<strong>XMMatrixOrthographicLH()関数</strong>によって作り出し、それを掛け算します。その結果を<strong>constantBuffer.transform</strong>にセットします。<br>
+　<strong>BaseCrossDx12</strong>では２Ｄオブジェクトは<strong>transposeしません</strong>。３Ｄは<strong>transposeします</strong>。transposeするサンプルは次項以降に紹介します。出来上がった<strong>constantBuffer変数</strong>を、現在のフレーム（描画時にフロントバッファになるフレーム）のＧＰＵ側リソースにコピーして更新処理は終了です。
+<h5>描画処理</h5>
+　<strong>描画処理</strong>は<strong>PcSprite::OnSceneDraw()関数</strong>で行います。<br>
+<pre class="my-3 p-3">
+void PcSprite::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
+	auto pBaseScene = Scene::Get();
+	auto rootSignatures = pBaseScene->GetRootSignatures();
+	auto frameIndex = pBaseScene->GetFrameIndex();
+	//頂点情報の変更
+	m_spriteMesh->UpdateVirtexBuffer&lt;VertexPositionColor>(pCommandList, m_backupVertices);
+	//これより描画処理
+	//ルートシグネチャの設定
+	pCommandList->SetGraphicsRootSignature(rootSignatures[RootSignature::SpritePass].Get());
+	//パイプラインステートの設定
+	auto scenePipeline = PipelineStatePool::GetPipelineState(L"PCSprite");
+	pCommandList->SetPipelineState(scenePipeline.Get());
+	//定数バッファのセット
+	pCommandList->SetGraphicsRootConstantBufferView(
+		pBaseScene->GetGpuSlotID(L"2d_b0"),
+		m_constBuffParamVec[frameIndex].m_constantBuffer->GetGPUVirtualAddress()
+	);
+	//そのほかの必要な設定
+	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	pCommandList->IASetVertexBuffers(0, 1, &m_spriteMesh->GetVertexBufferView());
+	pCommandList->IASetIndexBuffer(&m_spriteMesh->GetIndexBufferView());
+	pCommandList->RSSetViewports(1, &pBaseScene->GetViewport());
+	pCommandList->RSSetScissorRects(1, &pBaseScene->GetScissorRect());
+	pCommandList->OMSetRenderTargets(1, &pBaseScene->GetCurrentBackBufferRtvCpuHandle(),
+		FALSE, &pBaseScene->GetDepthDsvs()[DepthGenPass::Scene]);
+	//PcSpriteの描画
+	pCommandList->DrawIndexedInstanced(m_spriteMesh->GetNumIndices(), 1, 0, 0, 0);
+}
+</pre>
+　これで、一連の処理が終わりです。<br>
+　<strong>頂点の変更（表示色の動的な変化）</strong>と<strong>定数バッファの変更（左右に移動する）</strong>を実装する2Dオブジェクトが完成しました。<br>
+　<strong>BaseCrossDx12</strong>では、できるだけGPU（DirectX12）に直接アクセスする方法を提供しながら、フレームワークとしての便利さも提供したいと考えています。この2つの矛盾するテーマに挑みつつ、少しずつ前進していく所存ですので、どうか、長い目で見守っていただければ幸いです。
+<footer class="py-3 my-4">
+<ul class="nav justify-content-center border-top pb-3 mb-3">
+<li class="nav-item"><a href="index.html" class="nav-link px-2 text-success">目次</a></li>
+<li class="nav-item"><a href="#" class="nav-link px-2 text-success">次へ</a></li>
+</ul>
+<p class="text-center text-body-secondary">&copy; 2024  WiZ Tamura Hiroki,Yamanoi Yasushi MIT License.</p>
+</footer>
+</div>
+<!-- /container -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -90,7 +90,7 @@ public:
 
 	//basecross::bsm::Vec3
 	//
-	explicit inline Vector3(const basecross::bsm::Vec3& vec);
+	explicit inline Vector3(const bsm::Vec3& vec);
 
 	// Assign one 3-D vector to another
     // 
@@ -99,7 +99,7 @@ public:
 	//
 	inline Vector3 & operator =(XMVECTOR vec);
 	//
-	inline Vector3 & operator =(const basecross::bsm::Vec3& vec);
+	inline Vector3 & operator =(const bsm::Vec3& vec);
 
 	//
 	inline operator XMVECTOR() const;
@@ -406,11 +406,11 @@ public:
 
 	//basecross::bsm::Vec3
 	//
-	explicit inline Vector4(const basecross::bsm::Vec3& vec);
+	explicit inline Vector4(const bsm::Vec3& vec);
 
 	//const basecross::bsm::Vec4
 	//
-	explicit inline Vector4(const basecross::bsm::Vec4& vec);
+	explicit inline Vector4(const bsm::Vec4& vec);
 
 
     // Assign one 4-D vector to another
@@ -420,7 +420,7 @@ public:
 	//
 	inline Vector4 & operator =(XMVECTOR vec);
 	//
-	inline Vector4 & operator =(const basecross::bsm::Vec4& vec);
+	inline Vector4 & operator =(const bsm::Vec4& vec);
 
 	//
 	inline operator XMVECTOR() const;
@@ -957,10 +957,10 @@ public:
 
 	//basecross::bsm::Quat
 	//
-	explicit inline Quat(const basecross::bsm::Quat& qt);
+	explicit inline Quat(const bsm::Quat& qt);
 	//basecross::bsm::Vec4
 	//
-	explicit inline Quat(const basecross::bsm::Vec4& vec);
+	explicit inline Quat(const bsm::Vec4& vec);
 
     // Assign one quaternion to another
     // 
@@ -972,7 +972,7 @@ public:
 
 	//basecross::bsm::Qua
 	//
-	inline Quat & operator =(const basecross::bsm::Quat& qt);
+	inline Quat & operator =(const bsm::Quat& qt);
 
 	//XMVECTOR
 	//

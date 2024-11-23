@@ -1,13 +1,12 @@
 /*!
 @file BaseMath.h
 @brief ŒvŽZƒNƒ‰ƒX
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
 
 #pragma once
 #include "stdafx.h"
 
-namespace basecross {
 
 namespace bsm {
 
@@ -3321,10 +3320,18 @@ namespace bsm {
 	//--------------------------------------------------------------------------------------
 	inline const Mat4x4 orthoInverse(const Mat4x4 & tfrm);
 
+	using Vec2 = Flt2;
+	using Vec3 = Flt3;
+	using Vec4 = Flt4;
+	using Pt2 = Flt2;
+	using Pt3 = Flt3;
+	using Col4 = Flt4;
+	using Plane4 = Flt4;
+
 }
+using namespace bsm;
 //end bsm
-}
-//end basecross
 #include "BaseMathInc.h"
+
 
 

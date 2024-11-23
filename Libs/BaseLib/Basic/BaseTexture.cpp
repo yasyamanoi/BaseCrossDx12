@@ -10,8 +10,8 @@ namespace basecross {
 
 
 
-	shared_ptr<BaseTexture>  BaseTexture::CreateBaseTextureFromFilePrim(const ComPtr<ID3D12GraphicsCommandList>& commandList,
-		const wstring& fileName, const CD3DX12_CPU_DESCRIPTOR_HANDLE& mapHandle) {
+	std::shared_ptr<BaseTexture>  BaseTexture::CreateBaseTextureFromFilePrim(ID3D12GraphicsCommandList* pCommandList,
+		const std::wstring& fileName, const CD3DX12_CPU_DESCRIPTOR_HANDLE& mapHandle) {
 		if (fileName == L"") {
 			throw BaseException(
 				L"ファイルが指定されていません\n",
@@ -45,13 +45,13 @@ namespace basecross {
 			FileNamebuff, _MAX_FNAME,
 			Extbuff, _MAX_EXT);
 
-		wstring extStr = Extbuff;
+		std::wstring extStr = Extbuff;
 
-		shared_ptr<BaseTexture> ptrTexture = shared_ptr<BaseTexture>(new BaseTexture());
+		std::shared_ptr<BaseTexture> ptrTexture = std::shared_ptr<BaseTexture>(new BaseTexture());
 		TexMetadata matadata;
 
 		if (extStr == L".dds" || extStr == L".DDS") {
-			ThrowIfFailed(
+			ThrowIfFailedEx(
 				DirectX::LoadFromDDSFile(fileName.c_str(), DDS_FLAGS_NONE, &matadata, ptrTexture->m_image),
 				L"テクスチャの読み込みに失敗しました\n",
 				fileName,
@@ -59,7 +59,7 @@ namespace basecross {
 			);
 		}
 		else if (extStr == L".tga" || extStr == L".TGA") {
-			ThrowIfFailed(
+			ThrowIfFailedEx(
 				DirectX::LoadFromTGAFile(fileName.c_str(), &matadata, ptrTexture->m_image),
 				L"テクスチャの読み込みに失敗しました\n",
 				fileName,
@@ -68,7 +68,7 @@ namespace basecross {
 		}
 		else if (extStr == L".hdr" || extStr == L".HDR")
 		{
-			ThrowIfFailed(
+			ThrowIfFailedEx(
 				DirectX::LoadFromHDRFile(fileName.c_str(), &matadata, ptrTexture->m_image),
 				L"テクスチャの読み込みに失敗しました\n",
 				fileName,
@@ -76,7 +76,7 @@ namespace basecross {
 			);
 		}
 		else {
-			ThrowIfFailed(
+			ThrowIfFailedEx(
 				DirectX::LoadFromWICFile(fileName.c_str(), WIC_FLAGS_NONE, &matadata, ptrTexture->m_image),
 				L"テクスチャの読み込みに失敗しました\n",
 				fileName,
@@ -85,7 +85,7 @@ namespace basecross {
 		}
 		//デバイスの取得
 		auto device = App::GetID3D12Device();
-		ThrowIfFailed(
+		ThrowIfFailedEx(
 			DirectX::CreateTexture(device.Get(), matadata, &ptrTexture->m_texture),
 			L"テクスチャリソースの作成に失敗しました\n",
 			fileName,
@@ -93,7 +93,7 @@ namespace basecross {
 		);
 		NAME_D3D12_OBJECT(ptrTexture->m_texture);
 
-		ThrowIfFailed(
+		ThrowIfFailedEx(
 			DirectX::PrepareUpload(device.Get(), ptrTexture->m_image.GetImages(),
 				ptrTexture->m_image.GetImageCount(), matadata, ptrTexture->m_subresources),
 			L"DirectX::PrepareUpload()に失敗しました\n",
@@ -106,56 +106,65 @@ namespace basecross {
 			0,
 			static_cast<unsigned int>(ptrTexture->m_subresources.size())
 		);
-		ThrowIfFailed(
+		ThrowIfFailedEx(
 			device->CreateCommittedResource(
 				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 				D3D12_HEAP_FLAG_NONE,
 				&CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize),
-				D3D12_RESOURCE_STATE_GENERIC_READ,
+				D3D12_RESOURCE_STATE_COMMON,
 				nullptr,
 				IID_PPV_ARGS(ptrTexture->m_textureUploadHeap.GetAddressOf())),
 			L"テクスチャのアップロードヒープ作成に失敗しました\n",
 			fileName,
 			L"\nBaseTexture::CreateBaseTexture()"
 		);
+
+
 		NAME_D3D12_OBJECT(ptrTexture->m_textureUploadHeap);
 
 		ptrTexture->m_maphandle = mapHandle;
 		//SRVの作成
-		ptrTexture->UpdateSRAndCreateSRV(commandList);
+		ptrTexture->UpdateSRAndCreateSRV(pCommandList);
 
 		return ptrTexture;
 	}
 
-	shared_ptr<BaseTexture> BaseTexture::CreateTextureFlomFile(const wstring& falsename) {
-		auto pDevice = App::GetBaseDevice();
-		auto commandList = pDevice->GetComandList();
+	std::shared_ptr<BaseTexture> BaseTexture::CreateTextureFlomFile(ID3D12GraphicsCommandList* pCommandList, const std::wstring& falsename) {
+
+		auto dev = BaseDevice::GetBaseDevice();
+
+		//デバイスの取得
+		auto device = App::GetID3D12Device();
+
+		//シーンの取得
+		auto sceneBase = BaseDevice::GetScene();
 		//テクスチャの作成
 		//シェーダリソースハンドルを作成
-		UINT srvIndex = pDevice->GetSrvNextIndex();
+		UINT srvIndex = sceneBase->GetSrvNextIndex();
 		CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle(
-			pDevice->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
+			sceneBase->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
 			srvIndex,
-			pDevice->GetCbvSrvUavDescriptorHandleIncrementSize()
+			sceneBase->GetCbvSrvUavDescriptorHandleIncrementSize()
 		);
 		//画像ファイルをもとにテクスチャを作成(SRV込み)
-		auto texture = BaseTexture::CreateBaseTextureFromFilePrim(commandList, falsename, srvHandle);
+		auto texture = BaseTexture::CreateBaseTextureFromFilePrim(pCommandList, falsename, srvHandle);
 		texture->SetSrvIndex(srvIndex);
 		return texture;
 	}
 
-
-	void BaseTexture::UpdateSRAndCreateSRV(const ComPtr<ID3D12GraphicsCommandList>& commandList) {
-		UpdateSubresources(commandList.Get(),
+	void BaseTexture::UpdateSRAndCreateSRV(ID3D12GraphicsCommandList* pCommandList) {
+		UpdateSubresources(pCommandList,
 			m_texture.Get(), m_textureUploadHeap.Get(),
 			0, 0, static_cast<unsigned int>(m_subresources.size()),
 			m_subresources.data());
-		commandList->ResourceBarrier(
+/*
+		pCommandList->ResourceBarrier(
 			1,
 			&CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(),
 				D3D12_RESOURCE_STATE_COPY_DEST,
 				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
 		);
+*/
 		//テクスチャのシェーダリソースビューを作成
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;

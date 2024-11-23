@@ -1,8 +1,9 @@
 /*!
 @file Event.cpp
 @brief イベント
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
+
 #include "stdafx.h"
 
 namespace basecross {
@@ -13,8 +14,8 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	struct EventDispatcher::Impl {
 		//イベントのキュー
-		list< shared_ptr<Event> > m_PriorityQ;
-		map<wstring, vector<weak_ptr<ObjectInterface>>> m_EventInterfaceGroupMap;
+		std::list< std::shared_ptr<Event> > m_PriorityQ;
+		std::map<std::wstring, std::vector<std::weak_ptr<ObjectInterface>>> m_EventInterfaceGroupMap;
 		//
 		//--------------------------------------------------------------------------------------
 		//	void Discharge(
@@ -23,12 +24,12 @@ namespace basecross {
 		//用途: イベントの送信
 		//戻り値: なし
 		//--------------------------------------------------------------------------------------
-		void Discharge(const shared_ptr<Event>& event);
+		void Discharge(const std::shared_ptr<Event>& event);
 		Impl() {}
 		~Impl() {}
 	};
 
-	void EventDispatcher::Impl::Discharge(const shared_ptr<Event>& event) {
+	void EventDispatcher::Impl::Discharge(const std::shared_ptr<Event>& event) {
 		auto shptr = event->m_Receiver.lock();
 		if (shptr) {
 			//受け手が有効
@@ -47,7 +48,7 @@ namespace basecross {
 	{}
 	EventDispatcher::~EventDispatcher() {}
 
-	void EventDispatcher::AddEventReceiverGroup(const wstring& GroupKey, const shared_ptr<ObjectInterface>& Receiver) {
+	void EventDispatcher::AddEventReceiverGroup(const std::wstring& GroupKey, const std::shared_ptr<ObjectInterface>& Receiver) {
 		auto it = pImpl->m_EventInterfaceGroupMap.find(GroupKey);
 		if (it != pImpl->m_EventInterfaceGroupMap.end()) {
 			//キーがあった
@@ -55,7 +56,7 @@ namespace basecross {
 		}
 		else {
 			//グループがない
-			vector<weak_ptr<ObjectInterface>> vec;
+			std::vector<std::weak_ptr<ObjectInterface>> vec;
 			pImpl->m_EventInterfaceGroupMap[GroupKey] = vec;
 			pImpl->m_EventInterfaceGroupMap[GroupKey].push_back(Receiver);
 		}
@@ -63,16 +64,16 @@ namespace basecross {
 
 
 	//イベントのPOST（キューに入れる）
-	void EventDispatcher::PostEvent(float Delay, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-		const wstring& MsgStr, const  shared_ptr<void>& Info) {
+	void EventDispatcher::PostEvent(float Delay, const std::shared_ptr<ObjectInterface>& Sender, const std::shared_ptr<ObjectInterface>& Receiver,
+		const std::wstring& MsgStr, const  std::shared_ptr<void>& Info) {
 		//イベントの作成 
-		auto Ptr = make_shared<Event>(Delay, Sender, Receiver, MsgStr, Info);
+		auto Ptr = std::make_shared<Event>(Delay, Sender, Receiver, MsgStr, Info);
 		//キューにためる
 		pImpl->m_PriorityQ.push_back(Ptr);
 	}
 
-	void EventDispatcher::PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-		const wstring& MsgStr, const  shared_ptr<void>& Info) {
+	void EventDispatcher::PostEvent(float DispatchTime, const std::shared_ptr<ObjectInterface>& Sender, const std::wstring& ReceiverKey,
+		const std::wstring& MsgStr, const  std::shared_ptr<void>& Info) {
 		//ReceiverKeyによる相手の特定
 		//重複キーの検査
 		auto it = pImpl->m_EventInterfaceGroupMap.find(ReceiverKey);
@@ -82,7 +83,7 @@ namespace basecross {
 				auto shptr = v.lock();
 				if (shptr) {
 					//イベントの作成 
-					auto Ptr = make_shared<Event>(0.0f, Sender, shptr, MsgStr, Info);
+					auto Ptr = std::make_shared<Event>(0.0f, Sender, shptr, MsgStr, Info);
 					//キューにためる
 					pImpl->m_PriorityQ.push_back(Ptr);
 				}
@@ -93,16 +94,16 @@ namespace basecross {
 
 
 	//イベントのSEND（キューに入れずにそのまま送る）
-	void EventDispatcher::SendEvent(const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-		const wstring& MsgStr, const  shared_ptr<void>& Info) {
+	void EventDispatcher::SendEvent(const std::shared_ptr<ObjectInterface>& Sender, const std::shared_ptr<ObjectInterface>& Receiver,
+		const std::wstring& MsgStr, const  std::shared_ptr<void>& Info) {
 		//イベントの作成 
-		auto Ptr = make_shared<Event>(0.0f, Sender, Receiver, MsgStr, Info);
+		auto Ptr = std::make_shared<Event>(0.0f, Sender, Receiver, MsgStr, Info);
 		//送信
 		pImpl->Discharge(Ptr);
 	}
 
-	void EventDispatcher::SendEvent(const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-		const wstring& MsgStr, const  shared_ptr<void>& Info) {
+	void EventDispatcher::SendEvent(const std::shared_ptr<ObjectInterface>& Sender, const std::wstring& ReceiverKey,
+		const std::wstring& MsgStr, const  std::shared_ptr<void>& Info) {
 		//ReceiverKeyによる相手の特定
 		//重複キーの検査
 		auto it = pImpl->m_EventInterfaceGroupMap.find(ReceiverKey);
@@ -112,7 +113,7 @@ namespace basecross {
 				auto shptr = v.lock();
 				if (shptr) {
 					//イベントの作成 
-					auto Ptr = make_shared<Event>(0.0f, Sender, shptr, MsgStr, Info);
+					auto Ptr = std::make_shared<Event>(0.0f, Sender, shptr, MsgStr, Info);
 					//イベントの送出
 					pImpl->Discharge(Ptr);
 				}
@@ -124,7 +125,7 @@ namespace basecross {
 
 	void EventDispatcher::DispatchDelayedEvent() {
 		//前回のターンからの時間
-		float ElapsedTime = App::GetElapsedTime();
+		float ElapsedTime = (float)App::GetElapsedTime();
 		auto it = pImpl->m_PriorityQ.begin();
 		while (it != pImpl->m_PriorityQ.end()) {
 			(*it)->m_DispatchTime -= ElapsedTime;

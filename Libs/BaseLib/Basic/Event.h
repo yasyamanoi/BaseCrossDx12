@@ -1,11 +1,12 @@
 /*!
 @file Event.h
 @brief イベント
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
 
 #pragma once
 #include "stdafx.h"
+
 
 namespace basecross {
 
@@ -19,13 +20,13 @@ namespace basecross {
 		///	遅延時間（SendEventの場合は常に0）
 		float m_DispatchTime;
 		///	このメッセージを送ったオブジェクト
-		weak_ptr<ObjectInterface> m_Sender;
+		std::weak_ptr<ObjectInterface> m_Sender;
 		///	受け取るオブジェクト（nullptrの場合はアクティブステージ内すべてもしくはキーワードで識別するオブジェクト）
-		weak_ptr<ObjectInterface> m_Receiver;
+		std::weak_ptr<ObjectInterface> m_Receiver;
 		///	メッセージ文字列
-		wstring m_MsgStr;
+		std::wstring m_MsgStr;
 		///	追加情報をもつオブジェクトのポインタ
-		shared_ptr<void> m_Info;
+		std::shared_ptr<void> m_Info;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	コンストラクタ
@@ -36,8 +37,8 @@ namespace basecross {
 		@param[in]	Info	追加情報をもつユーザーデータ
 		*/
 		//--------------------------------------------------------------------------------------
-		Event(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-			const wstring& MsgStr, const shared_ptr<void>& Info = shared_ptr<void>()) :
+		Event(float DispatchTime, const std::shared_ptr<ObjectInterface>& Sender, const std::shared_ptr<ObjectInterface>& Receiver,
+			const std::wstring& MsgStr, const std::shared_ptr<void>& Info = std::shared_ptr<void>()) :
 			m_DispatchTime(DispatchTime),
 			m_Sender(Sender),
 			m_Receiver(Receiver),
@@ -80,7 +81,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void AddEventReceiverGroup(const wstring& GroupKey, const shared_ptr<ObjectInterface>& Receiver);
+		void AddEventReceiverGroup(const std::wstring& GroupKey, const std::shared_ptr<ObjectInterface>& Receiver);
 
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -93,8 +94,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void PostEvent(float Delay, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		void PostEvent(float Delay, const std::shared_ptr<ObjectInterface>& Sender, const std::shared_ptr<ObjectInterface>& Receiver,
+			const std::wstring& MsgStr, const  std::shared_ptr<void>& Info = std::shared_ptr<void>());
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのPOST（キューに入れる）
@@ -106,8 +107,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		void PostEvent(float DispatchTime, const std::shared_ptr<ObjectInterface>& Sender, const std::wstring& ReceiverKey,
+			const std::wstring& MsgStr, const  std::shared_ptr<void>& Info = std::shared_ptr<void>());
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのSEND（キューに入れずにそのまま送る）
@@ -118,8 +119,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		void SendEvent(const std::shared_ptr<ObjectInterface>& Sender, const std::shared_ptr<ObjectInterface>& Receiver,
+			const std::wstring& MsgStr, const  std::shared_ptr<void>& Info = std::shared_ptr<void>());
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのSEND（キューに入れずにそのまま送る）
@@ -130,8 +131,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		void SendEvent(const std::shared_ptr<ObjectInterface>& Sender, const std::wstring& ReceiverKey,
+			const std::wstring& MsgStr, const  std::shared_ptr<void>& Info = std::shared_ptr<void>());
 
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -150,7 +151,7 @@ namespace basecross {
 	private:
 		// pImplイディオム
 		struct Impl;
-		unique_ptr<Impl> pImpl;
+		std::unique_ptr<Impl> pImpl;
 		//コピー禁止
 		EventDispatcher(const EventDispatcher&) = delete;
 		EventDispatcher& operator=(const EventDispatcher&) = delete;
@@ -158,7 +159,6 @@ namespace basecross {
 		EventDispatcher(const EventDispatcher&&) = delete;
 		EventDispatcher& operator=(const EventDispatcher&&) = delete;
 	};
-
-
 }
+using namespace basecross;
 // end namespace basecross 

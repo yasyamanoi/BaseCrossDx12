@@ -1,7 +1,7 @@
 /*!
 @file VertexHelper.h
 @brief 頂点ヘルパークラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
 
 #pragma once
@@ -948,4 +948,5 @@ typedef const XMMATRIX& FXMMATRIX;
 
 
 }
+using namespace basecross;
 //end basecross

@@ -1,7 +1,7 @@
 /*!
 @file InputDevice.h
 @brief 入力デバイスクラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
 
 #pragma once
@@ -35,7 +35,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class InputDevice {
 		const DWORD MAX_CONTROLLERS = 4; // コントローラ数
-		vector<CONTROLER_STATE> m_State; // コントローラステートの配列
+		std::vector<CONTROLER_STATE> m_State; // コントローラステートの配列
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -141,11 +141,12 @@ namespace basecross {
 		@return	コントローラステート
 		*/
 		//--------------------------------------------------------------------------------------
-		const vector<CONTROLER_STATE>& GetControlerVec()const { 
+		const std::vector<CONTROLER_STATE>& GetControlerVec()const {
 			return m_State; 
 		}
 	};
 
 
 }
+using namespace basecross;
 // end namespace basecross

@@ -1,7 +1,7 @@
 /*!
 @file BaseHelper.h
-@brief ヘルパークラス、関数群
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@brief ユーティリティクラス、関数群
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
 
 #pragma once
@@ -9,74 +9,6 @@
 #include "stdafx.h"
 
 namespace basecross {
-
-	//--------------------------------------------------------------------------------------
-	/*!
-	@brief	HRESULTを文字列に変換
-	@param[in]	hr	HRESULT
-	@return	文字列
-	*/
-	//--------------------------------------------------------------------------------------
-	inline std::string HrToString(HRESULT hr)
-	{
-		char s_str[64] = {};
-		sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<UINT>(hr));
-		return std::string(s_str);
-	}
-
-	//--------------------------------------------------------------------------------------
-	///	例外クラス
-	//--------------------------------------------------------------------------------------
-	class HrException : public std::runtime_error
-	{
-	public:
-		HrException(HRESULT hr) : std::runtime_error(HrToString(hr)), m_hr(hr) {}
-		HrException(HRESULT hr, const std::string& mess) :
-			std::runtime_error(HrToString(hr) + mess),
-			m_hr(hr)
-		{}
-		HRESULT Error() const { return m_hr; }
-	private:
-		const HRESULT m_hr;
-	};
-
-#define SAFE_RELEASE(p) if (p) (p)->Release()
-
-	inline void ThrowIfFailed(HRESULT hr)
-	{
-		if (FAILED(hr))
-		{
-			throw HrException(hr);
-		}
-	}
-
-	// Assign a name to the object to aid with debugging.
-#if defined(_DEBUG) || defined(DBG)
-	inline void SetName(ID3D12Object* pObject, LPCWSTR name)
-	{
-		pObject->SetName(name);
-	}
-	inline void SetNameIndexed(ID3D12Object* pObject, LPCWSTR name, UINT index)
-	{
-		WCHAR fullName[50];
-		if (swprintf_s(fullName, L"%s[%u]", name, index) > 0)
-		{
-			pObject->SetName(fullName);
-		}
-	}
-#else
-	inline void SetName(ID3D12Object*, LPCWSTR)
-	{
-	}
-	inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
-	{
-	}
-#endif
-
-	// ComPtr<T>のための名前つけヘルパー
-
-#define NAME_D3D12_OBJECT(x) SetName((x).Get(), L#x)
-#define NAME_D3D12_OBJECT_INDEXED(x, n) SetNameIndexed((x)[n].Get(), L#x, n)
 
 	//--------------------------------------------------------------------------------------
 	///	ユーティリティ
@@ -173,15 +105,15 @@ namespace basecross {
 		@return　なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void WStrTrim(wstring& wstr, const wchar_t* TrimCharList = L" \t\v\r\n") {
-			wstring result(L"");
+		static void WStrTrim(std::wstring& wstr, const wchar_t* TrimCharList = L" \t\v\r\n") {
+			std::wstring result(L"");
 			if (wstr.size() <= 0) {
 				wstr = result;
 				return;
 			}
-			wstring::size_type left = wstr.find_first_not_of(TrimCharList);
-			if (left != wstring::npos) {
-				wstring::size_type right = wstr.find_last_not_of(TrimCharList);
+			std::wstring::size_type left = wstr.find_first_not_of(TrimCharList);
+			if (left != std::wstring::npos) {
+				std::wstring::size_type right = wstr.find_last_not_of(TrimCharList);
 				result = wstr.substr(left, right - left + 1);
 			}
 			wstr = result;
@@ -194,7 +126,7 @@ namespace basecross {
 		@return	変換後の文字列（マルチバイト）
 		*/
 		//--------------------------------------------------------------------------------------
-		static std::string WStoRetMB(const wstring& src) {
+		static std::string WStoRetMB(const std::wstring& src) {
 			size_t i;
 			char* pMBstr = new char[src.length() * MB_CUR_MAX + 1];
 			wcstombs_s(
@@ -204,7 +136,7 @@ namespace basecross {
 				src.c_str(),
 				_TRUNCATE	//すべて変換できなかったら切り捨て
 			);
-			string ret = pMBstr;
+			std::string ret = pMBstr;
 			delete[] pMBstr;
 			return ret;
 		}
@@ -217,7 +149,7 @@ namespace basecross {
 		@return	変換後の文字列（ワイド文字列）
 		*/
 		//--------------------------------------------------------------------------------------
-		static std::wstring MBtoRetWS(const string& src) {
+		static std::wstring MBtoRetWS(const std::string& src) {
 			size_t i;
 			wchar_t* WCstr = new wchar_t[src.length() + 1];
 			mbstowcs_s(
@@ -227,7 +159,7 @@ namespace basecross {
 				src.c_str(),
 				_TRUNCATE //すべて変換できなかったら切り捨て
 			);
-			wstring ret = WCstr;
+			std::wstring ret = WCstr;
 			delete[] WCstr;
 			return ret;
 		}
@@ -240,7 +172,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void WStoMB(const wstring& src, string& dest) {
+		static void WStoMB(const std::wstring& src, std::string& dest) {
 			size_t i;
 			char* pMBstr = new char[src.length() * MB_CUR_MAX + 1];
 			wcstombs_s(
@@ -263,7 +195,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void ConvertWstringtoUtf8(const wstring& src, string& dest) {
+		static void ConvertWstringtoUtf8(const std::wstring& src, std::string& dest) {
 			INT bufsize = ::WideCharToMultiByte(CP_UTF8, 0, src.c_str(), -1, NULL, 0, NULL, NULL);
 			char* Temp = new char[bufsize + 1];
 			::WideCharToMultiByte(CP_UTF8, 0, src.c_str(), -1, Temp, bufsize, NULL, NULL);
@@ -280,7 +212,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void ConvertUtf8toWstring(const string& src, wstring& dest) {
+		static void ConvertUtf8toWstring(const std::string& src, std::wstring& dest) {
 			INT bufsize = ::MultiByteToWideChar(CP_UTF8, 0, src.c_str(), -1, (wchar_t*)NULL, 0);
 			wchar_t* Temp = (wchar_t*)new wchar_t[bufsize];
 			::MultiByteToWideChar(CP_UTF8, 0, src.c_str(), -1, Temp, bufsize);
@@ -296,7 +228,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void MBtoWS(const string& src, wstring& dest) {
+		static void MBtoWS(const std::string& src, std::wstring& dest) {
 			size_t i;
 			wchar_t* WCstr = new wchar_t[src.length() + 1];
 			mbstowcs_s(
@@ -319,9 +251,9 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void WStrToTokenVector(vector<wstring>& wstrvec, const wstring& line, wchar_t delimiter) {
-			wstring::size_type i = 0;
-			wstring wks(L"");
+		static void WStrToTokenVector(std::vector<std::wstring>& wstrvec, const std::wstring& line, wchar_t delimiter) {
+			std::wstring::size_type i = 0;
+			std::wstring wks(L"");
 			for (i = 0; i < line.size(); i++) {
 				if (line[i] == delimiter) {
 					if (wks != L"") {
@@ -344,8 +276,8 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		template<typename T>
-		static wstring GetWSTypeName() {
-			wstring clsname;
+		static std::wstring GetWSTypeName() {
+			std::wstring clsname;
 			MBtoWS(typeid(T).name(), clsname);
 			return clsname;
 		}
@@ -357,7 +289,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		template<typename T>
-		static string GetMBTypeName() {
+		static std::string GetMBTypeName() {
 			string clsname = typeid(T).name();
 			return clsname;
 		}
@@ -380,12 +312,12 @@ namespace basecross {
 		@return	変換した文字列
 		*/
 		//--------------------------------------------------------------------------------------
-		static wstring FloatToWStr(float Val, streamsize Precision = 0,
+		static std::wstring FloatToWStr(float Val, std::streamsize Precision = 0,
 			FloatModify Modify = FloatModify::Default) {
 			//返す文字列
-			wstring str;
+			std::wstring str;
 			//書式を整えるストリーム
-			wostringstream stream;
+			std::wostringstream stream;
 			//浮動小数点の精度を決める
 			if (Precision > 0) {
 				stream.precision(Precision);
@@ -415,12 +347,12 @@ namespace basecross {
 		@return	変換した文字列
 		*/
 		//--------------------------------------------------------------------------------------
-		static string FloatToStr(float Val, streamsize Precision = 0,
+		static std::string FloatToStr(float Val, std::streamsize Precision = 0,
 			FloatModify Modify = FloatModify::Default) {
 			//返す文字列
-			string str;
+			std::string str;
 			//書式を整えるストリーム
-			ostringstream stream;
+			std::ostringstream stream;
 			//浮動小数点の精度を決める
 			if (Precision > 0) {
 				stream.precision(Precision);
@@ -458,11 +390,11 @@ namespace basecross {
 		@return	変換した文字列
 		*/
 		//--------------------------------------------------------------------------------------
-		static wstring UintToWStr(UINT num, NumModify Modify = NumModify::Dec) {
+		static std::wstring UintToWStr(UINT num, NumModify Modify = NumModify::Dec) {
 			//返す文字列
-			wstring str;
+			std::wstring str;
 			//書式を整えるストリーム
-			wostringstream stream;
+			std::wostringstream stream;
 			//表示形式を決める
 			switch (Modify) {
 			case NumModify::Oct:
@@ -487,11 +419,11 @@ namespace basecross {
 		@return	変換した文字列
 		*/
 		//--------------------------------------------------------------------------------------
-		static wstring SizeTToWStr(size_t num, NumModify Modify = NumModify::Dec) {
+		static std::wstring SizeTToWStr(size_t num, NumModify Modify = NumModify::Dec) {
 			//返す文字列
-			wstring str;
+			std::wstring str;
 			//書式を整えるストリーム
-			wostringstream stream;
+			std::wostringstream stream;
 			//表示形式を決める
 			switch (Modify) {
 			case NumModify::Oct:
@@ -516,11 +448,11 @@ namespace basecross {
 		@return	変換した文字列
 		*/
 		//--------------------------------------------------------------------------------------
-		static string UintToStr(UINT num, NumModify Modify = NumModify::Dec) {
+		static std::string UintToStr(UINT num, NumModify Modify = NumModify::Dec) {
 			//返す文字列
-			string str;
+			std::string str;
 			//書式を整えるストリーム
-			ostringstream stream;
+			std::ostringstream stream;
 			//表示形式を決める
 			switch (Modify) {
 			case NumModify::Oct:
@@ -545,7 +477,7 @@ namespace basecross {
 		@return	変換した文字列
 		*/
 		//--------------------------------------------------------------------------------------
-		static string SizeTToStr(UINT num, NumModify Modify = NumModify::Dec) {
+		static std::string SizeTToStr(UINT num, NumModify Modify = NumModify::Dec) {
 			return UintToStr((UINT)num, Modify);
 		}
 		//--------------------------------------------------------------------------------------
@@ -556,11 +488,11 @@ namespace basecross {
 		@return	変換した文字列
 		*/
 		//--------------------------------------------------------------------------------------
-		static wstring IntToWStr(int num, NumModify Modify = NumModify::Dec) {
+		static std::wstring IntToWStr(int num, NumModify Modify = NumModify::Dec) {
 			//返す文字列
-			wstring str;
+			std::wstring str;
 			//書式を整えるストリーム
-			wostringstream stream;
+			std::wostringstream stream;
 			//表示形式を決める
 			switch (Modify) {
 			case NumModify::Oct:
@@ -586,11 +518,11 @@ namespace basecross {
 		@return	変換した文字列
 		*/
 		//--------------------------------------------------------------------------------------
-		static string IntToStr(int num, NumModify Modify = NumModify::Dec) {
+		static std::string IntToStr(int num, NumModify Modify = NumModify::Dec) {
 			//返す文字列
-			string str;
+			std::string str;
 			//書式を整えるストリーム
-			ostringstream stream;
+			std::ostringstream stream;
 			//表示形式を決める
 			switch (Modify) {
 			case NumModify::Oct:
@@ -713,7 +645,7 @@ namespace basecross {
 	@return	なし（文字列をあわせてthrow）
 	*/
 	//--------------------------------------------------------------------------------------
-	inline void ThrowIfFailed(HRESULT hr,
+	inline void ThrowIfFailedEx(HRESULT hr,
 		const std::wstring& wstr1,
 		const std::wstring& wstr2 = std::wstring(),
 		const std::wstring& wstr3 = std::wstring()
@@ -721,7 +653,7 @@ namespace basecross {
 	{
 		if (FAILED(hr))
 		{
-			string message = Util::WStoRetMB(wstr1);
+			std::string message = Util::WStoRetMB(wstr1);
 			if (wstr2 != L"") {
 				message += "\r\n";
 				message += Util::WStoRetMB(wstr2);
@@ -744,7 +676,7 @@ namespace basecross {
 	@return	なし（文字列をあわせてthrow）
 	*/
 	//--------------------------------------------------------------------------------------
-	inline void ThrowIfFailed(HRESULT hr,
+	inline void ThrowIfFailedEx(HRESULT hr,
 		const std::string& str1,
 		const std::string& str2 = std::string(),
 		const std::string& str3 = std::string()
@@ -752,7 +684,7 @@ namespace basecross {
 	{
 		if (FAILED(hr))
 		{
-			string message = str1;
+			std::string message = str1;
 			if (str2 != "") {
 				message += "\r\n";
 				message += str2;
@@ -765,13 +697,15 @@ namespace basecross {
 		}
 	}
 
+
+
 	//--------------------------------------------------------------------------------------
 	/// Base例外クラス
 	//--------------------------------------------------------------------------------------
 	class BaseException : std::runtime_error
 	{
 		// メッセージ変数
-		string m_Message;
+		std::string m_Message;
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -782,7 +716,7 @@ namespace basecross {
 		@return	なし（文字列をあわせて保持）
 		*/
 		//--------------------------------------------------------------------------------------
-		BaseException(const wstring& m1, const wstring& m2 = wstring(L""), const wstring& m3 = wstring(L"")) :
+		BaseException(const std::wstring& m1, const std::wstring& m2 = std::wstring(L""), const std::wstring& m3 = std::wstring(L"")) :
 			runtime_error("") {
 			m_Message = Util::WStoRetMB(m1);
 			if (m2 != L"") {
@@ -803,7 +737,7 @@ namespace basecross {
 		@return	なし（文字列をあわせて保持）
 		*/
 		//--------------------------------------------------------------------------------------
-		BaseException(const string& m1, const string& m2 = string(""), const string& m3 = string("")) :
+		BaseException(const std::string& m1, const std::string& m2 = std::string(""), const std::string& m3 = std::string("")) :
 			runtime_error("") {
 			m_Message = m1;
 			if (m2 != "") {
@@ -815,7 +749,7 @@ namespace basecross {
 				m_Message += m3;
 			}
 		}
-		string what_m() const throw() {
+		std::string what_m() const throw() {
 			return m_Message;
 		}
 	};
@@ -970,12 +904,12 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		template<typename T>
 		std::shared_ptr<T> GetThis() {
-			auto ptr = dynamic_pointer_cast<T>(shared_from_this());
+			auto ptr = std::dynamic_pointer_cast<T>(shared_from_this());
 			if (ptr) {
 				return ptr;
 			}
 			else {
-				wstring str(L"thisを");
+				std::wstring str(L"thisを");
 				str += Util::GetWSTypeName<T>();
 				str += L"型にキャストできません";
 				throw BaseException(
@@ -1063,8 +997,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-			const wstring& MsgStr, const shared_ptr<void>& Info = shared_ptr<void>());
+		void PostEvent(float DispatchTime, const std::shared_ptr<ObjectInterface>& Sender, const std::shared_ptr<ObjectInterface>& Receiver,
+			const std::wstring& MsgStr, const std::shared_ptr<void>& Info = std::shared_ptr<void>());
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのPOST（キューに入れる）
@@ -1076,8 +1010,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void PostEvent(float DispatchTime, const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		void PostEvent(float DispatchTime, const std::shared_ptr<ObjectInterface>& Sender, const std::wstring& ReceiverKey,
+			const std::wstring& MsgStr, const  std::shared_ptr<void>& Info = std::shared_ptr<void>());
 
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1089,8 +1023,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const shared_ptr<ObjectInterface>& Receiver,
-			const wstring& MsgStr, const shared_ptr<void>& Info = shared_ptr<void>());
+		void SendEvent(const std::shared_ptr<ObjectInterface>& Sender, const std::shared_ptr<ObjectInterface>& Receiver,
+			const std::wstring& MsgStr, const std::shared_ptr<void>& Info = std::shared_ptr<void>());
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントのSEND（キューに入れずにそのまま送る）
@@ -1101,8 +1035,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SendEvent(const shared_ptr<ObjectInterface>& Sender, const wstring& ReceiverKey,
-			const wstring& MsgStr, const  shared_ptr<void>& Info = shared_ptr<void>());
+		void SendEvent(const std::shared_ptr<ObjectInterface>& Sender, const std::wstring& ReceiverKey,
+			const std::wstring& MsgStr, const  std::shared_ptr<void>& Info = std::shared_ptr<void>());
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	イベントを受け取る
@@ -1110,7 +1044,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnEvent(const shared_ptr<Event>& event) {}
+		virtual void OnEvent(const std::shared_ptr<Event>& event) {}
 
 	private:
 		//コピー禁止
@@ -1137,8 +1071,8 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		template<typename T, typename... Ts>
-		static shared_ptr<T> Create(Ts&&... params) {
-			shared_ptr<T> ptr = shared_ptr<T>(new T(params...));
+		static std::shared_ptr<T> Create(Ts&&... params) {
+			std::shared_ptr<T> ptr = std::shared_ptr<T>(new T(params...));
 			//初期化関数呼び出し
 			ptr->OnPreCreate();
 			ptr->OnCreate();
@@ -1155,8 +1089,8 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		template<typename T, typename... Ts>
-		static shared_ptr<T> CreateInitParam(Ts&&... params) {
-			shared_ptr<T> ptr = shared_ptr<T>(new T());
+		static std::shared_ptr<T> CreateInitParam(Ts&&... params) {
+			std::shared_ptr<T> ptr = std::shared_ptr<T>(new T());
 			//初期化関数呼び出し
 			ptr->OnCreate(params...);
 			ptr->SetCreated(true);
@@ -1174,8 +1108,8 @@ namespace basecross {
 		Dx12ShaderResource();
 		virtual ~Dx12ShaderResource();
 		//シェーダアクセサ
-		ID3DBlob* GetShaderBlob(const wstring& fileName, ComPtr<ID3DBlob>& shaderComPtr);
-		ComPtr<ID3DBlob>& GetShaderBlobComPtr(const wstring& fileName, ComPtr<ID3DBlob>& shaderComPtr);
+		ID3DBlob* GetShaderBlob(const std::wstring& fileName, ComPtr<ID3DBlob>& shaderComPtr);
+		ComPtr<ID3DBlob>& GetShaderBlobComPtr(const std::wstring& fileName, ComPtr<ID3DBlob>& shaderComPtr);
 	private:
 		//コピー禁止
 		Dx12ShaderResource(const Dx12ShaderResource&) = delete;
@@ -1190,7 +1124,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	template<typename ShaderType>
 	class Dx12Shader : public Dx12ShaderResource {
-		wstring m_fileName;
+		std::wstring m_fileName;
 	protected:
 		//デリーター
 		struct Deleter
@@ -1199,9 +1133,9 @@ namespace basecross {
 		};
 		ComPtr<ID3DBlob> m_shaderPtr;
 		//構築と破棄
-		Dx12Shader<ShaderType>(const wstring& fileName) : Dx12ShaderResource(), m_fileName(fileName) {}
+		Dx12Shader<ShaderType>(const std::wstring& fileName) : Dx12ShaderResource(), m_fileName(fileName) {}
 		virtual ~Dx12Shader() {}
-		static unique_ptr<ShaderType, Deleter> m_ptr;
+		static std::unique_ptr<ShaderType, Deleter> m_ptr;
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1227,7 +1161,7 @@ namespace basecross {
 		@return　シェーダーのインスタンス
 		*/
 		//--------------------------------------------------------------------------------------
-		static unique_ptr<ShaderType, Deleter>& GetPtr() {
+		static std::unique_ptr<ShaderType, Deleter>& GetPtr() {
 			if (!m_ptr) {
 				m_ptr.reset(new ShaderType());
 			}
@@ -1243,10 +1177,10 @@ namespace basecross {
 		ShaderName(); \
 	};
 	//シェーダ実体用マクロ
-#define IMPLEMENT_DX12SHADER(ShaderName,CsoFilename) unique_ptr<ShaderName, ShaderName::Deleter> ShaderName::m_ptr; \
+#define IMPLEMENT_DX12SHADER(ShaderName,CsoFilename) std::unique_ptr<ShaderName, ShaderName::Deleter> ShaderName::m_ptr; \
 	ShaderName::ShaderName() : \
 	Dx12Shader(CsoFilename){}
 
-
 }
+using namespace basecross;
 // end namespace basecross

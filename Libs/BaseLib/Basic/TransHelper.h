@@ -1,7 +1,7 @@
 /*!
 @file TransHelper.h
 @brief 衝突判定、補間処理用ユーティリティ
-@copyright Copyright (c) 2017 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
 
 #pragma once
@@ -10,7 +10,7 @@
 namespace basecross {
 
 	//--------------------------------------------------------------------------------------
-	///	Easing 親クラス
+	///	Easing（非線形） 親クラス
 	//--------------------------------------------------------------------------------------
 	template<typename T>
 	class EasingBase {
@@ -207,7 +207,7 @@ namespace basecross {
 
 
 	//--------------------------------------------------------------------------------------
-	///	Easingクラステンプレート版
+	///	Easing（非線形）クラステンプレート版
 	//--------------------------------------------------------------------------------------
 	template<typename T>
 	class Easing {
@@ -429,7 +429,7 @@ namespace basecross {
 
 
 	//--------------------------------------------------------------------------------------
-	///	Lerp 補間処理計算構造体
+	///	Lerp 線形補間処理計算構造体
 	//--------------------------------------------------------------------------------------
 	struct Lerp {
 		enum rate {
@@ -1232,7 +1232,7 @@ namespace basecross {
 	///	球配列データ
 	//--------------------------------------------------------------------------------------
 	struct SPHERE_ARR {
-		vector<SPHERE> m_SphereArr;
+		std::vector<SPHERE> m_SphereArr;
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -3783,6 +3783,6 @@ namespace basecross {
 		sp_top.m_Radius = m_Radius;
 		return HitTest::AABB_OR_AABB(sp_bottom.GetWrappedAABB(), sp_top.GetWrappedAABB());
 	}
-
 }
+using namespace basecross;
 //end of namespace basecross.

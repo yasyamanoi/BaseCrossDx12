@@ -1,7 +1,7 @@
 /*!
 @file BaseMathInc.h
 @brief 計算インクルードクラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
 
 #pragma once
@@ -9,7 +9,6 @@
 #include "stdafx.h"
 #include "BaseMath.h"
 
-namespace basecross {
 namespace bsm {
 
 
@@ -2610,15 +2609,7 @@ namespace bsm {
 			Flt3((-((inv0 * tfrm.getMajor3().x) + ((inv1 * tfrm.getMajor3().y) + (inv2 * tfrm.getMajor3().z)))))
 		);
 	}
-	using Vec2 = Flt2;
-	using Vec3 = Flt3;
-	using Vec4 = Flt4;
-	using Pt2 = Flt2;
-	using Pt3 = Flt3;
-	using Col4 = Flt4;
-	using Plane4 = Flt4;
 
 }
+using namespace bsm;
 // end bsm
-}
-//end basecross

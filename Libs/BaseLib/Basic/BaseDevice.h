@@ -1,499 +1,147 @@
 /*!
 @file BaseDevice.h
 @brief デバイスクラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
 
 #pragma once
 
 #include "stdafx.h"
 
+
 namespace basecross {
 
-	class BaseMesh;
-	class BaseTexture;
-	struct BaseFrame;
+	class BaseUI;
+	class BaseScene;
+	class Scene;
+
+
+#ifndef USE_DXGI_1_6
+#define DXGI_GPU_PREFERENCE_UNSPECIFIED 0
+#define DXGI_GPU_PREFERENCE_MINIMUM_POWER 1
+#define DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE 2
+#define DXGI_GPU_PREFERENCE UINT
+#endif
 
 	//--------------------------------------------------------------------------------------
-	///	シェーダー
+	//	デバイス
 	//--------------------------------------------------------------------------------------
-	DECLARE_DX12SHADER(VSPNTStaticInit)
-	DECLARE_DX12SHADER(PSPNTStaticInit)
-
-	//--------------------------------------------------------------------------------------
-	///	デバイスクラス
-	//--------------------------------------------------------------------------------------
-	class BaseDevice
+	class BaseDevice : public PrimDevice
 	{
 	public:
-		//フレーム数
-		static const UINT m_frameCount = 3;
-		//ライト数
-		static const UINT m_numLights = 3;
-		static const UINT m_numContexts = 1;
+		BaseDevice(UINT width, UINT height, std::wstring name);
+		~BaseDevice();
 
-		static const int m_commandListCount = 3;
-		static const int m_commandListPre = 0;
-		static const int m_commandListMid = 1;
-		static const int m_commandListPost = 2;
-
-	private:
-		//幅
-		UINT m_width;
-		//高さ
-		UINT m_height;
-		//縦横比
-		float m_aspectRatio;
-		//ESCキーで終了させるかどうか
-		bool m_quiteEscapeKey;
-		//ラップモードかどうか
-		bool m_useWarpDevice;
-		//ウインドウタイトル
-		wstring m_title;
-
-
-		//フレームのインデックス
-		UINT m_frameIndex;
-		//フェンス関連
-		HANDLE m_fenceEvent;
-		ComPtr<ID3D12Fence> m_fence;
-		UINT64 m_fenceValue;
-
-		//クリアする色
-		Col4 m_clearColor;
-		// ビューポートとシザー矩形
-		CD3DX12_VIEWPORT m_viewport;
-		CD3DX12_RECT m_scissorRect;
-
-
-		//パイプラインオブジェクト
-		ComPtr<ID3D12Device> m_device;
-		ComPtr<ID3D12CommandQueue> m_commandQueue;
-		ComPtr<IDXGISwapChain3> m_swapChain;
-		//ディスクプリタヒープ
-		ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
-		ComPtr<ID3D12DescriptorHeap> m_dsvHeap;
-		ComPtr<ID3D12DescriptorHeap> m_cbvSrvUavHeap;
-		ComPtr<ID3D12DescriptorHeap> m_samplerHeap;
-
-		//コマンドアロケーター
-		ComPtr<ID3D12CommandAllocator> m_commandAllocator;
-		//初期化用のコマンドリスト
-		ComPtr<ID3D12GraphicsCommandList> m_initCommandList;
-
-		//rtv管理用
-		UINT m_rtvDescriptorIncrementSize;
-		//dsv管理用
-		UINT m_dsvDescriptorIncrementSize;
-		//sampler管理用
-		map<wstring, UINT> m_samplerMap;
-		UINT m_samplerDescriptorIncrementSize;
-		const UINT m_samplerMax = 512;
-		UINT m_samplerSendIndex;
-		//cbvSrvUav管理用
-		UINT m_cbvSrvUavDescriptorIncrementSize;
-		const UINT m_cbvSrvUavMax = 4096;
-		const UINT m_srvStartIndex = 2;
-		const UINT m_srvMax = 1024;
-		UINT m_srvSendIndex;
-		const UINT m_cbvUavStartIndex = 1024;
-		const UINT m_cbvUavMax = 4096;
-		UINT m_cbvUavSendIndex;
-
-		//アプリケーションリソース
-		//タイマー
-		BaseTimer m_timer;
-		ComPtr<ID3D12RootSignature> m_rootSignature;
-		//ルートシグネチャで設定されるGPUスロットのマップ
-		map<wstring, UINT> m_gpuSlotMap;
-
-		ComPtr<ID3D12Resource> m_renderTargets[m_frameCount];
-		ComPtr<ID3D12Resource> m_depthStencil;
-
-		//ステージが再構築されたかどうか
-		bool m_stageReCreated;
-
-		//フレームリソース
-		BaseFrame* m_baseFrames[m_frameCount];
-		BaseFrame* m_pCurrentBaseFrame;
-		int m_currentBaseFrameIndex;
-
-		//処理のenum
-		enum class process {
-			pipelineInit,
-			update,
-			begin,
-			shadowmap,
-			scene,
-			mid,
-			end
-		};
-		process m_process;
-		//パイプラインオブジェクトの作成
-		void LoadPipeline();
-		//アセットオブジェクトの作成
-		void LoadAssets();
-		//ハードウェアアダプターを得る
-		void GetHardwareAdapter(
-			_In_ IDXGIFactory1* pFactory,
-			_Outptr_result_maybenull_ IDXGIAdapter1** ppAdapter,
-			bool requestHighPerformanceAdapter = false);
-		//ルート署名の作成
-		void CreateRootSignature();
-		void CreatePipelineStates();
-		void CreateRenderTargetViews();
-		void CreateDepthStencil();
-		void CreateSamplers();
-		void CreateFrameResources();
-		void CreateSynchronizationObjects();
-
-		void BeginFrame();
-		void MidFrame();
-		void EndFrame();
-		void WorkerThread();
-		void SetCommonPipelineState(ID3D12GraphicsCommandList* pCommandList);
-
-	public:
-
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	コンストラクタ
-		@param[in]	width	ゲーム幅
-		@param[in]	height	ゲーム高さ
-		@param[in]	title	ウインドウタイトル
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		BaseDevice(UINT width, UINT height,const wstring& title);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デストラクタ
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual ~BaseDevice();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	ゲーム幅の取得
-		@return	ゲーム幅
-		*/
-		//--------------------------------------------------------------------------------------
-		UINT GetWidth() const { return m_width; }
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	ゲーム高さの取得
-		@return	ゲーム高さ
-		*/
-		//--------------------------------------------------------------------------------------
-		UINT GetHeight() const { return m_height; }
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	ウインドウタイトルの取得
-		@return	ウインドウタイトル
-		*/
-		//--------------------------------------------------------------------------------------
-		const wstring GetTitle() const { return m_title; }
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	ビューポートの取得
-		@return	ビューポート
-		*/
-		//--------------------------------------------------------------------------------------
-		CD3DX12_VIEWPORT GetViewport() const { return m_viewport; }
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	シーザーレクトの取得
-		@return	シーザーレクト
-		*/
-		//--------------------------------------------------------------------------------------
-		CD3DX12_RECT GetScissorRect() const { return m_scissorRect; }
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	画面をクリアする色を得る
-		@return	画面をクリアする色
-		*/
-		//--------------------------------------------------------------------------------------
-		Col4 GetClearColor() const {
-			return m_clearColor;
+		static const UINT FrameCount = 3; //フレーム数
+		//前回のターンからの経過時間の取得
+		double GetElapsedTime() {
+			return m_timer.GetElapsedSeconds();
 		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	画面をクリアする色を設定する
-		@param[in]	params	このステージを構築するのに使用するパラメータ。
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void SetClearColor(const Col4& col) {
-			m_clearColor = col;
+		//デバイス（自分自身）の取得
+		static BaseDevice* GetBaseDevice() {
+			return s_device;
 		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	Escで終了するかどうかの取得
-		@return	終了するならtrue
-		*/
-		//--------------------------------------------------------------------------------------
-		bool IsQuiteEscapeKey() const {return m_quiteEscapeKey;}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	Escで終了するかどうかの設定
-		@param[in]	b	true/false
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void SetQuiteEscapeKey(bool b) {m_quiteEscapeKey = b;}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	コマンドラインをパースする
-		@param[in]	argv	コマンドライン文字列のポインタの配列
-		@param[in]	argc	コマンドラインの文字列数
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void ParseCommandLineArgs(_In_reads_(argc) WCHAR* argv[], int argc);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	スワップチェーンの取得
-		@return	スワップチェーンのComPtr
-		*/
-		//--------------------------------------------------------------------------------------
-		ComPtr<IDXGISwapChain3> GetSwapChain() const {
-			return m_swapChain;
+		//シーンの取得
+		static std::shared_ptr<Scene> GetScene() {
+			return GetBaseDevice()->m_scene;
 		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	ID3D12Deviceの取得
-		@return	ID3D12DeviceのComPtr
-		*/
-		//--------------------------------------------------------------------------------------
+		//ID3D12Deviceの取得
 		ComPtr<ID3D12Device> GetID3D12Device() const {
 			return m_device;
 		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	Rtvディスクリプタヒープの取得
-		@return	RtvディスクリプタヒープのComPtr
-		*/
-		//--------------------------------------------------------------------------------------
-		ComPtr<ID3D12DescriptorHeap> GetRtvDescriptorHeap() const {
-			return m_rtvHeap;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	Dsvディスクリプタヒープの取得
-		@return	DsvディスクリプタヒープのComPtr
-		*/
-		//--------------------------------------------------------------------------------------
-		ComPtr<ID3D12DescriptorHeap> GetDsvDescriptorHeap() const {
-			return m_dsvHeap;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	CbvSrvUavディスクリプタヒープの取得
-		@return	CbvSrvUavディスクリプタヒープのComPtr
-		*/
-		//--------------------------------------------------------------------------------------
-		ComPtr<ID3D12DescriptorHeap> GetCbvSrvUavDescriptorHeap() const {
-			return m_cbvSrvUavHeap;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	CbvSrvUavディスクリプタヒープのインクリメントサイズの取得
-		@return	CbvSrvUavディスクリプタヒープのインクリメントサイズ
-		*/
-		//--------------------------------------------------------------------------------------
-		UINT GetCbvSrvUavDescriptorHandleIncrementSize() const {
-			return m_cbvSrvUavDescriptorIncrementSize;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	Srvの次のインデックスの取得
-		@return	Srvの次のインデックス
-		*/
-		//--------------------------------------------------------------------------------------
-		UINT GetSrvNextIndex();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	Cbvの次のインデックスの取得
-		@return	Cbvの次のインデックス
-		*/
-		//--------------------------------------------------------------------------------------
-		UINT GetCbvUavNextIndex();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	サンプラーディスクリプタヒープの取得
-		@return	サンプラーディスクリプタヒープのComPtr
-		*/
-		//--------------------------------------------------------------------------------------
-		ComPtr<ID3D12DescriptorHeap> GetSamplerDescriptorHeap() const {
-			return m_samplerHeap;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	サンプラーディスクリプタヒープのインクリメントサイズの取得
-		@return	サンプラーディスクリプタヒープのインクリメントサイズ
-		*/
-		//--------------------------------------------------------------------------------------
-		UINT GetSamplerDescriptorHandleIncrementSize() const {
-			return m_samplerDescriptorIncrementSize;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	サンプラーの次のインデックスの取得
-		@return	サンプラーの次のインデックス
-		*/
-		//--------------------------------------------------------------------------------------
-		UINT GetSamplerNextIndex();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	指定したサンプラーのインデックスの取得
-		@param[in]	key	LinearWrapなどのキー
-		@return	指定したサンプラーのインデックス（存在しなかったらしたらUINT_MAXを返す）
-		*/
-		//--------------------------------------------------------------------------------------
-		UINT GetSamplerIndex(const wstring& key);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	ルート認証の取得
-		@return	ルート認証のComPtr
-		*/
-		//--------------------------------------------------------------------------------------
-		ComPtr<ID3D12RootSignature> GetRootSignature() const {
-			return m_rootSignature;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	GPUのスロットIDの設定
-		@param[in]	key	s0,t0などのキー
-		@param[in]	val	ID
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void SetGpuSlot(const wstring& key, UINT val) {
-			m_gpuSlotMap[key] = val;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	GPUのスロットIDの取得
-		@param[in]	key	s0,t0などのキー
-		@return	keyで指定したキーのID
-		*/
-		//--------------------------------------------------------------------------------------
-		UINT GetGpuSlotID(const wstring& key) {
-			auto it = m_gpuSlotMap.begin();
-			while (it != m_gpuSlotMap.end()) {
-				if (it->first == key) {
-					return it->second;
-				}
-				it++;
-			}
-			throw BaseException(
-				L"そのキーはGPUスロットにありません",
-				key,
-				L"BaseDevice::GetGpuSlotID()"
-			);
-			return 0;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	ElapsedTimeの取得
-		@return	ElapsedTime
-		*/
-		//--------------------------------------------------------------------------------------
-		double GetElapsedTime() const {
-			return m_timer.GetElapsedSeconds();
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	今使用しているBaseFrameの取得
-		@return	BaseFrameのポインタ
-		*/
-		//--------------------------------------------------------------------------------------
-		BaseFrame* GetCurrentBaseFrame() const {
-			return m_baseFrames[m_currentBaseFrameIndex];
-		}
+	protected:
+		//初期化
+		virtual void OnInit();
+		//キーボードを押す
+		virtual void OnKeyDown(UINT8 key);
+		//キーボードを離す
+		virtual void OnKeyUp(UINT8 key);
+		//サイズが変えられた
+		virtual void OnSizeChanged(UINT width, UINT height, bool minimized);
+		//更新処理
+		virtual void OnUpdate();
+		//描画処理
+		virtual void OnRender();
+		//終了処理
+		virtual void OnDestroy();
+		//スワップチェーンの取得
+		virtual IDXGISwapChain* GetSwapchain() { return m_swapChain.Get(); }
+	private:
+		// 以下GPU関連
+		struct DxgiAdapterInfo
+		{
+			DXGI_ADAPTER_DESC1 desc;
+			bool supportsDx12FL11;
+		};
+		DXGI_GPU_PREFERENCE m_activeGpuPreference;
+		std::map<DXGI_GPU_PREFERENCE, std::wstring> m_gpuPreferenceToName;
+		UINT m_activeAdapter;
+		LUID m_activeAdapterLuid;
+		std::vector<DxgiAdapterInfo> m_gpuAdapterDescs;
+		bool m_manualAdapterSelection;
+		HANDLE m_adapterChangeEvent;
+		DWORD m_adapterChangeRegistrationCookie;
+		// 以下D3D オブジェクト
+		ComPtr<ID3D12Device> m_device;
+		ComPtr<ID3D12CommandQueue> m_commandQueue;
+#ifdef USE_DXGI_1_6
+		ComPtr<IDXGISwapChain4> m_swapChain;
+		ComPtr<IDXGIFactory6>   m_dxgiFactory;
+#else
+		ComPtr<IDXGISwapChain3> m_swapChain;
+		ComPtr<IDXGIFactory2>   m_dxgiFactory;
+#endif
+		UINT m_dxgiFactoryFlags;
+		ComPtr<ID3D12Resource> m_renderTargets[FrameCount];
+		ComPtr<ID3D12Fence> m_fence;
+		//シーン
+		std::shared_ptr<Scene> m_scene;
+		// UI文字列
+		std::unique_ptr<BaseUI> m_uiLayer;
+		bool m_bCtrlKeyIsPressed;
+		float m_fps;
+		//タイマー
+		StepTimer m_timer;
+		// Frame 同期オブジェクト
+		UINT   m_frameIndex;
+		HANDLE m_fenceEvent;
+		UINT64 m_fenceValues[FrameCount];
 
-		BaseFrame** GetBaseFrames() {
-			return m_baseFrames;
-		}
+		// Windowステート
+		bool m_windowVisible;
+		bool m_windowedMode;
 
-
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	ステージが再構築されたかどうか
-		@return	再構築されたらtrue
-		*/
-		//--------------------------------------------------------------------------------------
-		bool IsStageReCreated() const {
-			return m_stageReCreated;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	Gステージが再構築されたかどうか設定
-		@param[in]	b　フラグ
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void SetStageReCreated(bool b) {
-			m_stageReCreated = b;
-		}
-
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	汎用的なコマンドリストの取得
-		@return	汎用的コマンドリストのComPtr
-		*/
-		//--------------------------------------------------------------------------------------
-		ComPtr<ID3D12GraphicsCommandList> GetComandList()const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デバイスの初期化時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnCreate();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デバイスの更新描画時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnUpdateDraw();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デバイスの更新時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnUpdate();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デバイスの描画時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnDraw();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デバイスの破棄時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnDestroy();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	キーが押された時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnKeyDown(UINT8 key);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	キーが離された時に呼ばれるイベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void OnKeyUp(UINT8 key);
+		// 自分自身のポインタ
+		static BaseDevice* s_device;
+		//パイプラインオブジェクトの設定
+		void LoadPipeline();
+		//アセットオブジェクトの設定
+		void LoadAssets();
+		//ウインドウ依存リソースの設定
+		void LoadSizeDependentResources();
+		//ウインドウ依存リソースの解放
+		void ReleaseSizeDependentResources();
+		// UI文字列の更新
+		void UpdateUI();
+		//D3Dオブジェクトの再構築
+		void RecreateD3Dresources();
+		//D3Dオブジェクトのリリース
+		void ReleaseD3DObjects();
+		//以下GPU関連
+		void EnumerateGPUadapters();
+		void GetGPUAdapter(UINT adapterIndex, IDXGIAdapter1** ppAdapter);
+		bool QueryForAdapterEnumerationChanges();
+		HRESULT ValidateActiveAdapter();
+		bool RetrieveAdapterIndex(UINT* adapterIndex, LUID prevActiveAdapterLuid);
+		void SelectAdapter(UINT index);
+		void SelectGPUPreference(UINT index);
+		//fpsの計算
+		void CalculateFrameStats();
+		//GPUのウエイト
+		void WaitForGpu(ID3D12CommandQueue* pCommandQueue);
+		//次のフレームへの移行
+		void MoveToNextFrame();
 	};
-
 }
-// end namespace basecross
+using namespace basecross;
+//end namespace basecross

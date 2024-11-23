@@ -1,7 +1,7 @@
 /*!
 @file BaseBlendState.cpp
 @brief ブレンンドステートまとめ
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
 
 #include "stdafx.h"

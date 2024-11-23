@@ -1,11 +1,10 @@
 /*!
 @file VertexHelper.cpp
 @brief 頂点ヘルパークラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
 
 #include "stdafx.h"
-#include <DirectXPackedVector.h>
 
 namespace basecross {
 

@@ -25,6 +25,11 @@ namespace
         const GUID&     source;
         const GUID&     target;
         TEX_ALPHA_MODE  alphaMode;
+
+        constexpr WICConvert(const GUID& src, const GUID& tgt, TEX_ALPHA_MODE mode) noexcept :
+            source(src),
+            target(tgt),
+            alphaMode(mode) {}
     };
 
     constexpr WICConvert g_WICConvert[] =
@@ -106,7 +111,7 @@ namespace
         {
             if (memcmp(&GUID_WICPixelFormat96bppRGBFixedPoint, &pixelFormat, sizeof(WICPixelFormatGUID)) == 0)
             {
-#if (_WIN32_WINNT >= _WIN32_WINNT_WIN8) || defined(_WIN7_PLATFORM_UPDATE)
+            #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8) || defined(_WIN7_PLATFORM_UPDATE)
                 if (iswic2)
                 {
                     if (pConvert)
@@ -114,9 +119,9 @@ namespace
                     format = DXGI_FORMAT_R32G32B32_FLOAT;
                 }
                 else
-#else
+                #else
                 UNREFERENCED_PARAMETER(iswic2);
-#endif
+            #endif
                 {
                     if (pConvert)
                         memcpy_s(pConvert, sizeof(WICPixelFormatGUID), &GUID_WICPixelFormat128bppRGBAFloat, sizeof(GUID));
@@ -525,7 +530,7 @@ namespace
         _In_ IWICBitmapFrameDecode *frame,
         _Out_ TexMetadata& metadata,
         _Out_opt_ WICPixelFormatGUID* pConvert,
-        _In_opt_ std::function<void(IWICMetadataQueryReader*)> getMQR)
+        _In_ std::function<void(IWICMetadataQueryReader*)> getMQR)
     {
         if (!decoder || !frame)
             return E_POINTER;
@@ -600,7 +605,7 @@ namespace
                         sRGB = (flags & WIC_FLAGS_DEFAULT_SRGB) != 0;
                     }
                 }
-#if (defined(_XBOX_ONE) && defined(_TITLE)) || defined(_GAMING_XBOX)
+            #if (defined(_XBOX_ONE) && defined(_TITLE)) || defined(_GAMING_XBOX)
                 else if (memcmp(&containerFormat, &GUID_ContainerFormatJpeg, sizeof(GUID)) == 0)
                 {
                     if (SUCCEEDED(metareader->GetMetadataByName(L"/app1/ifd/exif/{ushort=40961}", &value)) && value.vt == VT_UI2)
@@ -623,7 +628,7 @@ namespace
                         sRGB = (flags & WIC_FLAGS_DEFAULT_SRGB) != 0;
                     }
                 }
-#else
+            #else
                 else if (SUCCEEDED(metareader->GetMetadataByName(L"System.Image.ColorSpace", &value)) && value.vt == VT_UI2)
                 {
                     sRGB = (value.uiVal == 1);
@@ -632,7 +637,7 @@ namespace
                 {
                     sRGB = (flags & WIC_FLAGS_DEFAULT_SRGB) != 0;
                 }
-#endif
+            #endif
 
                 std::ignore = PropVariantClear(&value);
 
@@ -913,7 +918,7 @@ namespace
                     std::ignore = metawriter->RemoveMetadataByName(L"/sRGB/RenderingIntent");
                 }
             }
-#if (defined(_XBOX_ONE) && defined(_TITLE)) || defined(_GAMING_XBOX)
+        #if (defined(_XBOX_ONE) && defined(_TITLE)) || defined(_GAMING_XBOX)
             else if (memcmp(&containerFormat, &GUID_ContainerFormatJpeg, sizeof(GUID)) == 0)
             {
                 // Set Software name
@@ -940,7 +945,7 @@ namespace
                     std::ignore = metawriter->SetMetadataByName(L"/ifd/exif/{ushort=40961}", &value);
                 }
             }
-#else
+        #else
             else
             {
                 // Set Software name
@@ -954,7 +959,7 @@ namespace
                     std::ignore = metawriter->SetMetadataByName(L"System.Image.ColorSpace", &value);
                 }
             }
-#endif
+        #endif
         }
         else if (hr == WINCODEC_ERR_UNSUPPORTEDOPERATION)
         {
@@ -1079,7 +1084,7 @@ namespace
         _In_ REFGUID containerFormat,
         _Inout_ IStream* stream,
         _In_opt_ const GUID* targetFormat,
-        _In_opt_ std::function<void(IPropertyBag2*)> setCustomProps)
+        _In_ std::function<void(IPropertyBag2*)> setCustomProps)
     {
         if (!stream)
             return E_INVALIDARG;
@@ -1144,7 +1149,7 @@ namespace
         _In_ REFGUID containerFormat,
         _Inout_ IStream* stream,
         _In_opt_ const GUID* targetFormat,
-        _In_opt_ std::function<void(IPropertyBag2*)> setCustomProps)
+        _In_ std::function<void(IPropertyBag2*)> setCustomProps)
     {
         if (!stream || nimages < 2)
             return E_INVALIDARG;
@@ -1617,3 +1622,56 @@ HRESULT DirectX::SaveToWICFile(
 
     return S_OK;
 }
+
+
+//--------------------------------------------------------------------------------------
+// Adapters for /Zc:wchar_t- clients
+
+#if defined(_MSC_VER) && !defined(_NATIVE_WCHAR_T_DEFINED)
+
+namespace DirectX
+{
+    HRESULT __cdecl GetMetadataFromWICFile(
+        _In_z_ const __wchar_t* szFile,
+        _In_ WIC_FLAGS flags,
+        _Out_ TexMetadata& metadata,
+        _In_ std::function<void __cdecl(IWICMetadataQueryReader*)> getMQR)
+    {
+        return GetMetadataFromWICFile(reinterpret_cast<const unsigned short*>(szFile), flags, metadata, getMQR);
+    }
+
+    HRESULT __cdecl LoadFromWICFile(
+        _In_z_ const __wchar_t* szFile,
+        _In_ WIC_FLAGS flags,
+        _Out_opt_ TexMetadata* metadata,
+        _Out_ ScratchImage& image,
+        _In_ std::function<void __cdecl(IWICMetadataQueryReader*)> getMQR)
+    {
+        return LoadFromWICFile(reinterpret_cast<const unsigned short*>(szFile), flags, metadata, image, getMQR);
+    }
+
+    HRESULT __cdecl SaveToWICFile(
+        _In_ const Image& image,
+        _In_ WIC_FLAGS flags,
+        _In_ REFGUID guidContainerFormat,
+        _In_z_ const __wchar_t* szFile,
+        _In_opt_ const GUID* targetFormat,
+        _In_ std::function<void __cdecl(IPropertyBag2*)> setCustomProps)
+    {
+        return SaveToWICFile(image, flags, guidContainerFormat, reinterpret_cast<const unsigned short*>(szFile), targetFormat, setCustomProps);
+    }
+
+    HRESULT __cdecl SaveToWICFile(
+        _In_count_(nimages) const Image* images,
+        _In_ size_t nimages,
+        _In_ WIC_FLAGS flags,
+        _In_ REFGUID guidContainerFormat,
+        _In_z_ const __wchar_t* szFile,
+        _In_opt_ const GUID* targetFormat,
+        _In_ std::function<void __cdecl(IPropertyBag2*)> setCustomProps)
+    {
+        return SaveToWICFile(images, nimages, flags, guidContainerFormat, reinterpret_cast<const unsigned short*>(szFile), targetFormat, setCustomProps);
+    }
+}
+
+#endif // !_NATIVE_WCHAR_T_DEFINED

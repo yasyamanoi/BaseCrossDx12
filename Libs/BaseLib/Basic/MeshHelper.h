@@ -1,7 +1,7 @@
 /*!
 @file MeshHelper.h
 @brief メッシュヘルパークラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
 */
 
 #pragma once
@@ -10,7 +10,7 @@
 namespace basecross {
 
 	//--------------------------------------------------------------------------------------
-	///	頂点関連のユーティリティ関数群(static呼び出しをす)
+	///	頂点関連のユーティリティ関数群(static呼び出しをする)
 	//--------------------------------------------------------------------------------------
 	class MeshUtill {
 		static const float SQRT2;
@@ -64,7 +64,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void CreateCylinderCap(vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices,
+		static void CreateCylinderCap(std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices,
 			size_t tessellation, float height, float radius, bool isTop);
 	public:
 		//--------------------------------------------------------------------------------------
@@ -75,10 +75,10 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void ReverseWinding(vector<uint32_t>& indices, vector<VertexPositionNormalTexture>& vertices)
+		static void ReverseWinding(std::vector<uint32_t>& indices, std::vector<VertexPositionNormalTexture>& vertices)
 		{
 			if ((indices.size() % 3) != 0) {
-				throw runtime_error("頂点とインデックスの向きを反転できません。");
+				throw std::runtime_error("頂点とインデックスの向きを反転できません。");
 			}
 			for (auto it = indices.begin(); it != indices.end(); it += 3)
 			{
@@ -100,7 +100,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static void CreateSquare(float size,
-			vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices);
+			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPosNormalTexフォーマットの立方体を作成する(static関数)
@@ -111,7 +111,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static void CreateCube(float size,
-			vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices);
+			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPosNormalTexフォーマットの球体を作成する(static関数)
@@ -123,7 +123,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static void CreateSphere(float diameter, size_t tessellation,
-			vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices);
+			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPosNormalTexフォーマットのカプセルを作成する(static関数)
@@ -140,7 +140,7 @@ namespace basecross {
 		static void CreateCapsule(float diameter,
 			const bsm::Vec3& PointA, const bsm::Vec3& PointB,
 			size_t tessellation,
-			vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices,bool landscape = false);
+			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices,bool landscape = false);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPosNormalTexフォーマットのシリンダーを作成する(static関数)
@@ -154,7 +154,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static void CreateCylinder(float height, float diameter, size_t tessellation,
-			vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices,
+			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices,
 			 bool landscape = false);
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -168,7 +168,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static void CreateCone(float diameter, float height, size_t tessellation,
-			vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices);
+			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPosNormalTexフォーマットのトーラスを作成する(static関数)
@@ -181,7 +181,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static void CreateTorus(float diameter, float thickness, size_t tessellation,
-			vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices);
+			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPosNormalTexフォーマットの正4面体を作成する(static関数)
@@ -192,7 +192,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static void CreateTetrahedron(float size,
-			vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices);
+			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPosNormalTexフォーマットの正8面体を作成する(static関数)
@@ -203,7 +203,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static void CreateOctahedron(float size,
-			vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices);
+			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPosNormalTexフォーマットの正12面体を作成する(static関数)
@@ -214,7 +214,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static void CreateDodecahedron(float size,
-			vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices);
+			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPosNormalTexフォーマットの正20面体を作成する(static関数)
@@ -225,7 +225,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static void CreateIcosahedron(float size,
-			vector<VertexPositionNormalTexture>& vertices, vector<uint32_t>& indices);
+			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPositionNormalTangentTextureフォーマットのメッシュのタンジェントを追加する
@@ -233,7 +233,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void SetNormalTangent(vector<VertexPositionNormalTangentTexture>& vertices);
+		static void SetNormalTangent(std::vector<VertexPositionNormalTangentTexture>& vertices);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPositionNormalTangentTextureSkinningフォーマットのメッシュのタンジェントを追加する
@@ -241,14 +241,14 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void SetNormalTangent(vector<VertexPositionNormalTangentTextureSkinning>& vertices);
+		static void SetNormalTangent(std::vector<VertexPositionNormalTangentTextureSkinning>& vertices);
 
-		static void ConvertVertex(const vector<VertexPositionNormalTexture>& vertices,
-			vector<VertexPositionColor>& new_pc_vertices,
-			vector<VertexPositionNormal>& new_pn_vertices,
-			vector<VertexPositionTexture>& new_pt_vertices,
-			vector<VertexPositionNormalTangentTexture>& new_pntnt_vertices,
-			vector<VertexPositionNormalTextureTangent>& new_pnttn_vertices
+		static void ConvertVertex(const std::vector<VertexPositionNormalTexture>& vertices,
+			std::vector<VertexPositionColor>& new_pc_vertices,
+			std::vector<VertexPositionNormal>& new_pn_vertices,
+			std::vector<VertexPositionTexture>& new_pt_vertices,
+			std::vector<VertexPositionNormalTangentTexture>& new_pntnt_vertices,
+			std::vector<VertexPositionNormalTextureTangent>& new_pnttn_vertices
 		) {
 			new_pc_vertices.clear();
 			new_pn_vertices.clear();
@@ -303,4 +303,5 @@ namespace basecross {
 
 
 }
+using namespace basecross;
 //end basecross
