@@ -464,11 +464,12 @@ struct ConstBuffParam {
 　リソース等、定数バッファへ書き込む情報が入っています。<br>
 　<strong>OnCreate()関数</strong>では、以下のように初期化されます。
 <pre class="my-3 p-3">
-	auto pBaseScene = Scene::Get();
-	UINT frameCount = pBaseScene->GetFrameCount();
+	//シーンのポインタを取得
+	auto pScene = BaseDevice::GetScene();
+	UINT frameCount = pScene->GetFrameCount();
 	m_constBuffParamVec.resize(frameCount);
 	for (UINT i = 0; i &lt; frameCount; i++) {
-		m_constBuffParamVec[i] = pBaseScene->GetframeResources()[i]->CreateConstBuffParam&lt;Base2DConstant>();
+		m_constBuffParamVec[i] = pScene->GetframeResources()[i]->CreateConstBuffParam&lt;Base2DConstant>();
 	}
 </pre>
 　<strong>Base2DConstant</strong>という型は、２Ｄ専用の定数バッファです。<br>
@@ -478,7 +479,8 @@ struct ConstBuffParam {
 　更新処理は以下です。<br>
 <pre class="my-3 p-3">
 void PcSprite::OnUpdate(double elapsedTime) {
-	auto pBaseScene = Scene::Get();
+	//シーンのポインタを取得
+	auto pScene = BaseDevice::GetScene();
 	//トータル時間の変更
 	m_totalTime += elapsedTime;
 	if (m_totalTime > XM_2PI) {
@@ -512,7 +514,7 @@ void PcSprite::OnUpdate(double elapsedTime) {
 	constantBuffer.emissive = Col4(0.5f);
 	constantBuffer.diffuse = Col4(1.0f);
 	//コンスタントバッファのコミット
-	auto frameIndex = pBaseScene->GetFrameIndex();
+	auto frameIndex = pScene->GetFrameIndex();
 	memcpy(
 		m_constBuffParamVec[frameIndex].m_pConstantBufferWO,
 		&constantBuffer,
@@ -529,9 +531,10 @@ void PcSprite::OnUpdate(double elapsedTime) {
 　<strong>描画処理</strong>は<strong>PcSprite::OnSceneDraw()関数</strong>で行います。<br>
 <pre class="my-3 p-3">
 void PcSprite::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
-	auto pBaseScene = Scene::Get();
-	auto rootSignatures = pBaseScene->GetRootSignatures();
-	auto frameIndex = pBaseScene->GetFrameIndex();
+	//シーンのポインタを取得
+	auto pScene = BaseDevice::GetScene();
+	auto rootSignatures = pScene->GetRootSignatures();
+	auto frameIndex = pScene->GetFrameIndex();
 	//頂点情報の変更
 	m_spriteMesh->UpdateVirtexBuffer&lt;VertexPositionColor>(pCommandList, m_backupVertices);
 	//これより描画処理
@@ -542,17 +545,17 @@ void PcSprite::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
 	pCommandList->SetPipelineState(scenePipeline.Get());
 	//定数バッファのセット
 	pCommandList->SetGraphicsRootConstantBufferView(
-		pBaseScene->GetGpuSlotID(L"2d_b0"),
+		pScene->GetGpuSlotID(L"2d_b0"),
 		m_constBuffParamVec[frameIndex].m_constantBuffer->GetGPUVirtualAddress()
 	);
 	//そのほかの必要な設定
 	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pCommandList->IASetVertexBuffers(0, 1, &m_spriteMesh->GetVertexBufferView());
 	pCommandList->IASetIndexBuffer(&m_spriteMesh->GetIndexBufferView());
-	pCommandList->RSSetViewports(1, &pBaseScene->GetViewport());
-	pCommandList->RSSetScissorRects(1, &pBaseScene->GetScissorRect());
-	pCommandList->OMSetRenderTargets(1, &pBaseScene->GetCurrentBackBufferRtvCpuHandle(),
-		FALSE, &pBaseScene->GetDepthDsvs()[DepthGenPass::Scene]);
+	pCommandList->RSSetViewports(1, &pScene->GetViewport());
+	pCommandList->RSSetScissorRects(1, &pScene->GetScissorRect());
+	pCommandList->OMSetRenderTargets(1, &pScene->GetCurrentBackBufferRtvCpuHandle(),
+		FALSE, &pScene->GetDepthDsvs()[DepthGenPass::Scene]);
 	//PcSpriteの描画
 	pCommandList->DrawIndexedInstanced(m_spriteMesh->GetNumIndices(), 1, 0, 0, 0);
 }
@@ -562,8 +565,8 @@ void PcSprite::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
 　<strong>BaseCrossDx12</strong>では、できるだけGPU（DirectX12）に直接アクセスする方法を提供しながら、フレームワークとしての便利さも提供したいと考えています。この2つの矛盾するテーマに挑みつつ、少しずつ前進していく所存ですので、どうか、長い目で見守っていただければ幸いです。
 <footer class="py-3 my-4">
 <ul class="nav justify-content-center border-top pb-3 mb-3">
-<li class="nav-item"><a href="index.html" class="nav-link px-2 text-success">目次</a></li>
-<li class="nav-item"><a href="#" class="nav-link px-2 text-success">次へ</a></li>
+<li class="nav-item"><a href="index.html" class="nav-link px-2 text-primary">目次</a></li>
+<li class="nav-item"><a href="002.html" class="nav-link px-2 text-success">次へ</a></li>
 </ul>
 <p class="text-center text-body-secondary">&copy; 2024  WiZ Tamura Hiroki,Yamanoi Yasushi MIT License.</p>
 </footer>
