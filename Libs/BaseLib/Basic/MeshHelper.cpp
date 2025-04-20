@@ -1,7 +1,8 @@
 /*!
-@file MeshHelper.cpp
-@brief メッシュヘルパークラス
+@file MeshHelper.h
+@brief メッシュ制作ユーティリティクラス 実体
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #include "stdafx.h"
@@ -59,10 +60,10 @@ namespace basecross {
 		try {
 			float HelfSize = size / 2.0f;
 			//頂点配列
-			vertices.push_back(VertexPositionNormalTexture(bsm::Vec3(-HelfSize, HelfSize, 0), bsm::Vec3(0.0f, 0.0f, -1.0f), bsm::Vec2(0.0f, 0.0f)));
-			vertices.push_back(VertexPositionNormalTexture(bsm::Vec3(HelfSize, HelfSize, 0), bsm::Vec3(0.0f, 0.0f, -1.0f), bsm::Vec2(1.0f, 0.0f)));
-			vertices.push_back(VertexPositionNormalTexture(bsm::Vec3(-HelfSize, -HelfSize, 0), bsm::Vec3(0.0f, 0.0f, -1.0f), bsm::Vec2(0.0f, 1.0f)));
-			vertices.push_back(VertexPositionNormalTexture(bsm::Vec3(HelfSize, -HelfSize, 0), bsm::Vec3(0.0f, 0.0f, -1.0f), bsm::Vec2(1.0f, 1.0f)));
+			vertices.push_back(VertexPositionNormalTexture(XMFLOAT3(-HelfSize, HelfSize, 0), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f)));
+			vertices.push_back(VertexPositionNormalTexture(XMFLOAT3(HelfSize, HelfSize, 0), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 0.0f)));
+			vertices.push_back(VertexPositionNormalTexture(XMFLOAT3(-HelfSize, -HelfSize, 0), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 1.0f)));
+			vertices.push_back(VertexPositionNormalTexture(XMFLOAT3(HelfSize, -HelfSize, 0), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 1.0f)));
 			//インデックスを作成するための配列
 			indices.push_back((uint32_t)0);
 			indices.push_back((uint32_t)1);
@@ -132,7 +133,6 @@ namespace basecross {
 		}
 	}
 
-
 	void MeshUtill::CreateSphere(float diameter, size_t tessellation,
 		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices) {
 		try {
@@ -196,9 +196,8 @@ namespace basecross {
 		}
 	}
 
-
 	void MeshUtill::CreateCapsule(float diameter,
-		const bsm::Vec3& PointA, const bsm::Vec3& PointB,
+		const XMFLOAT3& PointA, const XMFLOAT3& PointB,
 		size_t tessellation,
 		std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices,
 		bool landscape) {
@@ -221,12 +220,12 @@ namespace basecross {
 
 				XMScalarSinCos(&dy, &dxz, latitude);
 
-				bsm::Vec3 CenterPos = PointA;
+				XMFLOAT3 CenterPos = PointA;
 				if (i >= (verticalSegments / 2)) {
 					CenterPos = PointB;
 				}
 
-				float SphereTotalFront = diameter *  XM_PI / 2.0f;
+				float SphereTotalFront = diameter * XM_PI / 2.0f;
 				float SylinderTotalFront = abs(PointA.y - PointB.y);
 				float SphereRate = SphereTotalFront / (SphereTotalFront + SylinderTotalFront) / 2.0f;
 
@@ -253,7 +252,9 @@ namespace basecross {
 					XMVECTOR normal = XMVectorSet(dx, dy, dz, 0);
 					XMVECTOR textureCoordinate = XMVectorSet(u, v, 0, 0);
 
-					vertices.push_back(VertexPositionNormalTexture(normal * radius + (XMVECTOR)CenterPos, normal, textureCoordinate));
+					XMVECTOR vCenterPos = XMLoadFloat3(&CenterPos);
+
+					vertices.push_back(VertexPositionNormalTexture(normal * radius + (XMVECTOR)vCenterPos, normal, textureCoordinate));
 				}
 			}
 			size_t stride = horizontalSegments + 1;
@@ -278,13 +279,15 @@ namespace basecross {
 
 			//横に寝せる
 			if (landscape) {
-				bsm::Mat4x4 mat = (bsm::Mat4x4)XMMatrixRotationZ(XM_PIDIV2);
+				auto  mat = XMMatrixRotationZ(XM_PIDIV2);
 				for (auto& v : vertices) {
 					float tmp = -v.position.y;
 					v.position.y = v.position.x;
 					v.position.x = tmp;
-					v.normal *= mat;
-					v.normal.normalize();
+					auto v_normal = XMLoadFloat3(&v.normal);
+					v_normal = XMVector3Transform(v_normal, mat);
+					v_normal = XMVector3Normalize(v_normal);
+					XMStoreFloat3(&v.normal, v_normal);
 				}
 			}
 
@@ -337,20 +340,21 @@ namespace basecross {
 			CreateCylinderCap(vertices, indices, tessellation, height, radius, false);
 			//RHからLHに変更
 			ReverseWinding(indices, vertices);
+
+
 			//横に寝せる
 			if (landscape) {
-				bsm::Mat4x4 mat = (bsm::Mat4x4)XMMatrixRotationZ(XM_PIDIV2);
+				auto  mat = XMMatrixRotationZ(XM_PIDIV2);
 				for (auto& v : vertices) {
 					float tmp = -v.position.y;
 					v.position.y = v.position.x;
 					v.position.x = tmp;
-					v.normal *= mat;
-					v.normal.normalize();
+					auto v_normal = XMLoadFloat3(&v.normal);
+					v_normal = XMVector3Transform(v_normal, mat);
+					v_normal = XMVector3Normalize(v_normal);
+					XMStoreFloat3(&v.normal, v_normal);
 				}
 			}
-
-
-
 		}
 		catch (...) {
 			throw;
@@ -471,9 +475,9 @@ namespace basecross {
 
 			static const XMVECTORF32 verts[4] =
 			{
-				{ 0.f,        0.f,      1.f },
-				{ 2.f*SQRT2 / 3.f,        0.f, -1.f / 3.f },
-				{ -SQRT2 / 3.f,  SQRT6 / 3.f, -1.f / 3.f },
+				{ 0.f, 0.f, 1.f},
+				{ 2.f * SQRT2 / 3.f, 0.f, -1.f / 3.f },
+				{ -SQRT2 / 3.f, SQRT6 / 3.f, -1.f / 3.f },
 				{ -SQRT2 / 3.f, -SQRT6 / 3.f, -1.f / 3.f }
 			};
 
@@ -802,6 +806,21 @@ namespace basecross {
 			throw;
 		}
 	}
+/*
+	void MeshUtill::SetNormalTangent(std::vector<VertexPositionNormalTangentTexture>& vertices) {
+		for (size_t i = 0; i < vertices.size(); i++) {
+			auto v_normal = XMLoadFloat3(&vertices[i].normal);
+			v_normal = XMVector3Normalize(v_normal);
+			auto chk1 = XMVector3AngleBetweenNormals(v_normal, XMVectorSet(0, 1, 0, 0));
+			auto chk2 = XMVector3AngleBetweenNormals(v_normal, XMVectorSet(0, -1, 0, 0));
+			auto f1 = XMVectorGetByIndex(chk1,0);
+			auto f2 = XMVectorGetByIndex(chk2, 0);
+			if (f1 <= 0.1f || f2 <= 0.1f) {
+
+			}
+
+		}
+	}
 
 	void MeshUtill::SetNormalTangent(std::vector<VertexPositionNormalTangentTexture>& vertices) {
 		for (size_t i = 0; i < vertices.size(); i++) {
@@ -809,30 +828,16 @@ namespace basecross {
 			Norm.normalize();
 			if (bsm::Vec3(XMVector3AngleBetweenNormals(Norm, bsm::Vec3(0, 1, 0))).x <= 0.1f ||
 				bsm::Vec3(XMVector3AngleBetweenNormals(Norm, bsm::Vec3(0, -1, 0))).x <= 0.1f) {
-				vertices[i].tangent = bsm::Vec4(bsm::cross(Norm, bsm::Vec3(0, 0, 1)),0.0);
+				vertices[i].tangent = bsm::Vec4(bsm::cross(Norm, bsm::Vec3(0, 0, 1)), 0.0);
 			}
 			else {
-				vertices[i].tangent = bsm::Vec4(bsm::cross(Norm, bsm::Vec3(0, 1, 0)),0.0);
+				vertices[i].tangent = bsm::Vec4(bsm::cross(Norm, bsm::Vec3(0, 1, 0)), 0.0);
 			}
 			vertices[i].tangent.w = 0.0f;
 		}
 	}
-
-	void MeshUtill::SetNormalTangent(std::vector<VertexPositionNormalTangentTextureSkinning>& vertices) {
-		for (size_t i = 0; i < vertices.size(); i++) {
-			bsm::Vec3 Norm = (bsm::Vec3)vertices[i].normal;
-			Norm.normalize();
-			if (bsm::Vec3(XMVector3AngleBetweenNormals(Norm, bsm::Vec3(0, 1, 0))).x <= 0.1f ||
-				bsm::Vec3(XMVector3AngleBetweenNormals(Norm, bsm::Vec3(0, -1, 0))).x <= 0.1f) {
-				vertices[i].tangent = bsm::Vec4(bsm::cross(Norm, bsm::Vec3(0, 0, 1)),0.0);
-			}
-			else {
-				vertices[i].tangent = bsm::Vec4(bsm::cross(Norm, bsm::Vec3(0, 1, 0)),0.0);
-			}
-			vertices[i].tangent.w = 0.0f;
-		}
-	}
+*/
 
 
 }
-//end basecross
+// end namespace basecross

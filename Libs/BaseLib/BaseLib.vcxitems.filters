@@ -2,726 +2,141 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Basic">
-      <UniqueIdentifier>{570bf49f-30b5-43eb-affb-fd74d594291c}</UniqueIdentifier>
+      <UniqueIdentifier>{f1b63cba-cfc4-4ccd-bae8-fcdb6cbdce14}</UniqueIdentifier>
     </Filter>
     <Filter Include="Basic\Headers">
-      <UniqueIdentifier>{cac9a5ee-480f-44a8-b06c-e1e79e57ac3a}</UniqueIdentifier>
+      <UniqueIdentifier>{2670f7fb-dd21-4687-9eeb-fdbbddd81a83}</UniqueIdentifier>
     </Filter>
     <Filter Include="Basic\Sources">
-      <UniqueIdentifier>{1acd333c-17bc-45d1-b9e2-76ec5da776ca}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext">
-      <UniqueIdentifier>{38818651-7180-46d2-84ee-e00efc31aafe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects">
-      <UniqueIdentifier>{22a48ca5-dede-4b06-a924-8fd4e2e6aa3c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers">
-      <UniqueIdentifier>{888f4471-17ad-4089-ac30-e327bd6d47eb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Sources">
-      <UniqueIdentifier>{9a8761d1-4d8c-460a-b865-29f89b71d827}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\base_level">
-      <UniqueIdentifier>{3100a79f-5949-48ab-b0a2-50ac57751797}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\low_level">
-      <UniqueIdentifier>{04c63a8e-687b-4539-b33a-5bf456786281}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\util">
-      <UniqueIdentifier>{c6966253-1f0c-4efc-ade4-1ff2a196291f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\base_level\base">
-      <UniqueIdentifier>{de178b5c-96dd-4961-8d30-5d214d76ad40}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\base_level\broadphase">
-      <UniqueIdentifier>{372ba605-8d69-4074-96f1-b2967bfde069}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\base_level\collision">
-      <UniqueIdentifier>{8459947a-304d-45ca-bd33-f0a6ff130ba8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\base_level\rigidbody">
-      <UniqueIdentifier>{521931ec-b353-45bb-92ea-add2cc2cd105}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\base_level\solver">
-      <UniqueIdentifier>{fd38e62d-805f-4465-9f15-e0e5adf47c91}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\base_level\sort">
-      <UniqueIdentifier>{160cff03-919e-4065-99ba-1a8f644adbce}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\low_level\broadphase">
-      <UniqueIdentifier>{60519be6-9791-4c60-bd55-f3ca3b9b9d28}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\low_level\collision">
-      <UniqueIdentifier>{56d95787-b4ca-438b-9a61-d869aad9053e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\low_level\solver">
-      <UniqueIdentifier>{1252b4eb-c64d-4e7c-b5d0-73afe47b38bf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Headers\low_level\task">
-      <UniqueIdentifier>{12ffa068-d311-4e3a-9c56-b3433f09a2f0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Sources\base_level">
-      <UniqueIdentifier>{580ded22-ab18-4163-83fd-67ba648fd4bb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Sources\low_level">
-      <UniqueIdentifier>{3d530e1f-2fe7-46e7-baf3-66c74987f4a6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Sources\util">
-      <UniqueIdentifier>{e1a77ae8-f484-4fcb-ad96-d21597179ff5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Sources\base_level\broadphase">
-      <UniqueIdentifier>{646e8e03-9d11-4c8a-a4cd-8287bbd0eaec}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Sources\base_level\collision">
-      <UniqueIdentifier>{a0bf2d9e-6c2e-471d-a32e-d381d3e52068}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Sources\base_level\solver">
-      <UniqueIdentifier>{ad14566e-3b23-4457-a5eb-398447e85386}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Sources\base_level\sort">
-      <UniqueIdentifier>{5dbfa1ec-af43-48b8-a612-49c8f72fe37d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Sources\low_level\broadphase">
-      <UniqueIdentifier>{74e8a1f6-357f-4823-990f-997514e32ee4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Sources\low_level\collision">
-      <UniqueIdentifier>{be4a2486-0c7a-4eaf-9c66-e3d4dac12583}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\physics_effects\Sources\low_level\solver">
-      <UniqueIdentifier>{0f6fad95-d8a0-4921-97c4-5d97a28a0e2c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Ext\vectormath">
-      <UniqueIdentifier>{6d7e3911-1b2f-48b9-88f0-c90be66359bb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Standerd">
-      <UniqueIdentifier>{4d1b2e67-eef5-40d2-a4e2-52a1030a7a15}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Standerd\Components">
-      <UniqueIdentifier>{7eb9130d-fc7d-4563-902f-780838d0d477}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Standerd\Objects">
-      <UniqueIdentifier>{230cdb3d-e9e3-414f-9677-10e07c459b01}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Standerd\Objects\Headers">
-      <UniqueIdentifier>{6e47cdd9-d485-403b-b155-5853a5a91f48}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Standerd\Objects\Sources">
-      <UniqueIdentifier>{bdaca38d-6dee-4cc0-9196-6cd23a7f9438}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Standerd\Components\Headers">
-      <UniqueIdentifier>{1d1b381f-5ebb-4144-a8c2-cfe20eaaf665}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Standerd\Components\Sources">
-      <UniqueIdentifier>{6131441b-7bb5-4547-a97a-6f88060f6e7d}</UniqueIdentifier>
+      <UniqueIdentifier>{300938d8-290a-4702-b6ab-1670a79d3bf3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseInclude.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\App.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\PrimDevice.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Camera.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseCommon.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseDevice.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\d3dx12.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseFrame.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseScene.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\StepTimer.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseUI.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseHelper.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMath.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMathInc.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseHelper.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Event.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\targetver.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects.h">
-      <Filter>Basic\Ext\physics_effects\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\pfx_base_level_include.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\base\pfx_common.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\base</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\base\pfx_error_code.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\base</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\base\pfx_heap_manager.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\base</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\base\pfx_perf_counter.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\base</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\base\pfx_vec_int3.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\base</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\base\pfx_vec_utils.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\base</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\base\pfx_vectormath_include.win32.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\base</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\broadphase\pfx_broadphase_pair.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\broadphase</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\broadphase\pfx_broadphase_proxy.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\broadphase</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\broadphase\pfx_update_broadphase_proxy.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\broadphase</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_aabb.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_box.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_capsule.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_collidable.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_collidable_implementation.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_contact_manifold.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_cylinder.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_large_tri_mesh.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_ray.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_shape.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_shape_implementation.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_shape_iterator.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_sphere.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_sub_data.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\collision\pfx_tri_mesh.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\sort\pfx_sort.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\sort</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\sort\pfx_sort_data.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\sort</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_constraint_pair.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_constraint_row.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_contact_constraint.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_integrate.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_joint.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_joint_ball.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_joint_constraint.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_joint_fix.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_joint_hinge.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_joint_slider.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_joint_swing_twist.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_joint_universal.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\solver\pfx_solver_body.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\rigidbody\pfx_rigid_body.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\rigidbody</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\base_level\rigidbody\pfx_rigid_state.h">
-      <Filter>Basic\Ext\physics_effects\Headers\base_level\rigidbody</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\low_level\pfx_low_level_include.h">
-      <Filter>Basic\Ext\physics_effects\Headers\low_level</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\low_level\broadphase\pfx_broadphase.h">
-      <Filter>Basic\Ext\physics_effects\Headers\low_level\broadphase</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\low_level\collision\pfx_batched_ray_cast.h">
-      <Filter>Basic\Ext\physics_effects\Headers\low_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\low_level\collision\pfx_collision_detection.h">
-      <Filter>Basic\Ext\physics_effects\Headers\low_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\low_level\collision\pfx_island_generation.h">
-      <Filter>Basic\Ext\physics_effects\Headers\low_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\low_level\collision\pfx_ray_cast.h">
-      <Filter>Basic\Ext\physics_effects\Headers\low_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\low_level\collision\pfx_refresh_contacts.h">
-      <Filter>Basic\Ext\physics_effects\Headers\low_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\low_level\task\pfx_sync_components.h">
-      <Filter>Basic\Ext\physics_effects\Headers\low_level\task</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\low_level\task\pfx_task_manager.h">
-      <Filter>Basic\Ext\physics_effects\Headers\low_level\task</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\low_level\solver\pfx_constraint_solver.h">
-      <Filter>Basic\Ext\physics_effects\Headers\low_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\low_level\solver\pfx_joint_constraint_func.h">
-      <Filter>Basic\Ext\physics_effects\Headers\low_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\low_level\solver\pfx_update_rigid_states.h">
-      <Filter>Basic\Ext\physics_effects\Headers\low_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\util\pfx_array.h">
-      <Filter>Basic\Ext\physics_effects\Headers\util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\util\pfx_array_implementation.h">
-      <Filter>Basic\Ext\physics_effects\Headers\util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\util\pfx_debug_render.h">
-      <Filter>Basic\Ext\physics_effects\Headers\util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\util\pfx_mass.h">
-      <Filter>Basic\Ext\physics_effects\Headers\util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\util\pfx_mesh_creator.h">
-      <Filter>Basic\Ext\physics_effects\Headers\util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\util\pfx_pool_array.h">
-      <Filter>Basic\Ext\physics_effects\Headers\util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\util\pfx_pool_array_implementation.h">
-      <Filter>Basic\Ext\physics_effects\Headers\util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\util\pfx_static_array.h">
-      <Filter>Basic\Ext\physics_effects\Headers\util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\util\pfx_static_array_implementation.h">
-      <Filter>Basic\Ext\physics_effects\Headers\util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\util\pfx_util_common.h">
-      <Filter>Basic\Ext\physics_effects\Headers\util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\include\physics_effects\util\pfx_util_include.h">
-      <Filter>Basic\Ext\physics_effects\Headers\util</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\broadphase\pfx_check_collidable.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\broadphase</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_box_box.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_box_capsule.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_box_sphere.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_cache.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_capsule_capsule.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_capsule_sphere.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_large_tri_mesh.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_sphere_sphere.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_tri_mesh_box.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_tri_mesh_capsule.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_tri_mesh_convex.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_tri_mesh_cylinder.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_tri_mesh_sphere.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_decoded_tri_mesh.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_gjk_solver.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_gjk_support_func.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_common.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_ray_box.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_ray_capsule.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_ray_convex.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_ray_cylinder.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_ray_large_tri_mesh.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_ray_sphere.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_mesh_common.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_simplex_solver.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\solver\pfx_check_solver.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\solver\pfx_constraint_row_solver.h">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\collision\pfx_detect_collision_func.h">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\collision\pfx_intersect_ray_func.h">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\collision</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\solver\pfx_parallel_group.h">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\solver</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\vectormath\boolInVec.h">
-      <Filter>Basic\Ext\vectormath</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\vectormath\floatInVec.h">
-      <Filter>Basic\Ext\vectormath</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\vectormath\mat_aos.h">
-      <Filter>Basic\Ext\vectormath</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\vectormath\quat_aos.h">
-      <Filter>Basic\Ext\vectormath</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\vectormath\vec_aos.h">
-      <Filter>Basic\Ext\vectormath</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\vectormath\vectormath_aos.h">
-      <Filter>Basic\Ext\vectormath</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\TransHelper.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\InputDevice.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseBlendState.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BasePipelineState.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseCamera.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMesh.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseScene.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseTexture.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseLight.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BlendState.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\DXHelper.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\d3dx12.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Objects\GameObject.h">
-      <Filter>Standerd\Objects\Headers</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\DxHelper.h">
+      <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\Component.h">
-      <Filter>Standerd\Components\Headers</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\FrameResource.h">
+      <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Components\Transform.h">
-      <Filter>Standerd\Components\Headers</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.h">
+      <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)BaseCommon.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\PipelineState.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\PrimDevice.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\RootSignature.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\StepTimer.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\targetver.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\UILayer.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\ObjectInterface.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Camera.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Light.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Shadowmap.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\App.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\PrimDevice.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Camera.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseDevice.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseFrame.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseScene.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseUI.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseHelper.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Event.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\broadphase\pfx_update_broadphase_proxy.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\broadphase</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_collidable.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_box_box.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_box_capsule.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_box_sphere.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_cache.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_capsule_capsule.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_capsule_sphere.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_large_tri_mesh.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_manifold.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_sphere_sphere.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_tri_mesh_box.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_tri_mesh_capsule.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_tri_mesh_convex.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_tri_mesh_cylinder.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_contact_tri_mesh_sphere.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_gjk_solver.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_gjk_support_func.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_ray_box.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_ray_capsule.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_ray_convex.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_ray_cylinder.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_ray_large_tri_mesh.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_intersect_ray_sphere.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_shape.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\collision\pfx_simplex_solver.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\sort\pfx_sort.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\sort</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\solver\pfx_contact_constraint.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\solver</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\solver\pfx_joint_ball.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\solver</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\solver\pfx_joint_fix.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\solver</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\solver\pfx_joint_hinge.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\solver</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\solver\pfx_joint_slider.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\solver</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\solver\pfx_joint_swing_twist.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\solver</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\base_level\solver\pfx_joint_universal.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\base_level\solver</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\broadphase\pfx_broadphase_single.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\broadphase</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\collision\pfx_batched_ray_cast_single.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\collision\pfx_collision_detection_single.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\collision\pfx_detect_collision_func.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\collision\pfx_intersect_ray_func.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\collision\pfx_island_generation.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\collision\pfx_ray_cast.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\collision\pfx_refresh_contacts_single.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\collision</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\solver\pfx_constraint_solver_single.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\solver</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\solver\pfx_joint_constraint_func.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\solver</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\low_level\solver\pfx_update_rigid_states_single.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\low_level\solver</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\util\pfx_debug_render.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\util</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\util\pfx_mass.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\util</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\util\pfx_mesh_creator.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\util</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\physics_effects\src\util\pfx_util_common.cpp">
-      <Filter>Basic\Ext\physics_effects\Sources\util</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseBlendState.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BasePipelineState.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseCamera.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseMesh.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseScene.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseTexture.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseLight.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BlendState.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Objects\GameObject.cpp">
-      <Filter>Standerd\Objects\Sources</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\FrameResource.cpp">
+      <Filter>Basic\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\Component.cpp">
-      <Filter>Standerd\Components\Sources</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.cpp">
+      <Filter>Basic\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Components\Transform.cpp">
-      <Filter>Standerd\Components\Sources</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\PipelineState.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\PrimDevice.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\RootSignature.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\UILayer.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Light.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Camera.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Shadowmap.cpp">
+      <Filter>Basic\Sources</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

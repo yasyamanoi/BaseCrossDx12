@@ -1,18 +1,39 @@
+//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+
 /*!
 @file BaseScene.cpp
-@brief シーン親クラス
+@brief シーン親クラス　実体
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #include "stdafx.h"
+
 namespace basecross {
 
-//	using namespace SceneEnums;
 
-	BaseScene* BaseScene::pBaseScene = nullptr;
+	using namespace std;
+	using namespace SceneEnums;
+
+	IMPLEMENT_DX12SHADER(BcVSPNTStaticPL, App::GetShadersDir() + L"BcVSPNTStaticPL.cso")
+	IMPLEMENT_DX12SHADER(BcPSPNTPL, App::GetShadersDir() + L"BcPSPNTPL.cso")
+
+	IMPLEMENT_DX12SHADER(BcVSPNTStaticPLShadow, App::GetShadersDir() + L"BcVSPNTStaticPLShadow.cso")
+	IMPLEMENT_DX12SHADER(BcPSPNTPLShadow, App::GetShadersDir() + L"BcPSPNTPLShadow.cso")
+
+	BaseScene* BaseScene::s_baseScene = nullptr;
 	const float BaseScene::s_clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-	BaseScene::BaseScene(UINT frameCount, PrimDevice * pPrimDevice) :
+	BaseScene::BaseScene(UINT frameCount, PrimDevice* pPrimDevice) :
 		m_frameCount(frameCount),
 		m_fogDensity(0.04f),
 		m_frameIndex(0),
@@ -20,14 +41,17 @@ namespace basecross {
 		m_scissorRect(0, 0, 0L, 0L),
 		m_rtvDescriptorSize(0),
 		m_cbvSrvDescriptorSize(0),
-		m_pCurrentBaseFrame(nullptr),
+		m_pCurrentFrameResource(nullptr),
+		m_pPrimDevice(pPrimDevice),
 		m_srvSendIndex(m_srvStartIndex),
 		m_cbvUavSendIndex(m_cbvUavStartIndex),
 		m_samplerSendIndex(0)
 	{
-		pBaseScene = this;
+		s_baseScene = this;
+
 		m_renderTargets.resize(m_frameCount);
 		m_frameResources.resize(m_frameCount);
+
 	}
 
 	BaseScene::~BaseScene()
@@ -77,8 +101,24 @@ namespace basecross {
 		return UINT_MAX;
 	}
 
-	void BaseScene::CreateDescriptorHeaps(ID3D12Device* pDevice) {
-		// RTVディスクプリタヒープ作成（フレームの数作成）
+	void BaseScene::Initialize(ID3D12Device* pDevice, ID3D12CommandQueue* pDirectCommandQueue, ID3D12GraphicsCommandList* pCommandList, UINT frameIndex)
+	{
+		CreateDescriptorHeaps(pDevice);
+		CreateRootSignatures(pDevice);
+		CreatePipelineStates(pDevice);
+		CreatePostprocessPassResources(pDevice);
+		CreateSamplers(pDevice);
+		CreateFrameResources(pDevice, pDirectCommandQueue);
+		CreateCommandLists(pDevice);
+		CreateBasicResources(pDevice, pCommandList);
+		CreateAssetResources(pDevice, pCommandList);
+		SetFrameIndex(frameIndex);
+	}
+
+	// Load the rendering pipeline dependencies.
+	void BaseScene::CreateDescriptorHeaps(ID3D12Device* pDevice)
+	{
+		// Describe and create a render target view (RTV) descriptor heap.
 		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
 		rtvHeapDesc.NumDescriptors = GetNumRtvDescriptors();
 		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
@@ -86,25 +126,31 @@ namespace basecross {
 		ThrowIfFailed(pDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_rtvHeap)));
 		NAME_D3D12_OBJECT(m_rtvHeap);
 
-		// デプスステンシルビュー用のディスクプリタヒープ作成（2個）
+		// Describe and create a depth stencil view (DSV) descriptor heap.
 		D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-		dsvHeapDesc.NumDescriptors = _countof(m_depthDsvs); //2個
+		dsvHeapDesc.NumDescriptors = _countof(m_depthDsvs);
 		dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 		dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		ThrowIfFailed(pDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_dsvHeap)));
 		NAME_D3D12_OBJECT(m_dsvHeap);
 
-		// CBVとSRVとUAV用のデスクプリタヒープ
-		D3D12_DESCRIPTOR_HEAP_DESC cbvSrvUavHeapDesc = {};
-		cbvSrvUavHeapDesc.NumDescriptors = m_cbvSrvUavMax; //全部で4096個
-		cbvSrvUavHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		cbvSrvUavHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		ThrowIfFailed(pDevice->CreateDescriptorHeap(&cbvSrvUavHeapDesc, IID_PPV_ARGS(&m_cbvSrvUavHeap)));
-		NAME_D3D12_OBJECT(m_cbvSrvUavHeap);
+		// Describe and create a shader resource view (SRV) and constant 
+		// buffer view (CBV) descriptor heap.  
+		// Heap layout: 
+		// 1) null views, 
+		// 2) depth buffer views,
+		// Note that we use root constant buffer views, so we don't need descriptor 
+		// heap space for each frames's constant buffer.
+		D3D12_DESCRIPTOR_HEAP_DESC cbvSrvHeapDesc = {};
+		cbvSrvHeapDesc.NumDescriptors = GetNumCbvSrvUavDescriptors(); //4096
+		cbvSrvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+		cbvSrvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+		ThrowIfFailed(pDevice->CreateDescriptorHeap(&cbvSrvHeapDesc, IID_PPV_ARGS(&m_cbvSrvHeap)));
+		NAME_D3D12_OBJECT(m_cbvSrvHeap);
 
-		//サンプラー用.
+		// Describe and create a sampler descriptor heap.
 		D3D12_DESCRIPTOR_HEAP_DESC samplerHeapDesc = {};
-		samplerHeapDesc.NumDescriptors = m_samplerMax; // 128 One clamp and one wrap sampler.
+		samplerHeapDesc.NumDescriptors = GetNumSamplerDescriptors(); // 128 One clamp and one wrap sampler.
 		samplerHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 		samplerHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		ThrowIfFailed(pDevice->CreateDescriptorHeap(&samplerHeapDesc, IID_PPV_ARGS(&m_samplerHeap)));
@@ -115,38 +161,11 @@ namespace basecross {
 		m_dsvDescriptorSize = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 		m_cbvSrvDescriptorSize = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		m_samplerDescriptorSize = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+
 	}
 
-	void BaseScene::CreateCommandLists(ID3D12Device* pDevice) {
-		// Temporarily use a frame resource's command allocator to create command lists.
-		ID3D12CommandAllocator* pCommandAllocator = m_frameResources[0]->m_commandAllocator.Get();
-
-		for (UINT i = 0; i < CommandListCount; i++)
-		{
-			ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, nullptr, IID_PPV_ARGS(&m_commandLists[i])));
-			ThrowIfFailed(m_commandLists[i]->Close());
-			NAME_D3D12_OBJECT_INDEXED(m_commandLists, i);
-		}
-
-
-		ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, nullptr, IID_PPV_ARGS(&m_shadowCommandList)));
-		ThrowIfFailed(m_shadowCommandList->Close());
-		NAME_D3D12_OBJECT(m_shadowCommandList);
-
-		ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, nullptr, IID_PPV_ARGS(&m_sceneCommandList)));
-		ThrowIfFailed(m_sceneCommandList->Close());
-		NAME_D3D12_OBJECT(m_sceneCommandList);
-
-		// Batch up command lists for execution later.
-		const UINT batchSize = 1 + 1 + CommandListCount; //Scene + Shadow + CommandListCount == 5
-		m_batchSubmit[0] = m_commandLists[CommandListPre].Get();
-		m_batchSubmit[1] = m_shadowCommandList.Get();
-		m_batchSubmit[2] = m_commandLists[CommandListMid].Get();
-		m_batchSubmit[3] = m_sceneCommandList.Get();
-		m_batchSubmit[4] = m_commandLists[CommandListPost].Get();
-	}
-
-	void BaseScene::CreateRootSignatures(ID3D12Device* pDevice) {
+	void BaseScene::CreateRootSignatures(ID3D12Device* pDevice)
+	{
 		D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
 
 		// This is the highest version the sample supports. If CheckFeatureSupport succeeds, the HighestVersion returned will not be greater than this.
@@ -157,25 +176,75 @@ namespace basecross {
 			featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
 		}
 
-
-		// Create a root signature for the shadow pass.
+		// Create a root signature for the basecross scene and shadow
 		{
-			CD3DX12_ROOT_PARAMETER1 rootParameters[1]; // Performance tip: Order root parameters from most frequently accessed to least frequently accessed.
-			rootParameters[0].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC, D3D12_SHADER_VISIBILITY_VERTEX); // 1 frequently changed constant buffer.
+
+			CD3DX12_DESCRIPTOR_RANGE1 ranges[12]; // Perfomance TIP: Order from most frequent to least frequent.
+
+			ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// t1.
+			ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// t2.
+			ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// t3.
+			ranges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// t4.
+			ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	//b0
+			ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	//b1
+			ranges[6].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	//  t0.
+			ranges[7].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// s0
+			ranges[8].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// s1
+			ranges[9].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 2, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);	// s2
+			ranges[10].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 3, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE); // s3
+			ranges[11].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 4, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE); // s4
+
+			CD3DX12_ROOT_PARAMETER1 rootParameters[12];
+
+
+			rootParameters[0].InitAsDescriptorTable(1, &ranges[0], D3D12_SHADER_VISIBILITY_PIXEL); //t1
+			rootParameters[1].InitAsDescriptorTable(1, &ranges[1], D3D12_SHADER_VISIBILITY_PIXEL); //t2
+			rootParameters[2].InitAsDescriptorTable(1, &ranges[2], D3D12_SHADER_VISIBILITY_PIXEL); //t3
+			rootParameters[3].InitAsDescriptorTable(1, &ranges[3], D3D12_SHADER_VISIBILITY_PIXEL); //t4
+			// 1 frequently changed constant buffer.
+			rootParameters[4].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC, D3D12_SHADER_VISIBILITY_ALL);
+			rootParameters[5].InitAsDescriptorTable(1, &ranges[5], D3D12_SHADER_VISIBILITY_ALL); //b1
+			rootParameters[6].InitAsDescriptorTable(1, &ranges[6], D3D12_SHADER_VISIBILITY_PIXEL); //t0
+			rootParameters[7].InitAsDescriptorTable(1, &ranges[7], D3D12_SHADER_VISIBILITY_PIXEL); //s0
+			rootParameters[8].InitAsDescriptorTable(1, &ranges[8], D3D12_SHADER_VISIBILITY_PIXEL); //s1
+			rootParameters[9].InitAsDescriptorTable(1, &ranges[9], D3D12_SHADER_VISIBILITY_PIXEL); //s2
+			rootParameters[10].InitAsDescriptorTable(1, &ranges[10], D3D12_SHADER_VISIBILITY_PIXEL); //s3
+			rootParameters[11].InitAsDescriptorTable(1, &ranges[11], D3D12_SHADER_VISIBILITY_PIXEL); //s4
+
+			SetGpuSlot(L"t0", 6);
+			SetGpuSlot(L"t1", 0);
+			SetGpuSlot(L"t2", 1);
+			SetGpuSlot(L"t3", 2);
+			SetGpuSlot(L"t4", 3);
+			SetGpuSlot(L"s0", 7);
+			SetGpuSlot(L"s1", 8);
+			SetGpuSlot(L"s2", 9);
+			SetGpuSlot(L"s3", 10);
+			SetGpuSlot(L"s4", 11);
+			SetGpuSlot(L"b0", 4);
+			SetGpuSlot(L"b1", 5);
 
 			CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
-			rootSignatureDesc.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr,
+			//HULL_SHADERとDOMAIN_SHADERとGEOMETRY_SHADERをアクセスできない設定
+			D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
 				D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS | // Performance tip: Limit root signature access when possible.
 				D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS);
+				D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+				D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+
+			rootSignatureDesc.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr, rootSignatureFlags);
 
 			ComPtr<ID3DBlob> signature;
 			ComPtr<ID3DBlob> error;
+
+			ComPtr<ID3D12RootSignature> rootSignature;
+
 			ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, featureData.HighestVersion, &signature, &error));
-			ThrowIfFailed(pDevice->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignatures[RootSignature::ShadowPass])));
-			NAME_D3D12_OBJECT(m_rootSignatures[RootSignature::ShadowPass]);
+			ThrowIfFailed(pDevice->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
+			NAME_D3D12_OBJECT(rootSignature);
+			//プールに登録
+			RootSignaturePool::AddRootSignature(L"BaseCrossDefault", rootSignature);
+
 		}
 
 		// Create a root signature for the post-process pass.
@@ -198,90 +267,282 @@ namespace basecross {
 
 			ComPtr<ID3DBlob> signature;
 			ComPtr<ID3DBlob> error;
+
+			ComPtr<ID3D12RootSignature> rootSignature;
+
 			ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, featureData.HighestVersion, &signature, &error));
-			ThrowIfFailed(pDevice->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignatures[RootSignature::PostprocessPass])));
-			NAME_D3D12_OBJECT(m_rootSignatures[RootSignature::PostprocessPass]);
+			ThrowIfFailed(pDevice->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
+			NAME_D3D12_OBJECT(rootSignature);
+
+			//プールに登録
+			RootSignaturePool::AddRootSignature(L"PostProcess", rootSignature);
 		}
-
-
-
-		// Create a root signature for the scene pass.
-		{
-			CD3DX12_DESCRIPTOR_RANGE1 ranges[5];
-
-			ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);	// 1 frequently changed diffuse texture using register t0.
-			ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);	// 1 frequently changed normal texture using register t1.
-			ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2);	// 1 infrequently changed shadow texture t2.
-			ranges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);	// 1 static samplers.s0
-			ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 1);	// 1 static samplers.s1
-
-			CD3DX12_ROOT_PARAMETER1 rootParameters[6];
-			rootParameters[0].InitAsDescriptorTable(1, &ranges[0], D3D12_SHADER_VISIBILITY_PIXEL); // diffuse t0.
-			rootParameters[1].InitAsDescriptorTable(1, &ranges[1], D3D12_SHADER_VISIBILITY_PIXEL); // diffuse t1.
-			rootParameters[2].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC, D3D12_SHADER_VISIBILITY_ALL); // 1 frequently changed constant buffer.
-			rootParameters[3].InitAsDescriptorTable(1, &ranges[2], D3D12_SHADER_VISIBILITY_PIXEL); // shadow texture t2.
-			rootParameters[4].InitAsDescriptorTable(1, &ranges[3], D3D12_SHADER_VISIBILITY_PIXEL); // 1 static sampler s0.
-			rootParameters[5].InitAsDescriptorTable(1, &ranges[4], D3D12_SHADER_VISIBILITY_PIXEL); // 1 static sampler s1.
-
-			SetGpuSlot(L"3d_t0", 0);
-			SetGpuSlot(L"3d_t1", 1);
-			SetGpuSlot(L"3d_b0", 2);
-			SetGpuSlot(L"3d_t2", 3);
-			SetGpuSlot(L"3d_s0", 4);
-			SetGpuSlot(L"3d_s1", 5);
-
-
-			CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
-			rootSignatureDesc.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr,
-				D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS | // Performance tip: Limit root signature access when possible.
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
-
-			ComPtr<ID3DBlob> signature;
-			ComPtr<ID3DBlob> error;
-			ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, featureData.HighestVersion, &signature, &error));
-			ThrowIfFailed(pDevice->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignatures[RootSignature::ScenePass])));
-			NAME_D3D12_OBJECT(m_rootSignatures[RootSignature::ScenePass]);
-		}
-
-
-		// Create a root signature for the sprite pass.
-		{
-
-			CD3DX12_DESCRIPTOR_RANGE1 ranges[2];
-
-			ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);	// 1 frequently changed diffuse texture using register t0.
-			ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0);	// 1 static samplers.s0
-
-			CD3DX12_ROOT_PARAMETER1 rootParameters[3];
-			rootParameters[0].InitAsDescriptorTable(1, &ranges[0], D3D12_SHADER_VISIBILITY_PIXEL); // diffuse t0.
-			rootParameters[1].InitAsDescriptorTable(1, &ranges[1], D3D12_SHADER_VISIBILITY_PIXEL); // 1 static sampler s0.
-			rootParameters[2].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC, D3D12_SHADER_VISIBILITY_ALL); // 1 frequently changed constant buffer.
-
-			SetGpuSlot(L"2d_t0", 0);
-			SetGpuSlot(L"2d_s0", 1);
-			SetGpuSlot(L"2d_b0", 2);
-
-
-			CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
-			rootSignatureDesc.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr,
-				D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS | // Performance tip: Limit root signature access when possible.
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS);
-
-			ComPtr<ID3DBlob> signature;
-			ComPtr<ID3DBlob> error;
-			ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, featureData.HighestVersion, &signature, &error));
-			ThrowIfFailed(pDevice->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignatures[RootSignature::SpritePass])));
-			NAME_D3D12_OBJECT(m_rootSignatures[RootSignature::SpritePass]);
-		}
-
 
 	}
 
-	void BaseScene::CreatePostprocessPassResources(ID3D12Device* pDevice) {
+	void BaseScene::CreatePipelineStates(ID3D12Device* pDevice) {
+		// Create Shadowmap pipeline state.
+		{
+			ComPtr<ID3D12PipelineState> PNTShadowmapPipelineState
+				= PipelineStatePool::GetPipelineState(L"PNTShadowmap");
+			auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
+
+			// シャドウマップ用
+			CD3DX12_DEPTH_STENCIL_DESC depthStencilDesc(D3D12_DEFAULT);
+			depthStencilDesc.DepthEnable = TRUE;
+			depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+			depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+			depthStencilDesc.StencilEnable = FALSE;
+
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+			psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };;
+			psoDesc.pRootSignature = rootSignature.Get();
+			psoDesc.VS =
+			{
+				reinterpret_cast<UINT8*>(PNTShadowmap::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				PNTShadowmap::GetPtr()->GetShaderComPtr()->GetBufferSize()
+
+			};
+			psoDesc.PS =
+			{
+				CD3DX12_SHADER_BYTECODE(0, 0)
+			};
+			psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+			psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+			psoDesc.DepthStencilState = depthStencilDesc;
+			psoDesc.SampleMask = UINT_MAX;
+			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			psoDesc.NumRenderTargets = 0;
+			psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+			psoDesc.SampleDesc.Count = 1;
+			if (!PNTShadowmapPipelineState) {
+				ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&PNTShadowmapPipelineState)));
+				NAME_D3D12_OBJECT(PNTShadowmapPipelineState);
+				PipelineStatePool::AddPipelineState(L"PNTShadowmap", PNTShadowmapPipelineState);
+			}
+		}
+		// Create Scene pipeline state.
+		{
+			ComPtr<ID3D12PipelineState> PNTPipelineState
+				= PipelineStatePool::GetPipelineState(L"BcPNTStaticShadow");
+
+			//ラスタライザステート
+			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
+			//カリング
+			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
+			//パイプラインステート
+			ComPtr<ID3D12PipelineState> bcPNTStaticShadowPipelineState;
+			auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault");
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+			ZeroMemory(&psoDesc, sizeof(psoDesc));
+			psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };
+			psoDesc.pRootSignature = rootSignature.Get();
+			psoDesc.VS =
+			{
+				reinterpret_cast<UINT8*>(BcVSPNTStaticPLShadow::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				BcVSPNTStaticPLShadow::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+			psoDesc.PS =
+			{
+				reinterpret_cast<UINT8*>(BcPSPNTPLShadow::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				BcPSPNTPLShadow::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+			psoDesc.RasterizerState = rasterizerStateDesc;
+			psoDesc.BlendState = BlendState::GetOpaqueBlend();
+			psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+			psoDesc.SampleMask = UINT_MAX;
+			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+			psoDesc.SampleDesc.Count = 1;
+			if (!PNTPipelineState) {
+				ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&bcPNTStaticShadowPipelineState)));
+				NAME_D3D12_OBJECT(bcPNTStaticShadowPipelineState);
+				PipelineStatePool::AddPipelineState(L"BcPNTStaticShadow", bcPNTStaticShadowPipelineState);
+			}
+		}
+	}
+
+	void BaseScene::CreateSamplers(ID3D12Device* pDevice)
+	{
+		//LinearWrap
+		// 通常描画リニアラップサンプラー
+		UINT index = GetSamplerNextIndex();
+		D3D12_SAMPLER_DESC base_wrapSamplerDesc = {};
+		base_wrapSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		base_wrapSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		base_wrapSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		base_wrapSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		base_wrapSamplerDesc.MinLOD = 0;
+		base_wrapSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+		base_wrapSamplerDesc.MipLODBias = 0.0f;
+		base_wrapSamplerDesc.MaxAnisotropy = 1;
+		base_wrapSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		base_wrapSamplerDesc.BorderColor[0]
+			= base_wrapSamplerDesc.BorderColor[1]
+			= base_wrapSamplerDesc.BorderColor[2]
+			= base_wrapSamplerDesc.BorderColor[3]
+			= 0;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE handle1(
+			m_samplerHeap->GetCPUDescriptorHandleForHeapStart(),
+			index,
+			m_samplerDescriptorSize
+		);
+		pDevice->CreateSampler(&base_wrapSamplerDesc, handle1);
+		m_samplerMap[L"LinearWrap"] = index;
+
+
+		//PointClamp
+		index = GetSamplerNextIndex();
+		D3D12_SAMPLER_DESC base_clampSamplerDesc = {};
+		base_clampSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+		base_clampSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		base_clampSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		base_clampSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		base_clampSamplerDesc.MipLODBias = 0.0f;
+		base_clampSamplerDesc.MaxAnisotropy = 1;
+		base_clampSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		base_clampSamplerDesc.BorderColor[0]
+			= base_clampSamplerDesc.BorderColor[1]
+			= base_clampSamplerDesc.BorderColor[2]
+			= base_clampSamplerDesc.BorderColor[3]
+			= 0;
+		base_clampSamplerDesc.MinLOD = 0;
+		base_clampSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE handle0(
+			m_samplerHeap->GetCPUDescriptorHandleForHeapStart(),
+			index,
+			m_samplerDescriptorSize
+		);
+		pDevice->CreateSampler(&base_clampSamplerDesc, handle0);
+		m_samplerMap[L"PointClamp"] = index;
+
+
+		//LinearClamp
+		// 通常描画リニアクランプサンプラー
+		index = GetSamplerNextIndex();
+		D3D12_SAMPLER_DESC linearClampSamplerDesc = {};
+		linearClampSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		linearClampSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		linearClampSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		linearClampSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		linearClampSamplerDesc.MinLOD = 0;
+		linearClampSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+		linearClampSamplerDesc.MipLODBias = 0.0f;
+		linearClampSamplerDesc.MaxAnisotropy = 1;
+		linearClampSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		linearClampSamplerDesc.BorderColor[0]
+			= linearClampSamplerDesc.BorderColor[1]
+			= linearClampSamplerDesc.BorderColor[2]
+			= linearClampSamplerDesc.BorderColor[3]
+			= 0;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE handle2(
+			m_samplerHeap->GetCPUDescriptorHandleForHeapStart(),
+			index,
+			m_samplerDescriptorSize
+		);
+		pDevice->CreateSampler(&linearClampSamplerDesc, handle2);
+		m_samplerMap[L"LinearClamp"] = index;
+		//ComparisonLinear
+		//影描画用コンパージョンリニア
+		index = GetSamplerNextIndex();
+		D3D12_SAMPLER_DESC ComparisonLinearSamplerDesc = {};
+		ComparisonLinearSamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+		ComparisonLinearSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		ComparisonLinearSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		ComparisonLinearSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		ComparisonLinearSamplerDesc.MinLOD = 0;
+		ComparisonLinearSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+		ComparisonLinearSamplerDesc.MipLODBias = 0.0f;
+		ComparisonLinearSamplerDesc.MaxAnisotropy = 0;
+		ComparisonLinearSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		ComparisonLinearSamplerDesc.BorderColor[0]
+			= ComparisonLinearSamplerDesc.BorderColor[1]
+			= ComparisonLinearSamplerDesc.BorderColor[2]
+			= ComparisonLinearSamplerDesc.BorderColor[3]
+			= 1.0;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE handle3(
+			m_samplerHeap->GetCPUDescriptorHandleForHeapStart(),
+			index,
+			m_samplerDescriptorSize
+		);
+		pDevice->CreateSampler(&ComparisonLinearSamplerDesc, handle3);
+		m_samplerMap[L"ComparisonLinear"] = index;
+	}
+
+
+
+	void BaseScene::CreateCommandLists(ID3D12Device* pDevice)
+	{
+		// Temporarily use a frame resource's command allocator to create command lists.
+		ID3D12CommandAllocator* pCommandAllocator = m_frameResources[0]->m_commandAllocator.Get();
+
+		for (UINT i = 0; i < CommandListCount; i++)
+		{
+			ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, nullptr, IID_PPV_ARGS(&m_commandLists[i])));
+			ThrowIfFailed(m_commandLists[i]->Close());
+			NAME_D3D12_OBJECT_INDEXED(m_commandLists, i);
+		}
+
+		ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, nullptr, IID_PPV_ARGS(&m_shadowCommandList)));
+		ThrowIfFailed(m_shadowCommandList->Close());
+		NAME_D3D12_OBJECT(m_shadowCommandList);
+
+		ThrowIfFailed(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, nullptr, IID_PPV_ARGS(&m_sceneCommandList)));
+		ThrowIfFailed(m_sceneCommandList->Close());
+		NAME_D3D12_OBJECT(m_sceneCommandList);
+
+		// Batch up command lists for execution later.
+		const UINT batchSize = 1 + 1 + CommandListCount; // m_sceneCommandList + m_shadowCommandList + CommandListCount
+
+		m_batchSubmit[0] = m_commandLists[CommandListPre].Get();
+		memcpy(m_batchSubmit + 1, m_shadowCommandList.GetAddressOf(), 1 * sizeof(ID3D12CommandList*));
+		m_batchSubmit[1 + 1] = m_commandLists[CommandListMid].Get();
+		memcpy(m_batchSubmit + 1 + 2, m_sceneCommandList.GetAddressOf(), 1 * sizeof(ID3D12CommandList*));
+		m_batchSubmit[batchSize - 1] = m_commandLists[CommandListPost].Get();
+	}
+
+
+	void BaseScene::CreateBasicResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) {
+
+		// Get a handle to the start of the descriptor heap.
+		CD3DX12_CPU_DESCRIPTOR_HANDLE cbvSrvCpuHandle(m_cbvSrvHeap->GetCPUDescriptorHandleForHeapStart());
+		CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvGpuHandle(m_cbvSrvHeap->GetGPUDescriptorHandleForHeapStart());
+
+		{
+			// Describe and create 2 null SRVs. Null descriptors are needed in order 
+			// to achieve the effect of an "unbound" resource.
+			D3D12_SHADER_RESOURCE_VIEW_DESC nullSrvDesc = {};
+			nullSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			nullSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			nullSrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			nullSrvDesc.Texture2D.MipLevels = 1;
+			nullSrvDesc.Texture2D.MostDetailedMip = 0;
+			nullSrvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+			for (UINT i = 0; i < NumNullSrvs; i++)
+			{
+				pDevice->CreateShaderResourceView(nullptr, &nullSrvDesc, cbvSrvCpuHandle);
+				cbvSrvCpuHandle.Offset(m_cbvSrvDescriptorSize);
+				cbvSrvGpuHandle.Offset(m_cbvSrvDescriptorSize);
+			}
+		}
+
+		// Save the descriptor handles for the depth buffer views.
+		for (UINT i = 0; i < _countof(m_depthSrvCpuHandles); i++)
+		{
+			m_depthSrvCpuHandles[i] = cbvSrvCpuHandle;
+			m_depthSrvGpuHandles[i] = cbvSrvGpuHandle;
+			cbvSrvCpuHandle.Offset(m_cbvSrvDescriptorSize);
+			cbvSrvGpuHandle.Offset(m_cbvSrvDescriptorSize);
+		}
+	}
+
+	void BaseScene::CreatePostprocessPassResources(ID3D12Device* pDevice)
+	{
+/*
 		// Create the vertex buffer.
 		// Define the screen space quad geometry.
 		Vertex triangleVertices[] =
@@ -302,7 +563,7 @@ namespace basecross {
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
-			D3D12_RESOURCE_STATE_COMMON,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
 			IID_PPV_ARGS(&m_vertexBuffers[VertexBuffer::ScreenQuad])));
 		NAME_D3D12_OBJECT(m_vertexBuffers[VertexBuffer::ScreenQuad]);
@@ -318,120 +579,19 @@ namespace basecross {
 		m_vertexBufferViews[VertexBuffer::ScreenQuad].BufferLocation = m_vertexBuffers[VertexBuffer::ScreenQuad]->GetGPUVirtualAddress();
 		m_vertexBufferViews[VertexBuffer::ScreenQuad].StrideInBytes = sizeof(Vertex);
 		m_vertexBufferViews[VertexBuffer::ScreenQuad].SizeInBytes = vertexBufferSize;
+*/
 	}
 
-	void BaseScene::CreateSamplers(ID3D12Device* pDevice) {
-		// Describe and create the point clamping sampler, which is 
-		// used for the shadow map.
-		UINT index = GetSamplerNextIndex();
-		D3D12_SAMPLER_DESC clampSamplerDesc = {};
-		clampSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
-		clampSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-		clampSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-		clampSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-		clampSamplerDesc.MipLODBias = 0.0f;
-		clampSamplerDesc.MaxAnisotropy = 1;
-		clampSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-		clampSamplerDesc.BorderColor[0] = clampSamplerDesc.BorderColor[1] = clampSamplerDesc.BorderColor[2] = clampSamplerDesc.BorderColor[3] = 0;
-		clampSamplerDesc.MinLOD = 0;
-		clampSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-		CD3DX12_CPU_DESCRIPTOR_HANDLE handle1(
-			m_samplerHeap->GetCPUDescriptorHandleForHeapStart(),
-			index,
-			m_samplerDescriptorSize
-		);
-		pDevice->CreateSampler(&clampSamplerDesc, handle1);
-		m_samplerMap[L"Clamp"] = index;
-
-		index = GetSamplerNextIndex();
-		// Describe and create the wrapping sampler, which is used for 
-		// sampling diffuse/normal maps.
-		D3D12_SAMPLER_DESC wrapSamplerDesc = {};
-		wrapSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-		wrapSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		wrapSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		wrapSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		wrapSamplerDesc.MinLOD = 0;
-		wrapSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-		wrapSamplerDesc.MipLODBias = 0.0f;
-		wrapSamplerDesc.MaxAnisotropy = 1;
-		wrapSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-		wrapSamplerDesc.BorderColor[0] = wrapSamplerDesc.BorderColor[1] = wrapSamplerDesc.BorderColor[2] = wrapSamplerDesc.BorderColor[3] = 0;
-		CD3DX12_CPU_DESCRIPTOR_HANDLE handle2(
-			m_samplerHeap->GetCPUDescriptorHandleForHeapStart(),
-			index,
-			m_samplerDescriptorSize
-		);
-		pDevice->CreateSampler(&wrapSamplerDesc, handle1);
-		m_samplerMap[L"Wrap"] = index;
-	}
-
-
-
-	void BaseScene::CreateBaseFrames(ID3D12Device* pDevice, ID3D12CommandQueue* pCommandQueue) {
+	void BaseScene::CreateFrameResources(ID3D12Device* pDevice, ID3D12CommandQueue* pCommandQueue)
+	{
 		for (UINT i = 0; i < m_frameCount; i++)
 		{
-			m_frameResources[i] = std::make_unique<BaseFrame>(pDevice, pCommandQueue);
+			m_frameResources[i] = make_unique<FrameResource>(pDevice, pCommandQueue);
 		}
-	}
-
-	void BaseScene::CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) {
-		// Create shader resources.
-		{
-			// Get a handle to the start of the descriptor heap.
-			CD3DX12_CPU_DESCRIPTOR_HANDLE cbvSrvCpuHandle(m_cbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());
-			CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvGpuHandle(m_cbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
-
-			{
-				// Describe and create 2 null SRVs. Null descriptors are needed in order 
-				// to achieve the effect of an "unbound" resource.
-				D3D12_SHADER_RESOURCE_VIEW_DESC nullSrvDesc = {};
-				nullSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-				nullSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-				nullSrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-				nullSrvDesc.Texture2D.MipLevels = 1;
-				nullSrvDesc.Texture2D.MostDetailedMip = 0;
-				nullSrvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-
-				for (UINT i = 0; i < NumNullSrvs; i++)
-				{
-					pDevice->CreateShaderResourceView(nullptr, &nullSrvDesc, cbvSrvCpuHandle);
-					cbvSrvCpuHandle.Offset(m_cbvSrvDescriptorSize);
-					cbvSrvGpuHandle.Offset(m_cbvSrvDescriptorSize);
-				}
-			}
-
-			// Save the descriptor handles for the depth buffer views.
-			for (UINT i = 0; i < _countof(m_depthSrvCpuHandles); i++)
-			{
-				m_depthSrvCpuHandles[i] = cbvSrvCpuHandle;
-				m_depthSrvGpuHandles[i] = cbvSrvGpuHandle;
-				cbvSrvCpuHandle.Offset(m_cbvSrvDescriptorSize);
-				cbvSrvGpuHandle.Offset(m_cbvSrvDescriptorSize);
-			}
-
-		}
-		CreateSceneResources(pDevice, pCommandList);
-	}
-
-
-
-
-	void BaseScene::Initialize(ID3D12Device * pDevice, ID3D12CommandQueue * pDirectCommandQueue, ID3D12GraphicsCommandList * pCommandList, UINT frameIndex)
-	{
-		CreateDescriptorHeaps(pDevice);
-		CreateRootSignatures(pDevice);
-		CreatePipelineStates(pDevice);
-		CreatePostprocessPassResources(pDevice);
-		CreateSamplers(pDevice);
-		CreateBaseFrames(pDevice, pDirectCommandQueue);
-		CreateCommandLists(pDevice);
-		CreateAssetResources(pDevice, pCommandList);
-		SetFrameIndex(frameIndex);
 	}
 
 	// Load resources that are dependent on the size of the main window.
-	void BaseScene::LoadSizeDependentResources(ID3D12Device * pDevice, ComPtr<ID3D12Resource>*ppRenderTargets, UINT width, UINT height)
+	void BaseScene::LoadSizeDependentResources(ID3D12Device* pDevice, ComPtr<ID3D12Resource>* ppRenderTargets, UINT width, UINT height)
 	{
 		m_viewport.Width = static_cast<float>(width);
 		m_viewport.Height = static_cast<float>(height);
@@ -488,44 +648,109 @@ namespace basecross {
 	void BaseScene::ReleaseD3DObjects()
 	{
 		ResetComPtrArray(&m_renderTargets);
-		ResetComPtrArray(&m_rootSignatures);
-		PipelineStatePool::ResetComPtrs();
-//		ResetComPtrArray(&m_pipelineStates);
-		ResetComPtrArray(&m_vertexBuffers);
-		ResetComPtrArray(&m_rootSignatures);
+		RootSignaturePool::ReleaseRootSignature();
+		PipelineStatePool::ReleasePipelineStates();
 		m_rtvHeap.Reset();
 		m_dsvHeap.Reset();
-		m_cbvSrvUavHeap.Reset();
+		m_cbvSrvHeap.Reset();
 		m_samplerHeap.Reset();
 		ResetUniquePtrArray(&m_frameResources);
-		m_pCurrentBaseFrame = nullptr;
+		m_pCurrentFrameResource = nullptr;
 	}
 
 	// Caller is expected to enforce frame synchronization and that the GPU is done with frameIndex frame before being set as current frame again.
 	void BaseScene::SetFrameIndex(UINT frameIndex)
 	{
 		m_frameIndex = frameIndex;
-		m_pCurrentBaseFrame = m_frameResources[m_frameIndex].get();
+		m_pCurrentFrameResource = m_frameResources[m_frameIndex].get();
 	}
 
 	void BaseScene::KeyUp(UINT8 key)
 	{
+		switch (key)
+		{
+		case VK_LEFT:
+			break;
+		case VK_RIGHT:
+			break;
+		case VK_UP:
+			break;
+		case VK_DOWN:
+			break;
+		default:
+			break;
+		}
 	}
 
 	void BaseScene::KeyDown(UINT8 key)
 	{
+		switch (key)
+		{
+		case VK_LEFT:
+			break;
+		case VK_RIGHT:
+			break;
+		case VK_UP:
+			break;
+		case VK_DOWN:
+			break;
+		case VK_SPACE:
+			break;
+		default:
+			break;
+		}
 	}
 
-	//フレーム処理の準備
-	void BaseScene::BeginFrame() {
-		m_pCurrentBaseFrame->InitFrame();
+
+	// Render the scene.
+	void BaseScene::Render(ID3D12CommandQueue* pCommandQueue, bool setBackbufferReadyForPresent)
+	{
+		BeginFrame();
+		// Shadow generation and scene render passes
+		WorkerThread();
+		MidFrame();
+		EndFrame(setBackbufferReadyForPresent);
+		pCommandQueue->ExecuteCommandLists(_countof(m_batchSubmit), m_batchSubmit);
+	}
+
+	// Apply a postprocess pass with a light scattering effect. 
+	void BaseScene::PostprocessPass(ID3D12GraphicsCommandList* pCommandList)
+	{
+		// Set necessary state.
+		//pCommandList->SetGraphicsRootSignature(m_rootSignatures[RootSignature::PostprocessPass].Get());
+		//pCommandList->SetPipelineState(m_pipelineStates[RenderPass::Postprocess].Get());
+
+		//DrawInScattering(pCommandList, GetCurrentBackBufferRtvCpuHandle());
+	}
+
+	void BaseScene::DrawInScattering(ID3D12GraphicsCommandList* pCommandList, const D3D12_CPU_DESCRIPTOR_HANDLE& renderTargetHandle)
+	{
+/*
+		// Set necessary state.
+		pCommandList->SetGraphicsRootDescriptorTable(0, m_depthSrvGpuHandles[DepthGenPass::Scene]); // Set scene depth as an SRV.
+		pCommandList->SetGraphicsRootConstantBufferView(1, m_pCurrentFrameResource->GetConstantBufferGPUVirtualAddress(RenderPass::Postprocess)); // Set postprocess constant buffer.
+		pCommandList->SetGraphicsRootDescriptorTable(2, m_samplerHeap->GetGPUDescriptorHandleForHeapStart()); // Set samplers.
+
+		pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		pCommandList->IASetVertexBuffers(0, 1, &m_vertexBufferViews[VertexBuffer::ScreenQuad]);
+		pCommandList->RSSetViewports(1, &m_viewport);
+		pCommandList->RSSetScissorRects(1, &m_scissorRect);
+		pCommandList->OMSetRenderTargets(1, &renderTargetHandle, FALSE, nullptr); // No depth stencil needed for in-scattering.
+
+		// Draw.
+		pCommandList->DrawInstanced(4, 1, 0, 0);
+*/
+	}
+
+	// Record the CommandListPre command list.
+	void BaseScene::BeginFrame()
+	{
+		m_pCurrentFrameResource->InitFrame();
 
 		ID3D12GraphicsCommandList* pCommandListPre = m_commandLists[CommandListPre].Get();
 
 		// Reset the command list.
-		ThrowIfFailed(pCommandListPre->Reset(m_pCurrentBaseFrame->m_commandAllocator.Get(), nullptr));
-
-		m_pCurrentBaseFrame->BeginFrame(pCommandListPre);
+		ThrowIfFailed(pCommandListPre->Reset(m_pCurrentFrameResource->m_commandAllocator.Get(), nullptr));
 
 		// Transition back-buffer to a writable state for rendering.
 		pCommandListPre->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
@@ -537,31 +762,33 @@ namespace basecross {
 
 		// Close the command list.
 		ThrowIfFailed(pCommandListPre->Close());
-
 	}
-	//フレームのリセット
-	void BaseScene::MidFrame() {
+
+	// Record the CommandListMid command list.
+	void BaseScene::MidFrame()
+	{
 		ID3D12GraphicsCommandList* pCommandListMid = m_commandLists[CommandListMid].Get();
 
 		// Reset the command list.
-		ThrowIfFailed(pCommandListMid->Reset(m_pCurrentBaseFrame->m_commandAllocator.Get(), nullptr));
+		ThrowIfFailed(pCommandListMid->Reset(m_pCurrentFrameResource->m_commandAllocator.Get(), nullptr));
 
 		// Transition our shadow map to a readable state for scene rendering.
 		pCommandListMid->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_depthTextures[DepthGenPass::Shadow].Get(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
 		// Close the command list.
 		ThrowIfFailed(pCommandListMid->Close());
-
 	}
-	//フレームの終了
-	void BaseScene::EndFrame(bool setBackbufferReadyForPresent) {
+
+	// Record the CommandListPost command list.
+	void BaseScene::EndFrame(bool setBackbufferReadyForPresent)
+	{
 		ID3D12GraphicsCommandList* pCommandListPost = m_commandLists[CommandListPost].Get();
 
 		// Reset the command list.
-		ThrowIfFailed(pCommandListPost->Reset(m_pCurrentBaseFrame->m_commandAllocator.Get(), nullptr));
+		ThrowIfFailed(pCommandListPost->Reset(m_pCurrentFrameResource->m_commandAllocator.Get(), nullptr));
 
 		// Set descriptor heaps.
-		ID3D12DescriptorHeap* ppHeaps[] = { m_cbvSrvUavHeap.Get(), m_samplerHeap.Get() };
+		ID3D12DescriptorHeap* ppHeaps[] = { m_cbvSrvHeap.Get(), m_samplerHeap.Get() };
 		pCommandListPost->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 		// Transition scene depth to a readable state for post-processing.
@@ -571,59 +798,37 @@ namespace basecross {
 
 		// Transition depth buffers back to a writable state for the next frame
 		// and conditionally indicate that the back buffer will now be used to present.
-		// Performance tip: Batch resource barriers into as few API calls as possible to minimize the amount of work the GPU does.
+	   // Performance tip: Batch resource barriers into as few API calls as possible to minimize the amount of work the GPU does.
 		D3D12_RESOURCE_BARRIER barriers[3];
 		barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(m_depthTextures[DepthGenPass::Shadow].Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(m_depthTextures[DepthGenPass::Scene].Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 		pCommandListPost->ResourceBarrier(setBackbufferReadyForPresent ? _countof(barriers) : _countof(barriers) - 1, barriers);
 
-		m_pCurrentBaseFrame->EndFrame(pCommandListPost);
-
 		// Close the command list.
 		ThrowIfFailed(pCommandListPost->Close());
 	}
 
-	void BaseScene::PostprocessPass(ID3D12GraphicsCommandList* pCommandList) {
-		// Set necessary state.
-		pCommandList->SetGraphicsRootSignature(m_rootSignatures[RootSignature::PostprocessPass].Get());
-
-		auto postprosessPipeline = PipelineStatePool::GetPipelineState(L"defaultPostprocess");
-
-		pCommandList->SetPipelineState(postprosessPipeline.Get());
-
-		auto currentBackBufferRtvCpuHandle = GetCurrentBackBufferRtvCpuHandle();
-		// Set necessary state.
-		pCommandList->SetGraphicsRootDescriptorTable(0, m_depthSrvGpuHandles[DepthGenPass::Scene]); // Set scene depth as an SRV.
-		pCommandList->SetGraphicsRootConstantBufferView(1, m_pCurrentBaseFrame->GetConstantBufferGPUVirtualAddress(RenderPass::Postprocess)); // Set postprocess constant buffer.
-		pCommandList->SetGraphicsRootDescriptorTable(2, m_samplerHeap->GetGPUDescriptorHandleForHeapStart()); // Set samplers.
-
-		pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-		pCommandList->IASetVertexBuffers(0, 1, &m_vertexBufferViews[VertexBuffer::ScreenQuad]);
-		pCommandList->RSSetViewports(1, &m_viewport);
-		pCommandList->RSSetScissorRects(1, &m_scissorRect);
-		pCommandList->OMSetRenderTargets(1, &currentBackBufferRtvCpuHandle, FALSE, nullptr); // No depth stencil needed for in-scattering.
-		// Draw.
-		pCommandList->DrawInstanced(4, 1, 0, 0);
-	}
-
-	//シャドウとシーンの描画
+	// Worker thread body. workerIndex is an integer from 0 to NumContexts 
+	// describing the worker's thread index.
 	void BaseScene::WorkerThread()
 	{
+
+
 		//
 		// Shadow pass
 		//
 		{
 			ID3D12GraphicsCommandList* pShadowCommandList = m_shadowCommandList.Get();
 
-			auto shadowPipeline = PipelineStatePool::GetPipelineState(L"defaultShadow");
-			// Reset コマンドライン
-			ThrowIfFailed(pShadowCommandList->Reset(m_pCurrentBaseFrame->m_contextCommandAllocator.Get(), shadowPipeline.Get()));
+			// Reset the command list.
+			auto shadowPipeline = PipelineStatePool::GetPipelineState(L"PNTShadowmap",true);
+			ThrowIfFailed(pShadowCommandList->Reset(m_pCurrentFrameResource->m_contextCommandAllocator.Get(), shadowPipeline.Get()));
 
-			// シャドウの描画
+			// Performance tip: Only set descriptor heaps if you need access to them.
 			ShadowPass(pShadowCommandList);
 
-			// クローズ
+			// Close the command list.
 			ThrowIfFailed(pShadowCommandList->Close());
 		}
 
@@ -632,35 +837,25 @@ namespace basecross {
 		//
 		{
 			ID3D12GraphicsCommandList* pSceneCommandList = m_sceneCommandList.Get();
-			// コマンドリストのリセット
-			//各オブジェクトで描画方法が違うのでnullptrでリセット
-			ThrowIfFailed(pSceneCommandList->Reset(m_pCurrentBaseFrame->m_contextCommandAllocator.Get(), nullptr));
-			//ディスクプリタヒープのセット（cbvSrvUavおよびサンプラー）
-			ID3D12DescriptorHeap* ppHeaps[] = { m_cbvSrvUavHeap.Get(), m_samplerHeap.Get() };
+
+			auto scenePipelineState = PipelineStatePool::GetPipelineState(L"BcPNTStaticShadow", true);
+
+			// Reset the command list.
+			ThrowIfFailed(pSceneCommandList->Reset(m_pCurrentFrameResource->m_contextCommandAllocator.Get(), scenePipelineState.Get()));
+
+			// Set descriptor heaps.
+			ID3D12DescriptorHeap* ppHeaps[] = { m_cbvSrvHeap.Get(), m_samplerHeap.Get() };
 			pSceneCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-			//シーンの描画
+
 			ScenePass(pSceneCommandList);
-			// クローズ
+
+			// Close the command list.
 			ThrowIfFailed(pSceneCommandList->Close());
 
 		}
 	}
-
-
-
-	// Render the scene.
-	void BaseScene::Render(ID3D12CommandQueue * pCommandQueue, bool setBackbufferReadyForPresent)
-	{
-		BeginFrame();
-		// Shadow generation and scene render passes
-		WorkerThread();
-		MidFrame();
-		EndFrame(setBackbufferReadyForPresent);
-		pCommandQueue->ExecuteCommandLists(_countof(m_batchSubmit), m_batchSubmit);
-		//pCommandQueue->ExecuteCommandLists(_countof(m_pCurrentBaseFrame->m_batchSubmit), m_pCurrentBaseFrame->m_batchSubmit);
-	}
-
-
-
 }
-// end namespace basecross 
+// end namespace basecross
+
+
+

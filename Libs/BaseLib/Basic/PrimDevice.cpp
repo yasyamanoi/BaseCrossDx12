@@ -1,14 +1,27 @@
+//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+
 /*!
 @file PrimDevice.cpp
-@brief プリミティブなデバイスクラス
+@brief デバイス親クラス　実体
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #include "stdafx.h"
 
-using namespace Microsoft::WRL;
-
 namespace basecross {
+
+	using namespace Microsoft::WRL;
+	using namespace std;
 
 	PrimDevice::PrimDevice(UINT width, UINT height, std::wstring name) :
 		m_width(width),
@@ -16,6 +29,7 @@ namespace basecross {
 		m_windowBounds{ 0,0,0,0 },
 		m_title(name),
 		m_aspectRatio(0.0f),
+		m_quiteEscapeKey(true),
 		m_useWarpDevice(false),
 		m_enableUI(true)
 	{
@@ -161,6 +175,101 @@ namespace basecross {
 		m_windowBounds.bottom = static_cast<LONG>(bottom);
 	}
 
+
+	//スレッド用の変数
+	static bool g_threadEnded;
+	static string g_msg;
+	//ミューテックス
+	static std::mutex g_mtx;
+
+	//メッセージボックス用のスレッド
+	static void MsgBoxFunc() {
+		g_mtx.lock();
+		g_threadEnded = false;
+		g_mtx.unlock();
+
+		MessageBoxA(nullptr, g_msg.c_str(), "エラー", MB_OK);
+		g_mtx.lock();
+		g_threadEnded = true;
+		g_mtx.unlock();
+	}
+
+
+
+	//ランタイムルーチン
+	//エラー表示用に、スレッドを新しく切ってメッセージボックスを表示
+	void PrimDevice::OnUpdateDraw() {
+
+		int retCode = 0;
+		try {
+#if defined(_DEBUG)
+			static bool loopStart = false;
+			if (!loopStart) {
+				OutputDebugStringA("loopStart\n");
+				loopStart = true;
+
+			}
+#endif
+			OnUpdate();
+			OnRender();
+		}
+		catch (BaseException& e) {
+			//デバッグ出力をする。
+			string str = e.what_m() + "\n";
+			OutputDebugStringA(str.c_str());
+			//メッセージボックス
+			g_msg = e.what_m() + "\n";
+			//メッセージボックススレッドのスタート
+			std::thread MsgThread(MsgBoxFunc);
+			MsgThread.join();
+			retCode = 1;
+		}
+		catch (runtime_error& e) {
+			//デバッグ出力をする。
+			string str(e.what());
+			str += "\n";
+			OutputDebugStringA(str.c_str());
+			//メッセージボックス
+			g_msg = e.what();
+			g_msg += "\n";
+			//メッセージボックススレッドのスタート
+			std::thread MsgThread(MsgBoxFunc);
+			MsgThread.join();
+			retCode = 1;
+		}
+		catch (exception& e) {
+			//STLエラー
+			string str(e.what());
+			str += "\n";
+			OutputDebugStringA(str.c_str());
+			//メッセージボックス
+			g_msg = e.what();
+			g_msg += "\n";
+			//メッセージボックススレッドのスタート
+			std::thread MsgThread(MsgBoxFunc);
+			MsgThread.join();
+
+			retCode = 1;
+		}
+		catch (...) {
+			OutputDebugStringA("原因不明のエラー\n");
+
+			//メッセージボックス
+			g_msg = "原因不明のエラー\n";
+			//メッセージボックススレッドのスタート
+			std::thread MsgThread(MsgBoxFunc);
+			MsgThread.join();
+
+			retCode = 1;
+		}
+		if (retCode) {
+			PostQuitMessage(1);
+		}
+	}
+
+
+
 }
-//end namespace basecross 
+// end namespace basecross
+
 

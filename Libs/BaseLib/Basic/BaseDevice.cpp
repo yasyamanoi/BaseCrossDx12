@@ -1,16 +1,31 @@
+//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+
 /*!
 @file BaseDevice.cpp
-@brief デバイスクラス
+@brief デバイスクラス　実体
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #include "stdafx.h"
 
 namespace basecross {
 
-	BaseDevice* BaseDevice::s_device = nullptr;
 
-	BaseDevice::BaseDevice(UINT width, UINT height, std::wstring name) :
+	using namespace std;
+
+	BaseDevice* BaseDevice::s_app = nullptr;
+
+	BaseDevice::BaseDevice(UINT width, UINT height, wstring name) :
 		PrimDevice(width, height, name),
 		m_frameIndex(0),
 		m_activeAdapter(0),
@@ -25,7 +40,6 @@ namespace basecross {
 		m_dxgiFactoryFlags(0),
 		m_windowedMode(true)
 	{
-
 		ThrowIfFailed(DXGIDeclareAdapterRemovalSupport());
 		if (!m_tearingSupport)
 		{
@@ -42,7 +56,7 @@ namespace basecross {
 			exit(EXIT_FAILURE);
 		}
 
-		s_device = this;
+		s_app = this;
 
 		m_gpuPreferenceToName[DXGI_GPU_PREFERENCE_UNSPECIFIED] = L"Unspecified";
 		m_gpuPreferenceToName[DXGI_GPU_PREFERENCE_MINIMUM_POWER] = L"Minimum power";
@@ -55,7 +69,6 @@ namespace basecross {
 
 	void BaseDevice::OnInit()
 	{
-
 		LoadPipeline();
 		LoadAssets();
 		LoadSizeDependentResources();
@@ -174,8 +187,9 @@ namespace basecross {
 	{
 		if (!m_scene)
 		{
-			m_scene = std::shared_ptr<Scene>(new Scene(FrameCount, this));
+			m_scene = make_unique<Scene>(FrameCount, this);
 		}
+
 		// Create a temporary command queue and command list for initializing data on the GPU.
 		// Performance tip: Copy command queues are optimized for transfer over PCIe.
 		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
@@ -218,7 +232,7 @@ namespace basecross {
 		{
 			if (!m_uiLayer)
 			{
-				m_uiLayer = std::make_unique<BaseUI>(FrameCount, m_device.Get(), m_commandQueue.Get());
+				m_uiLayer = make_unique<UILayer>(FrameCount, m_device.Get(), m_commandQueue.Get());
 			}
 			m_uiLayer->Resize(m_renderTargets, m_width, m_height);
 		}
@@ -240,52 +254,23 @@ namespace basecross {
 
 	void BaseDevice::UpdateUI()
 	{
-		std::vector<std::wstring> labels;
+		vector<wstring> labels;
 		{
-			std::wstringstream wLabel;
+			wstringstream wLabel;
 			wLabel.precision(1);
-			wLabel << std::fixed << L"FPS: " << m_fps
+			wLabel << fixed << L"FPS: " << m_fps
+				<< L"\n";
+			wLabel.precision(6);
+			wLabel << L"ElapsedTime: " << m_timer.GetElapsedSeconds()
 				<< L"\n";
 			labels.push_back(wLabel.str());
 		}
-/*
-		labels.push_back(L"GPU preference sorting mode (press a CTRL + key to select):\n");
-		for (auto& gpuPreferenceName : m_gpuPreferenceToName)
-		{
-			std::wstringstream wLabel;
-			wLabel << L" " << std::to_wstring(gpuPreferenceName.first) << L": " << gpuPreferenceName.second
-				<< (gpuPreferenceName.first == m_activeGpuPreference ? L" [x]" : L"")
-				<< L"\n";
-			labels.push_back(wLabel.str());
-		}
-		labels.push_back(L"\n");
 
-		{
-			std::wstringstream wLabel;
-			wLabel << L"Adapter selection (press 'A' key to toggle): " << (m_manualAdapterSelection ? L"manual" : L"always use adapter 0") << L"\n\n";
-			labels.push_back(wLabel.str());
-		}
-*/
-		{
-			std::wstringstream wLabel;
-//			wLabel << L"Available GPU adapters sorted by preference mode" << (m_manualAdapterSelection ? L" (press a key to select):" : L":") << L"\n";
-			for (UINT i = 0; i < m_gpuAdapterDescs.size(); i++)
-			{
-				bool supportsDx12FL11 = m_gpuAdapterDescs[i].supportsDx12FL11;
-				const DXGI_ADAPTER_DESC1& desc = m_gpuAdapterDescs[i].desc;
-				wLabel << L" " << (supportsDx12FL11 ? std::to_wstring(i) : L"(non-compliant)") << L": " << desc.Description
-//					<< (i == m_activeAdapter ? L" [x]" : L"")
-					<< L"\n";
-			}
-			labels.push_back(wLabel.str());
-		}
-
-		std::wstring uiText = L"";
+		wstring uiText = L"";
 		for (auto s : labels)
 		{
 			uiText += s;
 		}
-		m_scene->UpdateUI(uiText);
 		m_uiLayer->UpdateLabels(uiText);
 	}
 
@@ -345,32 +330,6 @@ namespace basecross {
 		m_scene->KeyDown(key);
 		switch (key)
 		{
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			if (m_bCtrlKeyIsPressed)
-			{
-				SelectGPUPreference(key - '0');
-			}
-			else if (m_manualAdapterSelection)
-			{
-				SelectAdapter(key - '0');
-			}
-			break;
-		case 'A':
-			m_manualAdapterSelection = !m_manualAdapterSelection;
-			if (!m_manualAdapterSelection && m_activeAdapter != 0)
-			{
-				SelectAdapter(0);
-			}
-			break;
 		case VK_CONTROL:
 			m_bCtrlKeyIsPressed = true;
 			break;
@@ -481,7 +440,7 @@ namespace basecross {
 					ThrowIfFailed(ValidateActiveAdapter());
 				}
 
-				// BaseUI will transition backbuffer to a present state.
+				// UILayer will transition backbuffer to a present state.
 				bool bSetBackbufferReadyForPresent = !m_enableUI;
 				m_scene->Render(m_commandQueue.Get(), bSetBackbufferReadyForPresent);
 
@@ -658,7 +617,7 @@ namespace basecross {
 			DxgiAdapterInfo adapterInfo;
 			ThrowIfFailed(adapter->GetDesc1(&adapterInfo.desc));
 			adapterInfo.supportsDx12FL11 = SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr));
-			m_gpuAdapterDescs.push_back(std::move(adapterInfo));
+			m_gpuAdapterDescs.push_back(move(adapterInfo));
 		}
 	}
 
@@ -707,8 +666,8 @@ namespace basecross {
 			// Display FPS on the window title bar if UI is disabled.
 			if (!m_enableUI)
 			{
-				std::wstring fpsStr = std::to_wstring(m_fps);
-				std::wstring windowText = L"	fps: " + fpsStr;
+				wstring fpsStr = to_wstring(m_fps);
+				wstring windowText = L"	fps: " + fpsStr;
 				SetCustomWindowText(windowText.c_str());
 			}
 		}
@@ -750,4 +709,5 @@ namespace basecross {
 		m_fenceValues[m_frameIndex] = currentFenceValue + 1;
 	}
 }
-//namespace basecross 
+// end namespace basecross
+

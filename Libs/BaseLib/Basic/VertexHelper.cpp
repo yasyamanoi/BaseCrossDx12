@@ -2,6 +2,7 @@
 @file VertexHelper.cpp
 @brief 頂点ヘルパークラス
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #include "stdafx.h"

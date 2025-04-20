@@ -2,6 +2,7 @@
 @file VertexHelper.h
 @brief 頂点ヘルパークラス
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #pragma once
@@ -33,7 +34,7 @@ typedef const XMMATRIX& FXMMATRIX;
 		{ }
 
 		VertexPosition(float x,float y,float z)
-			: position(bsm::Vec3(x, y, z))
+			: position(XMFLOAT3(x, y, z))
 		{ }
 
 
@@ -41,11 +42,8 @@ typedef const XMMATRIX& FXMMATRIX;
 			: position(pos)
 		{ }
 
-		VertexPosition(FXMVECTOR pos)
-			: position(pos)
-		{ }
 
-		bsm::Vec3 position;
+		XMFLOAT3 position;
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement(){
 			return VertexPositionLayout;
@@ -78,14 +76,9 @@ typedef const XMMATRIX& FXMMATRIX;
 			color(col)
 		{ }
 
-		VertexPositionColor(FXMVECTOR pos, FXMVECTOR col)
-			: position(pos),
-			color(col)
-		{
-		}
 
-		bsm::Vec3 position;
-		bsm::Vec4 color;
+		XMFLOAT3 position;
+		XMFLOAT4 color;
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement(){
 			return VertexPositionColorLayout;
@@ -117,14 +110,9 @@ typedef const XMMATRIX& FXMMATRIX;
 			textureCoordinate(tex)
 		{ }
 
-		VertexPositionTexture(FXMVECTOR pos, FXMVECTOR tex)
-			: position(pos),
-			textureCoordinate(tex)
-		{
-		}
 
-		bsm::Vec3 position;
-		bsm::Vec2 textureCoordinate;
+		XMFLOAT3 position;
+		XMFLOAT2 textureCoordinate;
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement(){
 			return VertexPositionTextureLayout;
@@ -156,14 +144,9 @@ typedef const XMMATRIX& FXMMATRIX;
 			normal(norm)
 		{ }
 
-		VertexPositionNormal(FXMVECTOR pos, FXMVECTOR norm)
-			: position(pos),
-			normal(norm)
-		{
-		}
 
-		bsm::Vec3 position;
-		bsm::Vec3 normal;
+		XMFLOAT3 position;
+		XMFLOAT3 normal;
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement(){
 			return VertexPositionNormalLayout;
@@ -197,16 +180,10 @@ typedef const XMMATRIX& FXMMATRIX;
 			textureCoordinate(tex)
 		{ }
 
-		VertexPositionColorTexture(FXMVECTOR pos, FXMVECTOR col, FXMVECTOR tex)
-			: position(pos),
-			color(col),
-			textureCoordinate(tex)
-		{
-		}
 
-		bsm::Vec3 position;
-		bsm::Vec4 color;
-		bsm::Vec2 textureCoordinate;
+		XMFLOAT3 position;
+		XMFLOAT4 color;
+		XMFLOAT2 textureCoordinate;
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement(){
 			return VertexPositionColorTextureLayout;
@@ -240,16 +217,10 @@ typedef const XMMATRIX& FXMMATRIX;
 			color(col)
 		{ }
 
-		VertexPositionNormalColor(FXMVECTOR pos, FXMVECTOR norm, FXMVECTOR col)
-			: position(pos),
-			normal(norm),
-			color(col)
-		{
-		}
 
-		bsm::Vec3 position;
-		bsm::Vec3 normal;
-		bsm::Vec4 color;
+		XMFLOAT3 position;
+		XMFLOAT3 normal;
+		XMFLOAT4 color;
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement(){
 			return VertexPositionNormalColorLayout;
@@ -279,21 +250,25 @@ typedef const XMMATRIX& FXMMATRIX;
 		VertexPositionNormalTexture()
 		{ }
 
+		VertexPositionNormalTexture(FXMVECTOR pos, FXMVECTOR norm, FXMVECTOR tex)
+		{
+			XMStoreFloat3(&position, pos);
+			XMStoreFloat3(&normal, norm);
+			XMStoreFloat2(&textureCoordinate, tex);
+
+		}
+
+
 		VertexPositionNormalTexture(XMFLOAT3 const& pos, XMFLOAT3 const& norm, XMFLOAT2 const& tex)
 			: position(pos),
 			normal(norm),
 			textureCoordinate(tex)
 		{ }
 
-		VertexPositionNormalTexture(FXMVECTOR pos, FXMVECTOR norm, FXMVECTOR tex)
-			: position(pos),
-			normal(norm),
-			textureCoordinate(tex)
-		{ }
 
-		bsm::Vec3 position;
-		bsm::Vec3 normal;
-		bsm::Vec2 textureCoordinate;
+		XMFLOAT3 position;
+		XMFLOAT3 normal;
+		XMFLOAT2 textureCoordinate;
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement(){
 			return VertexPositionNormalTextureLayout;
@@ -336,22 +311,11 @@ typedef const XMMATRIX& FXMMATRIX;
 			}
 		}
 
-		VertexPositionNormalTextureSkinning(FXMVECTOR pos, FXMVECTOR norm, FXMVECTOR tex,
-			uint32_t* index, float* weight)
-			: position(pos),
-			normal(norm),
-			textureCoordinate(tex)
-		{ 
-			for (int i = 0; i < 4; i++){
-				indices[i] = index[i];
-				weights[i] = weight[i];
-			}
-		}
 
 
-		bsm::Vec3 position;
-		bsm::Vec3 normal;
-		bsm::Vec2 textureCoordinate;
+		XMFLOAT3 position;
+		XMFLOAT3 normal;
+		XMFLOAT2 textureCoordinate;
 		uint32_t indices[4];
 		float weights[4];
 
@@ -391,17 +355,10 @@ typedef const XMMATRIX& FXMMATRIX;
 			textureCoordinate(tex)
 		{ }
 
-		VertexPositionNormalColorTexture(FXMVECTOR pos, FXMVECTOR norm, FXMVECTOR col, CXMVECTOR tex)
-			: position(pos),
-			normal(norm),
-			color(col),
-			textureCoordinate(tex)
-		{ }
-
-		bsm::Vec3 position;
-		bsm::Vec3 normal;
-		bsm::Vec4 color;
-		bsm::Vec2 textureCoordinate;
+		XMFLOAT3 position;
+		XMFLOAT3 normal;
+		XMFLOAT4 color;
+		XMFLOAT2 textureCoordinate;
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement(){
 			return VertexPositionNormalColorTextureLayout;
@@ -439,19 +396,11 @@ typedef const XMMATRIX& FXMMATRIX;
 		{
 		}
 
-		VertexPositionNormalTangentTexture(FXMVECTOR pos, FXMVECTOR norm, FXMVECTOR tan,  CXMVECTOR tex)
-			: position(pos),
-			normal(norm),
-			tangent(tan),
-			textureCoordinate(tex)
-		{
-		}
 
-
-		bsm::Vec3 position;
-		bsm::Vec3 normal;
-		bsm::Vec4 tangent;
-		bsm::Vec2 textureCoordinate;
+		XMFLOAT3 position;
+		XMFLOAT3 normal;
+		XMFLOAT4 tangent;
+		XMFLOAT2 textureCoordinate;
 
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement() {
@@ -492,19 +441,11 @@ typedef const XMMATRIX& FXMMATRIX;
 		{
 		}
 
-		VertexPositionNormalTextureTangent(FXMVECTOR pos, FXMVECTOR norm, FXMVECTOR tan, CXMVECTOR tex)
-			: position(pos),
-			normal(norm),
-			tangent(tan),
-			textureCoordinate(tex)
-		{
-		}
 
-
-		bsm::Vec3 position;
-		bsm::Vec3 normal;
-		bsm::Vec2 textureCoordinate;
-		bsm::Vec4 tangent;
+		XMFLOAT3 position;
+		XMFLOAT3 normal;
+		XMFLOAT2 textureCoordinate;
+		XMFLOAT4 tangent;
 
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement() {
@@ -551,24 +492,11 @@ typedef const XMMATRIX& FXMMATRIX;
 			}
 		}
 
-		VertexPositionNormalTangentTextureSkinning(FXMVECTOR pos, FXMVECTOR norm, FXMVECTOR tan, CXMVECTOR tex,
-			uint32_t* index, float* weight)
-			: position(pos),
-			normal(norm),
-			tangent(tan),
-			textureCoordinate(tex)
-		{
-			for (int i = 0; i < 4; i++) {
-				indices[i] = index[i];
-				weights[i] = weight[i];
-			}
-		}
 
-
-		bsm::Vec3 position;
-		bsm::Vec3 normal;
-		bsm::Vec4 tangent;
-		bsm::Vec2 textureCoordinate;
+		XMFLOAT3 position;
+		XMFLOAT3 normal;
+		XMFLOAT4 tangent;
+		XMFLOAT2 textureCoordinate;
 		uint32_t indices[4];
 		float weights[4];
 
@@ -614,14 +542,6 @@ typedef const XMMATRIX& FXMMATRIX;
 		{
 		}
 
-		VertexPositionNormalTangentColorTexture(FXMVECTOR pos, FXMVECTOR norm, FXMVECTOR tan, uint32_t rgba, CXMVECTOR tex)
-			: position(pos),
-			normal(norm),
-			tangent(tan),
-			color(rgba),
-			textureCoordinate(tex)
-		{
-		}
 
 		VertexPositionNormalTangentColorTexture(XMFLOAT3 const& position, XMFLOAT3 const& normal, XMFLOAT4 const& tangent, XMFLOAT4 const& color, XMFLOAT2 const& textureCoordinate)
 			: position(position),
@@ -632,24 +552,14 @@ typedef const XMMATRIX& FXMMATRIX;
 			SetColor( color );
 		}
 
-		VertexPositionNormalTangentColorTexture(FXMVECTOR position, FXMVECTOR normal, FXMVECTOR tangent, CXMVECTOR color, CXMVECTOR textureCoordinate)
-		{
-			XMStoreFloat3(&this->position, position);
-			XMStoreFloat3(&this->normal, normal);
-			XMStoreFloat4(&this->tangent, tangent);
-			XMStoreFloat2(&this->textureCoordinate, textureCoordinate);
+		void SetColor(XMFLOAT4 const& color) { SetColor(XMLoadFloat4(&color)); }
+		void XM_CALLCONV SetColor(FXMVECTOR color);
 
-			SetColor( color );
-		}
-
-		void SetColor( XMFLOAT4 const& color ) { SetColor( XMLoadFloat4( &color ) ); }
-		void XM_CALLCONV SetColor( FXMVECTOR color );
-
-		bsm::Vec3 position;
-		bsm::Vec3 normal;
-		bsm::Vec4 tangent;
+		XMFLOAT3 position;
+		XMFLOAT3 normal;
+		XMFLOAT4 tangent;
 		uint32_t color;
-		bsm::Vec2 textureCoordinate;
+		XMFLOAT2 textureCoordinate;
 
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement(){
@@ -693,13 +603,6 @@ typedef const XMMATRIX& FXMMATRIX;
 			SetBlendWeights( weights );
 		}
 
-		VertexPositionNormalTangentColorTextureSkinning(FXMVECTOR position, FXMVECTOR normal, FXMVECTOR tangent, uint32_t rgba, CXMVECTOR textureCoordinate,
-									XMUINT4 const& indices, CXMVECTOR weights)
-			: VertexPositionNormalTangentColorTexture(position,normal,tangent,rgba,textureCoordinate)
-		{
-			SetBlendIndices( indices );
-			SetBlendWeights( weights );
-		}
 
 		VertexPositionNormalTangentColorTextureSkinning(XMFLOAT3 const& position, XMFLOAT3 const& normal, XMFLOAT4 const& tangent, XMFLOAT4 const& color,
 									XMFLOAT2 const& textureCoordinate, XMUINT4 const& indices, XMFLOAT4 const& weights)
@@ -709,18 +612,11 @@ typedef const XMMATRIX& FXMMATRIX;
 			SetBlendWeights( weights );
 		}
 
-		VertexPositionNormalTangentColorTextureSkinning(FXMVECTOR position, FXMVECTOR normal, FXMVECTOR tangent, CXMVECTOR color, CXMVECTOR textureCoordinate,
-									XMUINT4 const& indices, CXMVECTOR weights)
-			: VertexPositionNormalTangentColorTexture(position,normal,tangent,color,textureCoordinate)
-		{
-			SetBlendIndices( indices );
-			SetBlendWeights( weights );
-		}
 
 		void SetBlendIndices( XMUINT4 const& indices );
 
 		void SetBlendWeights( XMFLOAT4 const& weights ) { SetBlendWeights( XMLoadFloat4( &weights ) ); }
-		void XM_CALLCONV SetBlendWeights( FXMVECTOR weights );
+		void XM_CALLCONV SetBlendWeights(FXMVECTOR weights);
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement(){
 			return VertexPositionNormalTangentColorTextureSkinningLayout;
@@ -762,18 +658,9 @@ typedef const XMMATRIX& FXMMATRIX;
 		{ }
 
 
-
-		VertexPositionColorMatrix(FXMVECTOR pos, FXMVECTOR col, 
-			FXMMATRIX const& mat)
-			: position(pos),
-			color(col),
-			matrix(mat)
-		{
-		}
-
-		bsm::Vec3 position;
-		bsm::Vec4 color;
-		bsm::Mat4x4 matrix;
+		XMFLOAT3 position;
+		XMFLOAT4 color;
+		XMFLOAT4X4 matrix;
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement() {
 			return VertexPositionColorMatrixLayout;
@@ -815,18 +702,9 @@ typedef const XMMATRIX& FXMMATRIX;
 		{ }
 
 
-
-		VertexPositionTextureMatrix(FXMVECTOR pos,  FXMVECTOR tex,
-			FXMMATRIX const& mat)
-			: position(pos),
-			textureCoordinate(tex),
-			matrix(mat)
-		{
-		}
-
-		bsm::Vec3 position;
-		bsm::Vec2 textureCoordinate;
-		bsm::Mat4x4 matrix;
+		XMFLOAT3 position;
+		XMFLOAT2 textureCoordinate;
+		XMFLOAT4X4 matrix;
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement() {
 			return VertexPositionTextureMatrixLayout;
@@ -870,20 +748,10 @@ typedef const XMMATRIX& FXMMATRIX;
 		{ }
 
 
-
-		VertexPositionColorTextureMatrix(FXMVECTOR pos, FXMVECTOR col, FXMVECTOR tex,
-			FXMMATRIX const& mat)
-			: position(pos),
-			color(col),
-			textureCoordinate(tex),
-			matrix(mat)
-		{
-		}
-
-		bsm::Vec3 position;
-		bsm::Vec4 color;
-		bsm::Vec2 textureCoordinate;
-		bsm::Mat4x4 matrix;
+		XMFLOAT3 position;
+		XMFLOAT4 color;
+		XMFLOAT2 textureCoordinate;
+		XMFLOAT4X4 matrix;
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement() {
 			return VertexPositionColorTextureMatrixLayout;
@@ -924,19 +792,11 @@ typedef const XMMATRIX& FXMMATRIX;
 			matrix(mat)
 		{ }
 
-		VertexPositionNormalTextureMatrix(FXMVECTOR pos, FXMVECTOR norm, FXMVECTOR tex,
-			FXMMATRIX const& mat)
-			: position(pos),
-			normal(norm),
-			textureCoordinate(tex),
-			matrix(mat)
-		{
-		}
 
-		bsm::Vec3 position;
-		bsm::Vec3 normal;
-		bsm::Vec2 textureCoordinate;
-		bsm::Mat4x4 matrix;
+		XMFLOAT3 position;
+		XMFLOAT3 normal;
+		XMFLOAT2 textureCoordinate;
+		XMFLOAT4X4 matrix;
 
 		static const D3D12_INPUT_ELEMENT_DESC* GetVertexElement() {
 			return VertexPositionNormalTextureMatrixLayout;
@@ -948,5 +808,4 @@ typedef const XMMATRIX& FXMMATRIX;
 
 
 }
-using namespace basecross;
 //end basecross

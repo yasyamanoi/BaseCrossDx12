@@ -1,19 +1,27 @@
+//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+
 /*!
 @file PrimDevice.h
-@brief プリミティブなデバイスクラス
+@brief デバイス親クラス
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #pragma once
 
 #include "stdafx.h"
-
-
 namespace basecross {
 
-	//--------------------------------------------------------------------------------------
-	///	プリミティブなデバイス
-	//--------------------------------------------------------------------------------------
+
 	class PrimDevice
 	{
 	public:
@@ -23,6 +31,7 @@ namespace basecross {
 		virtual void OnInit() = 0;
 		virtual void OnUpdate() = 0;
 		virtual void OnRender() = 0;
+		virtual void OnUpdateDraw();
 		virtual void OnSizeChanged(UINT width, UINT height, bool minimized) = 0;
 		virtual void OnDestroy() = 0;
 
@@ -34,7 +43,6 @@ namespace basecross {
 		virtual void OnLeftButtonDown(UINT /*x*/, UINT /*y*/) {}
 		virtual void OnLeftButtonUp(UINT /*x*/, UINT /*y*/) {}
 		virtual void OnDisplayChanged() {}
-
 		// Accessors.
 		UINT GetWidth() const { return m_width; }
 		UINT GetHeight() const { return m_height; }
@@ -42,6 +50,12 @@ namespace basecross {
 		bool GetTearingSupport() const { return m_tearingSupport; }
 		RECT GetWindowsBounds() const { return m_windowBounds; }
 		virtual IDXGISwapChain* GetSwapchain() { return nullptr; }
+		virtual ID3D12Device* GetD3D12Device() { return nullptr; }
+		virtual ComPtr<ID3D12Device> GetID3D12Device() { return nullptr; }
+		bool IsQuiteEscapeKey() const { return m_quiteEscapeKey; }
+		void SetQuiteEscapeKey(bool b) { m_quiteEscapeKey = b; }
+
+
 
 		void ParseCommandLineArgs(_In_reads_(argc) WCHAR* argv[], int argc);
 		void UpdateForSizeChange(UINT clientWidth, UINT clientHeight);
@@ -61,6 +75,10 @@ namespace basecross {
 		UINT m_width;
 		UINT m_height;
 		float m_aspectRatio;
+
+		//ESCキーで終了させるかどうか
+		bool m_quiteEscapeKey;
+
 
 		// Window bounds
 		RECT m_windowBounds;
@@ -82,5 +100,4 @@ namespace basecross {
 		std::wstring m_title;
 	};
 }
-using namespace basecross;
-//end namespace basecross 
+// end namespace basecross

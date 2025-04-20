@@ -1,7 +1,19 @@
+//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+
 /*!
 @file App.h
 @brief アプリケーションクラス
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #pragma once
@@ -11,82 +23,95 @@
 namespace basecross {
 
 
-	//--------------------------------------------------------------------------------------
-	///	アプリケーションクラス(static呼び出しをする)
-	//--------------------------------------------------------------------------------------
+	class PrimDevice;
+
 	class App
 	{
-		static HWND m_hwnd;
-		static bool m_fullscreenMode;
-		static const UINT m_windowStyle = WS_OVERLAPPEDWINDOW;
-		static RECT m_windowRect;
-		static PrimDevice* m_pPrimDevice;
-
-		static std::shared_ptr<EventDispatcher> m_EventDispatcher;
-
-		static std::wstring m_wstrModulePath;
-		static std::wstring m_wstrDir;
-		static std::wstring m_wstrMediaDir;
-		static std::wstring m_wstrShadersDir;
-		static std::wstring m_wstrRelativeMediaDir;
-		static std::wstring m_wstrRelativeShadersDir;
-		static std::wstring	m_wstrRelativeAssetsDir;
-		static void SetInitData();
 	public:
 		static int Run(PrimDevice* pPrimDevice, HINSTANCE hInstance, int nCmdShow);
 		static void ToggleFullscreenWindow(IDXGISwapChain* pOutput = nullptr);
 		static void SetWindowZorderToTopMost(bool setToTopMost);
 		static HWND GetHwnd() { return m_hwnd; }
 		static bool IsFullscreen() { return m_fullscreenMode; }
+		static PrimDevice* GetPrimDevice() { return m_pPrimDevice; }
+		static ID3D12Device* GetD3D12Device();
+		static ComPtr<ID3D12Device> GetID3D12Device();
 
-		//ID3D12Deviceの取得
-		static ComPtr<ID3D12Device> GetID3D12Device(){
-			auto dev = BaseDevice::GetBaseDevice();
-			if (!dev) {
-				return nullptr;
-			}
-			return dev->GetID3D12Device();
-		}
-		//ElapsedTimeを得る
-		static double GetElapsedTime() {
-			auto dev = BaseDevice::GetBaseDevice();
-			if (!dev) {
-				return 0.000001;
-
-			}
-			return dev->GetElapsedTime();
-		}
-		//イベントディスパッチャーを得る
-		static std::shared_ptr<EventDispatcher> GetEventDispatcher() {
-			return m_EventDispatcher;
-		}
-		//モジュール名フルパスを得る
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	モジュール名フルパスを得る
+		@return モジュール名フルパス
+		*/
+		//--------------------------------------------------------------------------------------
 		static const std::wstring& GetModulePath() { return m_wstrModulePath; }
-		//モジュールがあるディレクトリを得る
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	モジュールがあるディレクトリを得る
+		@return モジュールがあるディレクトリ
+		*/
+		//--------------------------------------------------------------------------------------
 		static const std::wstring& GetModuleDir() { return m_wstrDir; }
-		//絶対パスのメディアディレクトリを得る
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	絶対パスのメディアディレクトリを得る
+		@return 絶対パスのメディアディレクトリ
+		*/
+		//--------------------------------------------------------------------------------------
 		static const std::wstring& GetMediaDir() { return m_wstrMediaDir; }
-		//絶対パスのシェーダディレクトリを得る
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	絶対パスのシェーダディレクトリを得る
+		@return 絶対パスのシェーダディレクトリ
+		*/
+		//--------------------------------------------------------------------------------------
 		static const std::wstring& GetShadersDir() { return m_wstrShadersDir; }
-		//相対パスのメディアディレクトリを得る
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	相対パスのメディアディレクトリを得る
+		@return 相対パスのメディアディレクトリ
+		*/
+		//--------------------------------------------------------------------------------------
 		static const std::wstring& GetRelativeMediaDir() { return m_wstrRelativeMediaDir; }
-		//相対パスのシェーダディレクトリを得る
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	相対パスのシェーダディレクトリを得る
+		@return 相対パスのシェーダディレクトリ
+		*/
+		//--------------------------------------------------------------------------------------
 		static const std::wstring& GetRelativeShadersDir() { return m_wstrRelativeShadersDir; }
-		//相対パスのアセットディレクトリを得る
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	相対パスのアセットディレクトリを得る
+		@return 相対パスのアセットディレクトリ
+		*/
+		//--------------------------------------------------------------------------------------
 		static const std::wstring& GetRelativeAssetsDir() { return m_wstrRelativeAssetsDir; }
-		//ウインドウの幅を得る
-		static LONG GetWidth() {
-			return m_windowRect.right;
-		}
-		//ウインドウの高さを得る
-		static LONG GetHeight() {
-			return m_windowRect.bottom;
-		}
+
+
 
 	protected:
 		static LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+	private:
+		static HWND m_hwnd;
+		static bool m_fullscreenMode;
+		static const UINT m_windowStyle = WS_OVERLAPPEDWINDOW;
+		static RECT m_windowRect;
+		static PrimDevice* m_pPrimDevice;
+
+		static std::wstring m_wstrModulePath;		///< モジュール名フルパス
+		static std::wstring m_wstrDir;				///< モジュールがあるディレクトリ
+		static std::wstring m_wstrMediaDir;			///< 絶対パスのメディアディレクトリ
+		static std::wstring m_wstrShadersDir;		///< 絶対パスのシェーダディレクトリ
+		static std::wstring m_wstrRelativeMediaDir;	///< 相対パスのメディアディレクトリ
+		static std::wstring m_wstrRelativeShadersDir;	///< 相対パスのシェーダディレクトリ
+		static std::wstring	m_wstrRelativeAssetsDir;	///< 相対パスのアセットディレクトリ
+
+		static void SetInitData();
+
+
 	};
 }
-using namespace basecross;
-//namespace basecross
+// end namespace basecross
+
 

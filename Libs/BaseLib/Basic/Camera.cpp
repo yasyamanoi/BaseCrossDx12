@@ -1,100 +1,152 @@
+/*!
+@file BaseCamera.cpp
+@brief カメラクラス
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
+*/
+
 
 #include "stdafx.h"
 
 namespace basecross {
 
-	Camera* Camera::mCamera = nullptr;
+	//--------------------------------------------------------------------------------------
+	//	class Camera;
+	//--------------------------------------------------------------------------------------
 
-	Camera::Camera()
+	Camera::Camera() :
+		m_eye(0, 10.0f, -20.0f),	//デフォルトは後方
+		m_at(0, 0, 0),
+		m_up(0, 1.0f, 0),
+		m_near(0.5f),
+		m_far(1000.0f),
+		m_viewMatrix(),
+		m_projMatrix()
 	{
-		Reset();
-		mCamera = this;
 	}
 
-	Camera::~Camera()
-	{
-		mCamera = nullptr;
+	//アクセサ
+	const XMFLOAT3& Camera::GetEye() const { return m_eye; }
+	void Camera::SetEye(const XMFLOAT3& eye) {
+		m_eye = eye;
+		CalculateMatrix();
+	}
+	void Camera::SetEye(float x, float y, float z) {
+		m_eye = XMFLOAT3(x, y, z);
+		CalculateMatrix();
 	}
 
-	Camera* Camera::get()
-	{
-		return mCamera;
+	const XMFLOAT3& Camera::GetAt() const { return m_at; }
+	void Camera::SetAt(const XMFLOAT3& at) {
+		m_at = at;
+		CalculateMatrix();
+	}
+	void Camera::SetAt(float x, float y, float z) {
+		m_at = XMFLOAT3(x, y, z);
+		CalculateMatrix();
 	}
 
-	void Camera::Get3DViewProjMatricesLH(XMFLOAT4X4* view, XMFLOAT4X4* proj, float fovInDegrees, float screenWidth, float screenHeight)
-	{
-
-		float aspectRatio = (float)screenWidth / (float)screenHeight;
-		float fovAngleY = fovInDegrees * XM_PI / 180.0f;
-
-		if (aspectRatio < 1.0f)
-		{
-			fovAngleY /= aspectRatio;
-		}
-
-		XMStoreFloat4x4(view, XMMatrixLookAtLH(mEye, mAt, mUp));
-		XMStoreFloat4x4(proj, XMMatrixPerspectiveFovLH(fovAngleY, aspectRatio, 0.01f, 125.0f));
+	const XMFLOAT3& Camera::GetUp() const { return m_up; }
+	void Camera::SetUp(const XMFLOAT3& Up) {
+		m_up = Up;
+		CalculateMatrix();
+	}
+	void Camera::SetUp(float x, float y, float z) {
+		m_up = XMFLOAT3(x, y, z);
+		CalculateMatrix();
 	}
 
-	void Camera::Get3DViewProjMatrices(XMFLOAT4X4* view, XMFLOAT4X4* proj, float fovInDegrees, float screenWidth, float screenHeight)
-	{
-
-		float aspectRatio = (float)screenWidth / (float)screenHeight;
-		float fovAngleY = fovInDegrees * XM_PI / 180.0f;
-
-		if (aspectRatio < 1.0f)
-		{
-			fovAngleY /= aspectRatio;
-		}
-
-		XMStoreFloat4x4(view, XMMatrixTranspose(XMMatrixLookAtRH(mEye, mAt, mUp)));
-		XMStoreFloat4x4(proj, XMMatrixTranspose(XMMatrixPerspectiveFovRH(fovAngleY, aspectRatio, 0.01f, 125.0f)));
+	float Camera::GetNear() const { return m_near; }
+	void Camera::SetNear(float f) {
+		m_near = f;
+		CalculateMatrix();
 	}
 
-	void Camera::GetOrthoProjMatrices(XMFLOAT4X4* view, XMFLOAT4X4* proj, float width, float height)
-	{
-		XMStoreFloat4x4(view, XMMatrixTranspose(XMMatrixLookAtRH(mEye, mAt, mUp)));
-		XMStoreFloat4x4(proj, XMMatrixTranspose(XMMatrixOrthographicRH(width, height, 0.01f, 125.0f)));
+	float Camera::GetFar() const { return m_far; }
+	void Camera::SetFar(float f) {
+		m_far = f;
+		CalculateMatrix();
 	}
 
-	void Camera::RotateAroundYAxis(float angleRad)
-	{
-		XMMATRIX rotation = XMMatrixRotationY(angleRad);
+	const XMFLOAT4X4& Camera::GetViewMatrix() const { return m_viewMatrix; }
+	const XMFLOAT4X4& Camera::GetProjMatrix() const { return m_projMatrix; }
 
-		mEye = mAt + XMVector3TransformCoord(mEye - mAt, rotation);
-		mUp = XMVector3TransformCoord(mUp, rotation);
+	void Camera::OnCreate() {
+		CalculateMatrix();
 	}
 
-	void Camera::RotateYaw(float angleRad)
-	{
-		XMMATRIX rotation = XMMatrixRotationAxis(mUp, angleRad);
-
-		mEye = mAt + XMVector3TransformCoord(mEye - mAt, rotation);
+	void Camera::OnUpdate(double elapsedTime) {
+		CalculateMatrix();
 	}
 
-	void Camera::RotatePitch(float angleRad)
-	{
-		XMVECTOR right = XMVector3Normalize(XMVector3Cross(mAt - mEye, mUp));
-		XMMATRIX rotation = XMMatrixRotationAxis(right, angleRad);
+	//--------------------------------------------------------------------------------------
+	//	class PerspecCamera;
+	//--------------------------------------------------------------------------------------
+	PerspecCamera::PerspecCamera() :
+		Camera(),
+		m_fovY(XM_PIDIV4)
 
-		mEye = mAt + XMVector3TransformCoord(mEye - mAt, rotation);
-		mUp = XMVector3TransformCoord(mUp, rotation);
+	{
 	}
 
-	void Camera::Reset()
-	{
-		mEye = XMVectorSet(0.0f, 8.0f, -30.0f, 0.0f);
-		mAt = XMVectorSet(0.0f, 8.0f, 0.0f, 0.0f);
-		mUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	float PerspecCamera::GetFovY() const { return m_fovY; }
+	void PerspecCamera::SetFovY(float f) {
+		m_fovY = f;
+		CalculateMatrix();
 	}
 
-	void Camera::Set(XMVECTOR eye, XMVECTOR at, XMVECTOR up)
+	float PerspecCamera::GetAspect() const { return m_aspect; }
+	void PerspecCamera::SetAspect(float f) {
+		m_aspect = f;
+		CalculateMatrix();
+	}
+
+	void PerspecCamera::CalculateMatrix() {
+		auto pBaseScene = BaseScene::Get();
+		auto& viewport = pBaseScene->GetViewport();
+		auto width = viewport.Width;
+		auto height = viewport.Height;
+		m_aspect = width / height;
+		m_viewMatrix 
+			= bsm::makeF4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
+		m_projMatrix 
+			= bsm::makeF4x4(XMMatrixPerspectiveFovLH(m_fovY, m_aspect, m_near, m_far));
+	}
+
+	//--------------------------------------------------------------------------------------
+	//	class OrthoCamera;
+	//--------------------------------------------------------------------------------------
+	OrthoCamera::OrthoCamera() :
+		Camera(),
+		m_width(0),
+		m_height(0)
 	{
-		mEye = eye;
-		mAt = at;
-		mUp = up;
+	}
+
+
+
+	float OrthoCamera::GetWidth() const { return m_width; }
+	void OrthoCamera::SetWidth(float f) {
+		m_width = f;
+		CalculateMatrix();
+	}
+
+	float OrthoCamera::GetHeight() const { return m_height; }
+	void OrthoCamera::SetHeight(float f) {
+		m_height = f;
+		CalculateMatrix();
+	}
+
+	void OrthoCamera::CalculateMatrix() {
+		auto pBaseScene = BaseScene::Get();
+		auto& viewport = pBaseScene->GetViewport();
+		m_width = viewport.Width;
+		m_height = viewport.Height;
+		m_viewMatrix
+			= bsm::makeF4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
+		m_projMatrix
+			= bsm::makeF4x4(XMMatrixOrthographicLH(m_width, m_height, m_near, m_far));
 	}
 
 }
-//namespace basecross 
-
+// end namespace basecross

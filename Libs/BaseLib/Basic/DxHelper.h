@@ -13,6 +13,7 @@
 @file DxHelper.h
 @brief 基本的なヘルパークラス
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #pragma once

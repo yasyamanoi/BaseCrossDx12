@@ -100,6 +100,7 @@ namespace basecross {
 				Shadowmap::GetLightNear(), Shadowmap::GetLightFar());
 			constants.lightView = bsm::transpose(LightView);
 			constants.lightProjection = bsm::transpose(LightProj);
+			int a = 0;
 		}
 
 

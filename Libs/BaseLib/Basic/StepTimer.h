@@ -9,11 +9,19 @@
 //
 //*********************************************************
 
+/*!
+@file StepTimer.h
+@brief ステップタイマークラス
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
+*/
+
 #pragma once
 
 #include "stdafx.h"
 
 namespace basecross {
+
 
 	// Helper class for animation and simulation timing.
 	class StepTimer
@@ -186,5 +194,5 @@ namespace basecross {
 		UINT64 m_targetElapsedTicks;
 	};
 }
-using namespace basecross;
-// namespace basecross 
+// end namespace basecross
+

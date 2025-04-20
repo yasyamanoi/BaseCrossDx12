@@ -2,13 +2,12 @@
 @file BaseTexture.cpp
 @brief テクスチャクラス
 @copyright Copyright (c) 2021 WiZ Tamura Hiroki,Yamanoi Yasushi.
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #include "stdafx.h"
 
 namespace basecross {
-
-
 
 	std::shared_ptr<BaseTexture>  BaseTexture::CreateBaseTextureFromFilePrim(ID3D12GraphicsCommandList* pCommandList,
 		const std::wstring& fileName, const CD3DX12_CPU_DESCRIPTOR_HANDLE& mapHandle) {
@@ -130,14 +129,10 @@ namespace basecross {
 	}
 
 	std::shared_ptr<BaseTexture> BaseTexture::CreateTextureFlomFile(ID3D12GraphicsCommandList* pCommandList, const std::wstring& falsename) {
-
-		auto dev = BaseDevice::GetBaseDevice();
-
 		//デバイスの取得
 		auto device = App::GetID3D12Device();
-
 		//シーンの取得
-		auto sceneBase = BaseDevice::GetScene();
+		auto& sceneBase = BaseDevice::GetScene();
 		//テクスチャの作成
 		//シェーダリソースハンドルを作成
 		UINT srvIndex = sceneBase->GetSrvNextIndex();
@@ -157,14 +152,6 @@ namespace basecross {
 			m_texture.Get(), m_textureUploadHeap.Get(),
 			0, 0, static_cast<unsigned int>(m_subresources.size()),
 			m_subresources.data());
-/*
-		pCommandList->ResourceBarrier(
-			1,
-			&CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(),
-				D3D12_RESOURCE_STATE_COPY_DEST,
-				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
-		);
-*/
 		//テクスチャのシェーダリソースビューを作成
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;

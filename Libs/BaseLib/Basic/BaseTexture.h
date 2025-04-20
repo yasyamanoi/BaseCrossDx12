@@ -2,6 +2,7 @@
 @file BaseTexture.h
 @brief テクスチャクラス
 @copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #pragma once
@@ -51,5 +52,4 @@ namespace basecross {
 		static std::shared_ptr<BaseTexture> CreateTextureFlomFile(ID3D12GraphicsCommandList* pCommandList, const std::wstring& falsename);
 	};
 }
-using namespace basecross;
 //end basecross

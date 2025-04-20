@@ -1,7 +1,19 @@
+//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+
 /*!
 @file BaseHelper.h
 @brief ユーティリティクラス、関数群
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #pragma once
@@ -290,17 +302,18 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		template<typename T>
 		static std::string GetMBTypeName() {
-			string clsname = typeid(T).name();
+			std::string clsname = typeid(T).name();
 			return clsname;
 		}
 
 		//--------------------------------------------------------------------------------------
 		/// float型を文字列に変換する場合の形式
 		//--------------------------------------------------------------------------------------
-		enum FloatModify {
+		enum class FloatModify {
 			Default = 0,	///< デフォルト（浮動小数点）
 			Fixed,	///< 数字を出力
 			Scientific,	///< e+09などの形式
+			Count ///<カウント
 		};
 
 		//--------------------------------------------------------------------------------------
@@ -377,10 +390,11 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		/// 整数型を文字列に変換する場合の形式
 		//--------------------------------------------------------------------------------------
-		enum NumModify {
+		enum class NumModify {
 			Dec = 0,	///< 10進数
 			Hex,	///< 16進数
 			Oct,	///< 8進数
+			Count ///<カウント
 		};
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -653,7 +667,8 @@ namespace basecross {
 	{
 		if (FAILED(hr))
 		{
-			std::string message = Util::WStoRetMB(wstr1);
+			std::string message = "\r\n";
+			message += Util::WStoRetMB(wstr1);
 			if (wstr2 != L"") {
 				message += "\r\n";
 				message += Util::WStoRetMB(wstr2);
@@ -765,11 +780,6 @@ namespace basecross {
 		LARGE_INTEGER m_before;
 		LARGE_INTEGER m_after;
 	public:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief コンストラクタ
-		*/
-		//--------------------------------------------------------------------------------------
 		PerformanceCounter() :
 			m_isActive(false),
 			m_performanceTime(0.0f),
@@ -779,11 +789,6 @@ namespace basecross {
 			m_before = {};
 			m_after = {};
 		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief デストラクタ
-		*/
-		//--------------------------------------------------------------------------------------
 		~PerformanceCounter() {}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -874,232 +879,6 @@ namespace basecross {
 		}
 	};
 
-
-	class ObjectFactory;
-	class ObjectInterface;
-
-
-
-	//--------------------------------------------------------------------------------------
-	///	Objectインターフェイス
-	//--------------------------------------------------------------------------------------
-	class ObjectInterface : public std::enable_shared_from_this<ObjectInterface> {
-		friend class ObjectFactory;
-		//クリエイト済みかどうか
-		//Create関数が呼び出し後にtrueになる
-		bool m_created{ false };
-		void SetCreated(bool b) {
-			m_created = b;
-		}
-	protected:
-		ObjectInterface() {}
-		virtual ~ObjectInterface() {}
-	public:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief thisポインタ（shared_ptr）の取得
-		@tparam T	ポインタの型
-		@return　オブジェクトのshared_ptr
-		*/
-		//--------------------------------------------------------------------------------------
-		template<typename T>
-		std::shared_ptr<T> GetThis() {
-			auto ptr = std::dynamic_pointer_cast<T>(shared_from_this());
-			if (ptr) {
-				return ptr;
-			}
-			else {
-				std::wstring str(L"thisを");
-				str += Util::GetWSTypeName<T>();
-				str += L"型にキャストできません";
-				throw BaseException(
-					str,
-					L"if( ! dynamic_pointer_cast<T>(shared_from_this()) )",
-					L"ObjectInterface::GetThis()"
-				);
-			}
-			return nullptr;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief クリエイト済みかを取得
-		@return　クリエイト済みならtrue
-		*/
-		//--------------------------------------------------------------------------------------
-		bool IsCreated()const {
-			return m_created;
-		}
-		//仮想関数群
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	初期化前処理
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnPreCreate() {}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	初期化処理
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnCreate() = 0;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	更新処理
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnUpdate() = 0;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	更新処理２
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnUpdate2() {}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	描画処理
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnDraw() = 0;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	破棄時処理
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnDestroy() = 0;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	キーボード押された処理
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnKeyDown(UINT8 /*key*/) {}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	キーボード離された処理
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnKeyUp(UINT8 /*key*/) {}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	イベントのPOST（キューに入れる）
-		@param[in]	DispatchTime	POSTする時間（0で次のターン）
-		@param[in]	Sender	イベント送信者（nullptr可）
-		@param[in]	Receiver	イベント受信者（nullptr不可）
-		@param[in]	MsgStr	メッセージ
-		@param[in,out]	Info	追加情報
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void PostEvent(float DispatchTime, const std::shared_ptr<ObjectInterface>& Sender, const std::shared_ptr<ObjectInterface>& Receiver,
-			const std::wstring& MsgStr, const std::shared_ptr<void>& Info = std::shared_ptr<void>());
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	イベントのPOST（キューに入れる）
-		@param[in]	DispatchTime	POSTする時間（0で次のターン）
-		@param[in]	Sender	イベント送信者（nullptr可）
-		@param[in]	ReceiverKey	受け手側オブジェクトを判別するキー
-		@param[in]	MsgStr	メッセージ
-		@param[in,out]	Info	追加情報
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void PostEvent(float DispatchTime, const std::shared_ptr<ObjectInterface>& Sender, const std::wstring& ReceiverKey,
-			const std::wstring& MsgStr, const  std::shared_ptr<void>& Info = std::shared_ptr<void>());
-
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	イベントのSEND（キューに入れずにそのまま送る）
-		@param[in]	Sender	イベント送信者（nullptr可）
-		@param[in]	ReceiverKey	受け手側オブジェクトを判別するキー
-		@param[in]	MsgStr	メッセージ
-		@param[in,out]	Info	追加情報
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void SendEvent(const std::shared_ptr<ObjectInterface>& Sender, const std::shared_ptr<ObjectInterface>& Receiver,
-			const std::wstring& MsgStr, const std::shared_ptr<void>& Info = std::shared_ptr<void>());
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	イベントのSEND（キューに入れずにそのまま送る）
-		@param[in]	Sender	イベント送信者（nullptr可）
-		@param[in]	Receiver	イベント受信者（nullptr不可）
-		@param[in]	MsgStr	メッセージ
-		@param[in,out]	Info	追加情報
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void SendEvent(const std::shared_ptr<ObjectInterface>& Sender, const std::wstring& ReceiverKey,
-			const std::wstring& MsgStr, const  std::shared_ptr<void>& Info = std::shared_ptr<void>());
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	イベントを受け取る
-		@param[in]	event	イベント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnEvent(const std::shared_ptr<Event>& event) {}
-
-	private:
-		//コピー禁止
-		ObjectInterface(const ObjectInterface&) = delete;
-		ObjectInterface& operator=(const ObjectInterface&) = delete;
-		//ムーブ禁止
-		ObjectInterface(const ObjectInterface&&) = delete;
-		ObjectInterface& operator=(const ObjectInterface&&) = delete;
-	};
-
-
-	//--------------------------------------------------------------------------------------
-	///	Objectを構築する
-	//--------------------------------------------------------------------------------------
-	class ObjectFactory {
-	public:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief オブジェクト作成（static関数）
-		@tparam T	作成する型
-		@tparam Ts...	可変長パラメータ型
-		@param[in]	params	可変長パラメータ
-		@return　作成したオブジェクトのshared_ptr
-		*/
-		//--------------------------------------------------------------------------------------
-		template<typename T, typename... Ts>
-		static std::shared_ptr<T> Create(Ts&&... params) {
-			std::shared_ptr<T> ptr = std::shared_ptr<T>(new T(params...));
-			//初期化関数呼び出し
-			ptr->OnPreCreate();
-			ptr->OnCreate();
-			ptr->SetCreated(true);
-			return ptr;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief オブジェクト作成（static関数）。パラメータはOnInitに渡される
-		@tparam T	作成する型
-		@tparam Ts...	可変長パラメータ型
-		@param[in]	params	可変長パラメータ
-		@return　作成したオブジェクトのshared_ptr
-		*/
-		//--------------------------------------------------------------------------------------
-		template<typename T, typename... Ts>
-		static std::shared_ptr<T> CreateInitParam(Ts&&... params) {
-			std::shared_ptr<T> ptr = std::shared_ptr<T>(new T());
-			//初期化関数呼び出し
-			ptr->OnCreate(params...);
-			ptr->SetCreated(true);
-			return ptr;
-		}
-
-	};
-
-
 	//--------------------------------------------------------------------------------------
 	///	シェーダ関連リソースのインターフェイス
 	//--------------------------------------------------------------------------------------
@@ -1182,5 +961,4 @@ namespace basecross {
 	Dx12Shader(CsoFilename){}
 
 }
-using namespace basecross;
 // end namespace basecross

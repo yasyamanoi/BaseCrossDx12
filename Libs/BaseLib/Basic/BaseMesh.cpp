@@ -2,6 +2,7 @@
 @file BaseMesh.cpp
 @brief メッシュクラス
 @copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #include "stdafx.h"
@@ -32,8 +33,8 @@ namespace basecross {
 	std::shared_ptr<BaseMesh> BaseMesh::CreateCapsule(ID3D12GraphicsCommandList* pCommandList, float diameter, float height, size_t tessellation) {
 		std::vector<VertexPositionNormalTexture> vertices;
 		std::vector<uint32_t> indices;
-		bsm::Vec3 pointA(0, -height / 2.0f, 0);
-		bsm::Vec3 pointB(0, height / 2.0f, 0);
+		XMFLOAT3 pointA(0, -height / 2.0f, 0);
+		XMFLOAT3 pointB(0, height / 2.0f, 0);
 		//Capsuleの作成(ヘルパー関数を利用)
 		MeshUtill::CreateCapsule(diameter, pointA, pointB, tessellation, vertices, indices);
 		return BaseMesh::CreateBaseMesh<VertexPositionNormalTexture>(pCommandList, vertices, indices);

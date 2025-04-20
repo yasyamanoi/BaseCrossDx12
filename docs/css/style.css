@@ -19,16 +19,23 @@ h2{
 }
 
 h4{
-	font-size: 20px;
+	font-size: 24px;
 	padding-top: 30px;
 	padding-bottom: 10px;
 }
 
 h5{
-	font-size: 18px;
+	font-size: 20px;
 	padding-top: 20px;
 	padding-bottom: 10px;
 }
+
+h6{
+	font-size: 14px;
+	padding-top: 16px;
+	padding-bottom: 0px;
+}
+
 
 .red {
 	color: #ff0000; 

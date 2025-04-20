@@ -2,6 +2,7 @@
 @file BaseMesh.h
 @brief メッシュクラス
 @copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #pragma once
@@ -70,8 +71,8 @@ namespace basecross {
 		template<typename T>
 		static std::shared_ptr<BaseMesh> CreateBaseMesh(ID3D12GraphicsCommandList* pCommandList,const std::vector<T>& vertices) {
 			//デバイスの取得
-			auto device = App::GetID3D12Device();
-			auto baseDevice = App::GetBaseDevice();
+			auto device = App::GetD3D12Device();
+//			auto baseDevice = App::GetBaseDevice();
 			shared_ptr<BaseMesh> ptrMesh = shared_ptr<BaseMesh>(new BaseMesh());
 			UINT vertexBufferSize = (UINT)(sizeof(T) * vertices.size());
 			//頂点バッファの作成
@@ -134,7 +135,7 @@ namespace basecross {
 		template<typename T>
 		static std::shared_ptr<BaseMesh> CreateBaseMesh(ID3D12GraphicsCommandList* pCommandList,const std::vector<T>& vertices, const std::vector<uint32_t>& indices) {
 			//デバイスの取得
-			auto device = App::GetID3D12Device();
+			auto device = App::GetD3D12Device();
 			std::shared_ptr<BaseMesh> ptrMesh = std::shared_ptr<BaseMesh>(new BaseMesh());
 			UINT vertexBufferSize = (UINT)(sizeof(T) * vertices.size());
 			//頂点バッファの作成
@@ -247,7 +248,7 @@ namespace basecross {
 				);
 			}
 			//デバイスの取得
-			auto device = App::GetID3D12Device();
+			auto device = App::GetD3D12Device();
 			UINT vertexBufferSize = (UINT)(sizeof(T) * vertices.size());
 			//頂点バッファの更新
 			D3D12_SUBRESOURCE_DATA vertexData = {};
@@ -381,5 +382,4 @@ namespace basecross {
 
 	};
 }
-using namespace basecross;
 //end basecross

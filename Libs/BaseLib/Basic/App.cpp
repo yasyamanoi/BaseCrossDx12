@@ -1,12 +1,31 @@
+//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+
 /*!
 @file App.cpp
-@brief アプリケーションクラス
+@brief アプリケーションクラス　実体
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #include "stdafx.h"
 
 namespace basecross {
+
+
+	HWND App::m_hwnd = nullptr;
+	bool App::m_fullscreenMode = false;
+	RECT App::m_windowRect;
+	PrimDevice* App::m_pPrimDevice = nullptr;
+	using Microsoft::WRL::ComPtr;
 
 	std::wstring App::m_wstrModulePath;		///< モジュール名フルパス
 	std::wstring App::m_wstrDir;				///< モジュールがあるディレクトリ
@@ -15,17 +34,6 @@ namespace basecross {
 	std::wstring App::m_wstrRelativeMediaDir;	///< 相対パスのメディアディレクトリ
 	std::wstring App::m_wstrRelativeShadersDir;	///< 相対パスのシェーダディレクトリ
 	std::wstring App::m_wstrRelativeAssetsDir;	///< 相対パスのアセットディレクトリ
-
-
-	HWND App::m_hwnd = nullptr;
-	bool App::m_fullscreenMode = false;
-	RECT App::m_windowRect;
-
-	PrimDevice* App::m_pPrimDevice = nullptr;
-
-	std::shared_ptr<EventDispatcher> App::m_EventDispatcher = nullptr;	///< イベント送信オブジェクト
-
-	using Microsoft::WRL::ComPtr;
 
 	void App::SetInitData() {
 
@@ -107,9 +115,10 @@ namespace basecross {
 	}
 
 
-	int App::Run(PrimDevice* pPrimDevice, ::HINSTANCE hInstance, int nCmdShow)
+	int App::Run(PrimDevice* pPrimDevice, HINSTANCE hInstance, int nCmdShow)
 	{
-		m_pPrimDevice = pPrimDevice;
+		//終了コード
+		int retCode = 0;
 		//ウインドウ情報。メッセージボックス表示チェックに使用
 		WINDOWINFO winInfo;
 		ZeroMemory(&winInfo, sizeof(winInfo));
@@ -119,20 +128,14 @@ namespace basecross {
 			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 			//ロケールの設定
 			setlocale(LC_ALL, "JPN");
-			//COMの初期化
-			if (FAILED(::CoInitialize(nullptr))) {
-				// 初期化失敗
-				throw std::exception("Com初期化に失敗しました。");
-			}
-
-
-			m_EventDispatcher = std::shared_ptr<EventDispatcher>(new EventDispatcher);
 
 			// Parse the command line parameters
 			int argc;
 			LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 			pPrimDevice->ParseCommandLineArgs(argv, argc);
 			LocalFree(argv);
+
+			m_pPrimDevice = pPrimDevice;
 
 			// Initialize the window class.
 			WNDCLASSEX windowClass = { 0 };
@@ -141,11 +144,10 @@ namespace basecross {
 			windowClass.lpfnWndProc = WindowProc;
 			windowClass.hInstance = hInstance;
 			windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-			windowClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-			windowClass.lpszClassName = L"PrimDeviceClass";
+			windowClass.lpszClassName = L"BaseCrossClass";
 			RegisterClassEx(&windowClass);
+
 			RECT windowRect = { 0, 0, static_cast<LONG>(pPrimDevice->GetWidth()), static_cast<LONG>(pPrimDevice->GetHeight()) };
-			m_windowRect = windowRect;
 			AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
 
 			// Create the window and store a handle to it.
@@ -157,16 +159,22 @@ namespace basecross {
 				CW_USEDEFAULT,
 				windowRect.right - windowRect.left,
 				windowRect.bottom - windowRect.top,
-				nullptr,        // We have no parent window.
-				nullptr,        // We aren't using menus.
+				nullptr,		// We have no parent window.
+				nullptr,		// We aren't using menus.
 				hInstance,
 				pPrimDevice);
-			//メディアディレクトリなどの設定
 			SetInitData();
-			//BaseCross初期化
+			//COMの初期化
+			//サウンドなどで使用する
+			if (FAILED(::CoInitialize(nullptr))) {
+				// 初期化失敗
+				throw std::exception("Com初期化に失敗しました。");
+			}
+
+			// Initialize the sample. OnInit is defined in each child-implementation of DXSample.
 			pPrimDevice->OnInit();
 			ShowWindow(m_hwnd, nCmdShow);
-			// Main sample loop.
+
 			MSG msg = {};
 			while (msg.message != WM_QUIT)
 			{
@@ -175,19 +183,16 @@ namespace basecross {
 					TranslateMessage(&msg);
 					DispatchMessage(&msg);
 				}
+
 			}
-			//BaseCross終了
 			pPrimDevice->OnDestroy();
-			//COMのリリース
-			::CoUninitialize();
-			//WM_QUITを返す
-			return static_cast<char>(msg.wParam);
+			retCode = static_cast<char>(msg.wParam);
 		}
 		catch (BaseException& e) {
 			//デバッグ出力をする。
 			std::string str = e.what_m() + "\n";
 			OutputDebugStringA(str.c_str());
-
+			pPrimDevice->OnDestroy();
 			if (GetWindowInfo(m_hwnd, &winInfo)) {
 				//実行失敗した
 				MessageBoxA(m_hwnd, e.what_m().c_str(), "エラー", MB_OK);
@@ -196,13 +201,14 @@ namespace basecross {
 				//実行失敗した
 				MessageBoxA(nullptr, e.what_m().c_str(), "エラー", MB_OK);
 			}
+			retCode = 1;
 		}
 		catch (std::runtime_error& e) {
 			//デバッグ出力をする。
 			std::string str(e.what());
 			str += "\n";
 			OutputDebugStringA(str.c_str());
-
+			pPrimDevice->OnDestroy();
 			if (GetWindowInfo(m_hwnd, &winInfo)) {
 				//実行失敗した
 				MessageBoxA(m_hwnd, e.what(), "エラー", MB_OK);
@@ -211,12 +217,14 @@ namespace basecross {
 				//実行失敗した
 				MessageBoxA(nullptr, e.what(), "エラー", MB_OK);
 			}
+			retCode = 1;
 		}
 		catch (std::exception& e) {
 			//デバッグ出力をする。
 			std::string str(e.what());
 			str += "\n";
 			OutputDebugStringA(str.c_str());
+			pPrimDevice->OnDestroy();
 			//STLエラー
 			//マルチバイトバージョンのメッセージボックスを呼ぶ
 			if (GetWindowInfo(m_hwnd, &winInfo)) {
@@ -225,10 +233,12 @@ namespace basecross {
 			else {
 				MessageBoxA(nullptr, e.what(), "エラー", MB_OK);
 			}
+			retCode = 1;
 		}
 		catch (...) {
 			//デバッグ出力をする。
 			OutputDebugStringA("原因不明のエラー\n");
+			pPrimDevice->OnDestroy();
 			//原因不明失敗した
 			if (GetWindowInfo(m_hwnd, &winInfo)) {
 				MessageBox(m_hwnd, L"原因不明のエラーです", L"エラー", MB_OK);
@@ -236,12 +246,22 @@ namespace basecross {
 			else {
 				MessageBox(nullptr, L"原因不明のエラーです", L"エラー", MB_OK);
 			}
+			retCode = 1;
 		}
-		//エラー時対応
-		pPrimDevice->OnDestroy();
+		//例外処理終了
 		//COMのリリース
 		::CoUninitialize();
-		return EXIT_FAILURE;
+		if (retCode) {
+			PostQuitMessage(0);
+		}
+		return retCode;
+	}
+
+	ID3D12Device* App::GetD3D12Device() { 
+		return m_pPrimDevice->GetD3D12Device(); 
+	}
+	ComPtr<ID3D12Device> App::GetID3D12Device() {
+		return m_pPrimDevice->GetID3D12Device();
 	}
 
 	// Convert a styled window into a fullscreen borderless window and back again.
@@ -337,7 +357,7 @@ namespace basecross {
 			SWP_FRAMECHANGED | SWP_NOACTIVATE);
 	}
 
-	// ウィンドウプロシージャ
+	// Main message handler for the sample.
 	LRESULT CALLBACK App::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		PrimDevice* pPrimDevice = reinterpret_cast<PrimDevice*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
@@ -346,7 +366,7 @@ namespace basecross {
 		{
 		case WM_CREATE:
 		{
-			//CreateWindow時の PrimDevice* の保存
+			// Save the DXSample* passed in to CreateWindow.
 			LPCREATESTRUCT pCreateStruct = reinterpret_cast<LPCREATESTRUCT>(lParam);
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
 		}
@@ -355,6 +375,14 @@ namespace basecross {
 		case WM_KEYDOWN:
 			if (pPrimDevice)
 			{
+				if (pPrimDevice->IsQuiteEscapeKey()) {
+					switch (wParam) {
+					case VK_ESCAPE:
+						//ウインドウを破棄する
+						DestroyWindow(hWnd);
+						return 0;
+					}
+				}
 				pPrimDevice->OnKeyDown(static_cast<UINT8>(wParam));
 			}
 			return 0;
@@ -367,7 +395,7 @@ namespace basecross {
 			return 0;
 
 		case WM_SYSKEYDOWN:
-			// ALT+ENTER時
+			// Handle ALT+ENTER:
 			if ((wParam == VK_RETURN) && (lParam & (1 << 29)))
 			{
 				if (pPrimDevice && pPrimDevice->GetTearingSupport())
@@ -376,15 +404,14 @@ namespace basecross {
 					return 0;
 				}
 			}
-			// それ以外は、他の WM_SYSKEYDOWN default WndProcの発行
+			// Send all other WM_SYSKEYDOWN messages to the default WndProc.
 			break;
 
 		case WM_PAINT:
-			//ループ呼び出し
 			if (pPrimDevice)
 			{
-				pPrimDevice->OnUpdate();
-				pPrimDevice->OnRender();
+				//更新描画処理
+				pPrimDevice->OnUpdateDraw();
 			}
 			return 0;
 
@@ -451,8 +478,9 @@ namespace basecross {
 			return 0;
 		}
 
-		//処理しないメッセージ
+		// Handle any messages the switch statement didn't.
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 }
-// end namespace basecross 
+// end namespace basecross
+

@@ -1,127 +1,60 @@
+//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+
 /*!
 @file BaseScene.h
 @brief シーン親クラス
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #pragma once
 
 #include "stdafx.h"
 
-
 namespace basecross {
 
-	class BaseFrame;
+
+	using namespace DirectX;
+	class FrameResource;
 	class PrimDevice;
 
-	static const UINT NumNullSrvs = 2; // Null デスクプリタ
-	static const UINT NumLights = 1; //ライト数
-
-	//コマンドリスト数
-	static const int CommandListCount = 3;
-	static const int CommandListPre = 0;
-	static const int CommandListMid = 1;
-	static const int CommandListPost = 2;
-
-	namespace SceneEnums
-	{
-		namespace RenderPass {
-			enum Value { Scene = 0, Shadow, Postprocess, Count };
-		}
-
-		namespace DepthGenPass {
-			enum Value { Scene = 0, Shadow, Count };
-		}
-
-		namespace RootSignature {
-			enum { ShadowPass = 0, ScenePass, SpritePass, PostprocessPass, Count };
-		};
-
-		namespace VertexBuffer {
-			enum Value { ScreenQuad = 0, Count };
-		}
-	}
-	using namespace SceneEnums;
-
-	//--------------------------------------------------------------------------------------
-	///	BaseConstantコンスタントバッファ構造体
-	//--------------------------------------------------------------------------------------
-	struct BaseConstant
-	{
-		bsm::Mat4x4 world; // ワールド行列
-		bsm::Mat4x4 view; // ビュー行列
-		bsm::Mat4x4 projection; // 射影行列
-		bsm::Col4 emissive; // エミッシブ色
-		bsm::Col4 diffuse; // デフューズ色
-		bsm::Col4 specular;// スペキュラー
-		XMUINT4 activeFlg; // テクスチャ=xがアクティブかどうか
-		bsm::Vec4 lightDir;// ライイト方向
-		bsm::Vec4 lightPos;// ライト位置
-		bsm::Vec4 eyePos;// eyeの位置
-		bsm::Mat4x4 lightView;// ライトビュー行列
-		bsm::Mat4x4 lightProjection;// ライト射影行列
-		bsm::Vec4 Bones[3 * 72];// Bone配列
-		BaseConstant() {
-			memset(this, 0, sizeof(BaseConstant));
-			diffuse = bsm::Col4(1.0f, 1.0f, 1.0f, 1.0f);
-		};
-	};
-
-	//--------------------------------------------------------------------------------------
-	///	2D用コンスタントバッファ構造体
-	//--------------------------------------------------------------------------------------
-	struct Base2DConstant {
-		bsm::Mat4x4 transform; // 変換行列（row_majorで設定）
-		bsm::Col4 emissive; // エミッシブ色
-		bsm::Col4 diffuse; // デフューズ色
-
-	};
+	DECLARE_DX12SHADER(BcVSPNTStaticPL)
+	DECLARE_DX12SHADER(BcPSPNTPL)
+	DECLARE_DX12SHADER(BcVSPNTStaticPLShadow)
+	DECLARE_DX12SHADER(BcPSPNTPLShadow)
 
 
-	//--------------------------------------------------------------------------------------
-	///	ポストプロセス用コンスタントバッファ構造体
-	//--------------------------------------------------------------------------------------
-	struct PostprocessConstantBuffer
-	{
-		XMFLOAT4 lightPosition;
-		XMFLOAT4 cameraPosition;
-		XMFLOAT4X4 viewInverse;
-		XMFLOAT4X4 projInverse;
-		XMFLOAT4X4 viewProjInverseAtNearZ1;
-		float fogDensity;
-	};
-
-
-	//--------------------------------------------------------------------------------------
-	///	ベースシーン（親クラス）
-	//--------------------------------------------------------------------------------------
 	class BaseScene
 	{
-	protected:
+	public:
 		BaseScene(UINT frameCount, PrimDevice* pPrimDevice);
 		virtual ~BaseScene();
-	public:
-		float m_fogDensity; //フォグ密度
-		//初期化
+
 		virtual void Initialize(ID3D12Device* pDevice, ID3D12CommandQueue* pDirectCommandQueue, ID3D12GraphicsCommandList* pCommandList, UINT frameIndex);
-		//windowに依存するリソースの登録
 		virtual void LoadSizeDependentResources(ID3D12Device* pDevice, ComPtr<ID3D12Resource>* ppRenderTargets, UINT width, UINT height);
-		//windowに依存するリソースの解放
 		virtual void ReleaseSizeDependentResources();
-		//フレームインデックスの設定
 		void SetFrameIndex(UINT frameIndex);
-		//D3Dオブジェクトのリリース
 		void ReleaseD3DObjects();
-		//キーボードを押す
 		void KeyDown(UINT8 key);
-		//キーボードを離す
 		void KeyUp(UINT8 key);
-		//更新（純粋仮想関数）
 		virtual void Update(double elapsedTime) = 0;
-		//描画（仮想関数にしない）
-		void Render(ID3D12CommandQueue* pCommandQueue, bool setBackbufferReadyForPresent);
-		//自分自身の取得
-		static BaseScene* Get() { return pBaseScene; }
+		virtual void Render(ID3D12CommandQueue* pCommandQueue, bool setBackbufferReadyForPresent);
+		static BaseScene* Get(){ return s_baseScene; }
+		std::vector<std::unique_ptr<FrameResource>>& GetFrameResources() {
+			return m_frameResources;
+		}
+		FrameResource* GetCurrentFrameResource()const {
+			return m_pCurrentFrameResource;
+		}
 		//Rtvディスクリプタヒープの取得
 		ComPtr<ID3D12DescriptorHeap> GetRtvDescriptorHeap() const {
 			return m_rtvHeap;
@@ -132,7 +65,7 @@ namespace basecross {
 		}
 		//CbvSrvUavディスクリプタヒープの取得
 		ComPtr<ID3D12DescriptorHeap> GetCbvSrvUavDescriptorHeap() const {
-			return m_cbvSrvUavHeap;
+			return m_cbvSrvHeap;
 		}
 		//サンプラーディスクリプタヒープの取得
 		ComPtr<ID3D12DescriptorHeap> GetSamplerDescriptorHeap() const {
@@ -154,6 +87,11 @@ namespace basecross {
 		UINT GetSamplerDescriptorHandleIncrementSize() const {
 			return m_samplerDescriptorSize;
 		}
+		inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferRtvCpuHandle()
+		{
+			return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(), m_frameIndex, m_rtvDescriptorSize);
+		}
+
 		//Srv(シェーダーリソースビュー)の次のインデックスの取得
 		UINT GetSrvNextIndex();
 		//Cbv(コンスタントバッファビュー)の次のインデックスの取得
@@ -162,6 +100,26 @@ namespace basecross {
 		UINT GetSamplerNextIndex();
 		//指定したサンプラーのインデックスの取得
 		UINT GetSamplerIndex(const std::wstring& key);
+		//ビューポートの取得
+		const CD3DX12_VIEWPORT& GetViewport()const  {
+			return m_viewport;
+		}
+		//シザーレクトの取得
+		const CD3DX12_RECT& GetScissorRect() {
+			return m_scissorRect;
+		}
+		//CPU側デプスハンドルの取得
+		D3D12_CPU_DESCRIPTOR_HANDLE* GetDepthDsvs() {
+			return m_depthDsvs;
+		}
+		//CPU側シェーダーリソースデプスハンドルの取得
+		D3D12_CPU_DESCRIPTOR_HANDLE* GetDepthSrvCpuHandles() {
+			return m_depthSrvCpuHandles;
+		}
+		//GPU側シェーダーリソースデプスハンドルの取得
+		D3D12_GPU_DESCRIPTOR_HANDLE* GetDepthSrvGpuHandles() {
+			return m_depthSrvGpuHandles;
+		}
 		//GPUのスロットIDの設定
 		void SetGpuSlot(const std::wstring& key, UINT val) {
 			m_gpuSlotMap[key] = val;
@@ -182,67 +140,29 @@ namespace basecross {
 			);
 			return 0;
 		}
-		UINT GetFrameCount() const 
-		{
-			return m_frameCount;
-		}
-		UINT GetFrameIndex() const {
-			return m_frameIndex;
-		}
-		std::vector<std::unique_ptr<BaseFrame>>& GetframeResources() {
-			return m_frameResources;
-		}
-		ComPtr<ID3D12RootSignature>* GetRootSignatures(){
-			return m_rootSignatures;
-		}
-		const CD3DX12_VIEWPORT& GetViewport() const {
-			return m_viewport;
-		}
-		const CD3DX12_RECT& GetScissorRect() const {
-			return m_scissorRect;
-		}
-		inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferRtvCpuHandle()
-		{
-			return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(), m_frameIndex, m_rtvDescriptorSize);
-		}
-		virtual UINT GetNumRtvDescriptors() const
-		{
-			return m_frameCount;
-		}
-		D3D12_CPU_DESCRIPTOR_HANDLE* GetDepthDsvs() {
-			return m_depthDsvs;
-		}
-		//UI文字列の更新
-		virtual void UpdateUI(std::wstring& uiText){}
+		float m_fogDensity;
 	protected:
-		const UINT m_frameCount; //フレーム数
-		//ポストプロセス用の頂点定義
-		struct Vertex
-		{
-			XMFLOAT4 position;
-		};
-		//コマンドリストの配列
-		ID3D12CommandList* m_batchSubmit[2 + CommandListCount];   // 2: shadowCommandLists, sceneCommandLists
+		UINT m_frameCount;
 
-		CD3DX12_VIEWPORT m_viewport;//ビューポート
-		CD3DX12_RECT m_scissorRect;//シザー矩形
+		// *2: shadowCommandLists, sceneCommandLists
+		ID3D12CommandList* m_batchSubmit[2 + CommandListCount];   
+		// Pipeline objects.
+		CD3DX12_VIEWPORT m_viewport;
+		CD3DX12_RECT m_scissorRect;
 
-		// D3D オブジェクト
+		// D3D objects.
 		ComPtr<ID3D12GraphicsCommandList> m_commandLists[CommandListCount];
 		ComPtr<ID3D12GraphicsCommandList> m_shadowCommandList;
 		ComPtr<ID3D12GraphicsCommandList> m_sceneCommandList;
 		std::vector<ComPtr<ID3D12Resource>> m_renderTargets;
 		ComPtr<ID3D12Resource> m_depthTextures[SceneEnums::DepthGenPass::Count];
-		ComPtr<ID3D12RootSignature> m_rootSignatures[SceneEnums::RootSignature::Count];
-//		ComPtr<ID3D12PipelineState> m_pipelineStates[SceneEnums::RenderPass::Count];
-		ComPtr<ID3D12Resource> m_vertexBuffers[SceneEnums::VertexBuffer::Count];
-		D3D12_VERTEX_BUFFER_VIEW m_vertexBufferViews[SceneEnums::VertexBuffer::Count];
 
-		// Heap オブジェクト
+		// Heap objects.
 		ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
 		ComPtr<ID3D12DescriptorHeap> m_dsvHeap;
-		ComPtr<ID3D12DescriptorHeap> m_cbvSrvUavHeap;
+		ComPtr<ID3D12DescriptorHeap> m_cbvSrvHeap;
 		ComPtr<ID3D12DescriptorHeap> m_samplerHeap;
+
 		UINT m_rtvDescriptorSize;
 		UINT m_dsvDescriptorSize;
 		UINT m_cbvSrvDescriptorSize;
@@ -252,28 +172,28 @@ namespace basecross {
 		D3D12_CPU_DESCRIPTOR_HANDLE m_depthSrvCpuHandles[SceneEnums::DepthGenPass::Count];
 		D3D12_GPU_DESCRIPTOR_HANDLE m_depthSrvGpuHandles[SceneEnums::DepthGenPass::Count];
 
-		// フレームリソース
-		std::vector<std::unique_ptr<BaseFrame>> m_frameResources;
-		BaseFrame* m_pCurrentBaseFrame;
+		// Frame resources.
+		std::vector<std::unique_ptr<FrameResource>> m_frameResources;
+		FrameResource* m_pCurrentFrameResource;
 		UINT m_frameIndex;
 
 		// App resources.
+		PrimDevice* m_pPrimDevice;
+
 		static const float s_clearColor[4];
 
 		// Window state
 		bool m_windowVisible;
 		bool m_windowedMode;
 
-		static BaseScene* pBaseScene;
-
-		//以下、追加
 		//cbvSrvUav管理用
 		//CbvSrvUavの最大値
 		const UINT m_cbvSrvUavMax = 4096;
 		//Srvの開始インデックス(NullSrv用とdepthSrv用を前に置く)
 		//NullSrv==2
 		//_countof(m_depthSrvCpuHandles)==2
-		const UINT m_srvStartIndex = 4;
+		// NumNullSrvs + _countof(m_depthSrvCpuHandles)
+		const UINT m_srvStartIndex = NumNullSrvs + _countof(m_depthSrvCpuHandles);
 		//Srvの最大値
 		const UINT m_srvMax = 1024;
 		//Srvの発行インデックス
@@ -291,6 +211,37 @@ namespace basecross {
 
 		//ルートシグネチャで設定されるGPUスロットのマップ
 		std::map<std::wstring, UINT> m_gpuSlotMap;
+
+		HANDLE m_workerBeginRenderFrame;
+		HANDLE m_workerFinishShadowPass;
+		HANDLE m_workerFinishedScenePass;
+		HANDLE m_threadHandles;
+		// Singleton object so that worker threads can share members.
+		static BaseScene* s_baseScene;
+		// Updates the shadow copies of the constant buffers.
+		virtual void UpdateConstantBuffers() = 0; 
+		// Commits the shadows copies of the constant buffers to GPU-visible memory for the current frame.
+		virtual void CommitConstantBuffers() = 0; 
+		virtual void DrawInScattering(ID3D12GraphicsCommandList* pCommandList, const D3D12_CPU_DESCRIPTOR_HANDLE& renderTargetHandle);
+		void WorkerThread();
+
+		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList) = 0;
+		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList) = 0;
+		virtual void PostprocessPass(ID3D12GraphicsCommandList* pCommandList);
+
+		virtual void BeginFrame();
+		virtual void MidFrame();
+		virtual void EndFrame(bool setBackbufferReadyForPresent);
+
+		virtual void CreateDescriptorHeaps(ID3D12Device* pDevice);
+		virtual void CreateCommandLists(ID3D12Device* pDevice);
+		virtual void CreateRootSignatures(ID3D12Device* pDevice);
+		virtual void CreatePipelineStates(ID3D12Device* pDevice);
+		virtual void CreateFrameResources(ID3D12Device* pDevice, ID3D12CommandQueue* pCommandQueue);
+		virtual void CreateBasicResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList);
+		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) = 0;
+		virtual void CreatePostprocessPassResources(ID3D12Device* pDevice);
+		virtual void CreateSamplers(ID3D12Device* pDevice);
 
 		inline HRESULT CreateDepthStencilTexture2D(
 			ID3D12Device* pDevice,
@@ -354,38 +305,19 @@ namespace basecross {
 			return S_OK;
 		}
 
+		virtual UINT GetNumRtvDescriptors() const
+		{
+			return m_frameCount;
+		}
 
-		//これよ仮想関数
-		//以下、D3Dリソースの作成
-		virtual void CreateDescriptorHeaps(ID3D12Device* pDevice);
-		virtual void CreateCommandLists(ID3D12Device* pDevice);
-		virtual void CreateRootSignatures(ID3D12Device* pDevice);
-		virtual void CreatePipelineStates(ID3D12Device* pDevice) = 0;
-		virtual void CreateBaseFrames(ID3D12Device* pDevice, ID3D12CommandQueue* pCommandQueue);
-		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList);
-		virtual void CreateSceneResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) = 0;
-		virtual void CreatePostprocessPassResources(ID3D12Device* pDevice);
-		virtual void CreateSamplers(ID3D12Device* pDevice);
-
-		//フレーム処理の準備
-		virtual void BeginFrame();
-		//フレームのリセット
-		virtual void MidFrame();
-		//フレームの終了
-		virtual void EndFrame(bool setBackbufferReadyForPresent);
-
-		//シャドウとシーンの描画処理
-		virtual void WorkerThread();
-		//描画処理（シャドウ）
-		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList) = 0;
-		//描画処理（シーン）
-		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList) = 0;
-		//描画処理（ポストプロセス）
-		virtual void PostprocessPass(ID3D12GraphicsCommandList* pCommandList);
-
-
-
+		virtual UINT GetNumCbvSrvUavDescriptors() const
+		{
+			return m_cbvSrvUavMax;
+		}
+		virtual UINT GetNumSamplerDescriptors() const
+		{
+			return m_samplerMax;
+		}
 	};
 }
-using namespace basecross;
 // end namespace basecross

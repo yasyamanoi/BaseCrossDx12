@@ -1,10 +1,12 @@
 /*!
 @file MeshHelper.h
-@brief メッシュヘルパークラス
+@brief メッシュ制作ユーティリティクラス
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #pragma once
+
 #include "stdafx.h"
 
 namespace basecross {
@@ -138,9 +140,9 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static void CreateCapsule(float diameter,
-			const bsm::Vec3& PointA, const bsm::Vec3& PointB,
+			const XMFLOAT3& PointA, const XMFLOAT3& PointB,
 			size_t tessellation,
-			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices,bool landscape = false);
+			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices, bool landscape = false);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPosNormalTexフォーマットのシリンダーを作成する(static関数)
@@ -155,7 +157,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		static void CreateCylinder(float height, float diameter, size_t tessellation,
 			std::vector<VertexPositionNormalTexture>& vertices, std::vector<uint32_t>& indices,
-			 bool landscape = false);
+			bool landscape = false);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	VertexPosNormalTexフォーマットのコーンを作成する(static関数)
@@ -241,8 +243,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void SetNormalTangent(std::vector<VertexPositionNormalTangentTextureSkinning>& vertices);
-
+//		static void SetNormalTangent(std::vector<VertexPositionNormalTangentTextureSkinning>& vertices);
+/*
 		static void ConvertVertex(const std::vector<VertexPositionNormalTexture>& vertices,
 			std::vector<VertexPositionColor>& new_pc_vertices,
 			std::vector<VertexPositionNormal>& new_pn_vertices,
@@ -263,7 +265,7 @@ namespace basecross {
 				VertexPositionNormalTextureTangent new_pnttn_v;
 
 				new_pc_v.position = vertices[i].position;
-				new_pc_v.color = bsm::Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+				new_pc_v.color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 				new_pn_v.position = vertices[i].position;
 				new_pn_v.normal = vertices[i].normal;
@@ -274,7 +276,7 @@ namespace basecross {
 				new_pntnt_v.position = vertices[i].position;
 				new_pntnt_v.normal = vertices[i].normal;
 				new_pntnt_v.textureCoordinate = vertices[i].textureCoordinate;
-				bsm::Vec3 n = bsm::cross((bsm::Vec3)new_pntnt_v.normal, bsm::Vec3(0, 1, 0));
+				XMFLOAT3 n = bsm::cross((bsm::Vec3)new_pntnt_v.normal, bsm::Vec3(0, 1, 0));
 				new_pntnt_v.tangent = bsm::Vec4(n.x, n.y, n.z, 0.0f);
 				new_pntnt_v.tangent.w = 0.0f;
 
@@ -294,14 +296,12 @@ namespace basecross {
 
 			}
 
+
 		}
+*/		
 
 
 	};
 
-
-
-
 }
-using namespace basecross;
-//end basecross
+//end namespace basecross
