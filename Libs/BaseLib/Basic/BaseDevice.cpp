@@ -32,6 +32,7 @@ namespace basecross {
 		m_bCtrlKeyIsPressed(false),
 		m_activeGpuPreference(DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE),
 		m_fps(0.0f),
+		m_elapsedTime(0.0),
 		m_manualAdapterSelection(false),
 		m_adapterChangeEvent(NULL),
 		m_adapterChangeRegistrationCookie(0),
@@ -261,7 +262,7 @@ namespace basecross {
 			wLabel << fixed << L"FPS: " << m_fps
 				<< L"\n";
 			wLabel.precision(6);
-			wLabel << L"ElapsedTime: " << m_timer.GetElapsedSeconds()
+			wLabel << L"ElapsedTime: " << m_elapsedTime
 				<< L"\n";
 			labels.push_back(wLabel.str());
 		}
@@ -659,7 +660,9 @@ namespace basecross {
 		{
 			float diff = static_cast<float>(totalTime - elapsedTime);
 			m_fps = static_cast<float>(frameCnt) / diff; // Normalize to an exact second.
-
+			if (m_fps > 0.0f) {
+				m_elapsedTime = 1.0 / (double)m_fps;
+			}
 			frameCnt = 0;
 			elapsedTime = totalTime;
 

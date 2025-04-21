@@ -197,7 +197,6 @@
  <strong>Scene::Update()関数</strong>は、以下のような内容です。
 <pre class="my-3 p-3">
 	void Scene::Update(double elapsedTime) {
-		m_myCamera->CalculateMatrix();
 		for (auto& v : m_gameObjectvec) {
 			v->OnUpdate(elapsedTime);
 		}
@@ -206,10 +205,6 @@
 	}
 </pre>
 　ここでは、
-<pre class="my-3 p-3">
-		m_myCamera->CalculateMatrix();
-</pre>
-　でカメラの行列を計算します。カメラは、内部のパラメータが変更になったときに、自動的に<strong>CalculateMatrix()関数</strong>を呼び出すのですが、ここで呼んでおくと、より安全です。その後
 <pre class="my-3 p-3">
 		for (auto& v : m_gameObjectvec) {
 			v->OnUpdate(elapsedTime);

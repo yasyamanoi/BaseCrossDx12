@@ -95,6 +95,7 @@ namespace basecross {
 		std::unique_ptr<UILayer> m_uiLayer;
 		bool m_bCtrlKeyIsPressed;
 		float m_fps;
+		double m_elapsedTime;
 
 		StepTimer m_timer;
 

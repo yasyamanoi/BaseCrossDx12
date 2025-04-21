@@ -87,6 +87,7 @@ namespace basecross {
 		m_fovY(XM_PIDIV4)
 
 	{
+		CalculateMatrix();
 	}
 
 	float PerspecCamera::GetFovY() const { return m_fovY; }
@@ -102,10 +103,9 @@ namespace basecross {
 	}
 
 	void PerspecCamera::CalculateMatrix() {
-		auto pBaseScene = BaseScene::Get();
-		auto& viewport = pBaseScene->GetViewport();
-		auto width = viewport.Width;
-		auto height = viewport.Height;
+		auto device = BaseDevice::GetBaseDevice();
+		float width = (float)device->GetWidth();
+		float height = (float)device->GetHeight();
 		m_aspect = width / height;
 		m_viewMatrix 
 			= bsm::makeF4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
@@ -118,9 +118,10 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	OrthoCamera::OrthoCamera() :
 		Camera(),
-		m_width(0),
-		m_height(0)
+		m_width(32.0f),
+		m_height(24.0f)
 	{
+		CalculateMatrix();
 	}
 
 
@@ -138,10 +139,6 @@ namespace basecross {
 	}
 
 	void OrthoCamera::CalculateMatrix() {
-		auto pBaseScene = BaseScene::Get();
-		auto& viewport = pBaseScene->GetViewport();
-		m_width = viewport.Width;
-		m_height = viewport.Height;
 		m_viewMatrix
 			= bsm::makeF4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
 		m_projMatrix

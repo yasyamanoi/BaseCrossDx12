@@ -43,7 +43,6 @@ namespace basecross {
 
 
 	void Scene::Update(double elapsedTime) {
-		m_myCamera->CalculateMatrix();
 		for (auto& v : m_gameObjectvec) {
 			v->OnUpdate(elapsedTime);
 		}
