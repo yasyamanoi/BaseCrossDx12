@@ -1,5 +1,5 @@
 /*!
-@file GameObject.h
+@file MyObject.h
 @brief ゲームオブジェクトクラス
 */
 
@@ -15,7 +15,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	// 配置されるオブジェクトの親
 	//--------------------------------------------------------------------------------------
-	class GameObject : public ObjectInterface {
+	class MyObject : public ObjectInterface {
 	protected:
 		TransParam m_param;
 		BaseConstantBuffer m_constantBuffer;
@@ -34,11 +34,11 @@ namespace basecross {
 		XMFLOAT4 m_fogColor;
 		//フォグベクトル
 		XMFLOAT3 m_fogVector;
-		GameObject(const TransParam& param):m_param(param){
+		MyObject(const TransParam& param):m_param(param){
 			m_fogColor = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 			m_fogVector = XMFLOAT3(0.0, 0.0, 1.0f);
 		}
-		virtual ~GameObject() {}
+		virtual ~MyObject() {}
 
 		shared_ptr<BaseMesh> m_mesh;
 		shared_ptr < BaseTexture> m_texture;
@@ -58,7 +58,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	// 四角のオブジェクト
 	//--------------------------------------------------------------------------------------
-	class WallBox : public  GameObject {
+	class WallBox : public  MyObject {
 		double m_totalTime;
 	protected:
 	public:
@@ -71,7 +71,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	// ステージのオブジェクト
 	//--------------------------------------------------------------------------------------
-	class SkyStage : public GameObject {
+	class SkyStage : public MyObject {
 	public:
 		SkyStage(const TransParam& param);
 		virtual ~SkyStage();

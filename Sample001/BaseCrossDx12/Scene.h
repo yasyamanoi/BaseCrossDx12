@@ -9,7 +9,7 @@
 
 namespace basecross {
 
-	class GameObject;
+	class MyObject;
 
 	using namespace std;
 	using namespace SceneEnums;
@@ -19,15 +19,15 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class Scene : public BaseScene
 	{
-		vector<shared_ptr<GameObject>> m_gameObjectvec;
+		vector<shared_ptr<MyObject>> m_myObjectvec;
 	public:
 		Scene(UINT frameCount, PrimDevice* pSample);
 		virtual ~Scene();
 		template<typename T, typename... Ts>
-		shared_ptr<T> AddGameObject(ID3D12GraphicsCommandList* pCommandList, Ts&&... params) {
+		shared_ptr<T> AddMyObject(ID3D12GraphicsCommandList* pCommandList, Ts&&... params) {
 			try {
 				auto Ptr = ObjectFactory::Create<T>(pCommandList, params...);
-				m_gameObjectvec.push_back(Ptr);
+				m_myObjectvec.push_back(Ptr);
 				return Ptr;
 			}
 			catch (...) {

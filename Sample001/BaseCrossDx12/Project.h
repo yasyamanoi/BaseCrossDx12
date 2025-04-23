@@ -7,4 +7,4 @@
 #pragma once
 
 ////ƒRƒ“ƒeƒ“ƒc‘¤
-#include "GameObject.h"
+#include "MyObject.h"

@@ -28,15 +28,15 @@
 	//--------------------------------------------------------------------------------------
 	class Scene : public BaseScene
 	{
-		<span class="red">vector&lt;shared_ptr&lt;GameObject>> m_gameObjectvec;</span>
+		<span class="red">vector&lt;shared_ptr&lt;MyObject>> m_myObjectvec;</span>
 	public:
 		Scene(UINT frameCount, PrimDevice* pSample);
 		virtual ~Scene();
 		template&lt;typename T, typename... Ts>
-		shared_ptr&lt;T> AddGameObject(ID3D12GraphicsCommandList* pCommandList, Ts&&... params) {
+		shared_ptr&lt;T> AddMyObject(ID3D12GraphicsCommandList* pCommandList, Ts&&... params) {
 			try {
 				auto Ptr = ObjectFactory::Create&lt;T>(pCommandList, params...);
-				m_gameObjectvec.push_back(Ptr);
+				m_myObjectvec.push_back(Ptr);
 				return Ptr;
 			}
 			catch (...) {
@@ -82,32 +82,32 @@
 		auto quat = XMQuaternionIdentity();
 		param.quaternion = bsm::makeF4(quat);
 		param.position = XMFLOAT3(0.0, 5.0, 0.0f);
-		<span class="red">AddGameObject&lt;WallBox>(pCommandList, param);</span>
+		<span class="red">AddMyObject&lt;WallBox>(pCommandList, param);</span>
 		param.scale = XMFLOAT3(50, 1, 50);
 		param.position = XMFLOAT3(0, -0.5, 0.0f);
-		<span class="red">AddGameObject&lt;SkyStage>(pCommandList, param);</span>
+		<span class="red">AddMyObject&lt;SkyStage>(pCommandList, param);</span>
 	}
 </pre>
 　<strong>CreateAssetResources()関数</strong>をはじめ、<strong>BaseSceneクラス</strong>から継承する関数は、こう書かなければいけない、というわけでもなく、各オブジェクトを効率よく管理できる設計であれば、サンプル通りでなくても構いません。<br>
 　このサンプルでは、あらかじめ<strong>Sceneクラス</strong>に
 <pre class="my-3 p-3">
-		<span class="red">vector&lt;shared_ptr&lt;GameObject>> m_gameObjectvec;</span>
+		<span class="red">vector&lt;shared_ptr&lt;MyObject>> m_myObjectvec;</span>
 </pre>
-　という<strong>GameObjectの配列</strong>を持っており、それを使って各オブジェクトを管理します。<br>
-　<strong>GameObjectクラス</strong>は<strong>GameObject.h/cpp</strong>に記述されています。<br>
+　という<strong>MyObjectの配列</strong>を持っており、それを使って各オブジェクトを管理します。<br>
+　<strong>MyObjectクラス</strong>は<strong>MyObject.h/cpp</strong>に記述されています。<br>
  <strong>CreateAssetResources()関数</strong>では、最初に
 <pre class="my-3 p-3">
 		m_myCamera = shared_ptr&lt;PerspecCamera>(new PerspecCamera());
 		m_myLightSet = shared_ptr&lt;LightSet>(new LightSet());
 </pre>
 　という形で<strong>カメラとライト</strong>を作成しています。<br>
-　その後<strong>WallBox</strong>クラスと<strong>SkyStage</strong>クラスの、2つのインスタンスを<strong>AddGameObject()関数</strong>を使って作成しています。<strong>AddGameObject()関数</strong>はテンプレート関数になっていて、<strong>Scene.h</strong>に記述されている通り
+　その後<strong>WallBox</strong>クラスと<strong>SkyStage</strong>クラスの、2つのインスタンスを<strong>AddMyObject()関数</strong>を使って作成しています。<strong>AddMyObject()関数</strong>はテンプレート関数になっていて、<strong>Scene.h</strong>に記述されている通り
 <pre class="my-3 p-3">
 		template&lt;typename T, typename... Ts>
-		shared_ptr&lt;T> AddGameObject(ID3D12GraphicsCommandList* pCommandList, Ts&&... params) {
+		shared_ptr&lt;T> AddMyObject(ID3D12GraphicsCommandList* pCommandList, Ts&&... params) {
 			try {
 				auto Ptr = ObjectFactory::Create&lt;T>(pCommandList, params...);
-				m_gameObjectvec.push_back(Ptr);
+				m_myObjectvec.push_back(Ptr);
 				return Ptr;
 			}
 			catch (...) {
@@ -115,16 +115,16 @@
 			}
 		}
 </pre>
-　という記述です。<strong>BaseCross64</strong>を使ったことがある人はわかると思いますが、<strong>GameObjectクラス</strong>は<strong>ObjectInterface</strong>の派生クラスになっており、<strong>AddGameObject()関数</strong>を使うことで、<strong>GameObject::OnCreate()関数</strong>を自動的に呼び出すことができます。<br>
+　という記述です。<strong>BaseCross64</strong>を使ったことがある人はわかると思いますが、<strong>MyObjectクラス</strong>は<strong>ObjectInterface</strong>の派生クラスになっており、<strong>AddMyObject()関数</strong>を使うことで、<strong>MyObject::OnCreate()関数</strong>を自動的に呼び出すことができます。<br>
 <h5>計算ライブラリ</h5>
 　<strong>BaseCross64</strong>を使った人はわかるかと思いますが、<strong>BaseCross64</strong>では、計算ライブラリとして<strong>bsm::Vec3、bsm::Vec4クラス</strong>などがありました。これらは<strong>DirectXMath</strong>をラッピングするクラスで、<strong>DirectXMath</strong>のクラスを渡しても動くようになっていたのですが、<strong>BaseCrossDx12</strong>では、これらのクラスはなくして<strong>DirectXMath</strong>だけで計算するようにしました。<br>
 　とはいえ<strong>DirectXMath</strong>は多機能なのですが、ほとんど<strong>関数呼び出し</strong>で記述しなければならず、また、その根っこにある<strong>XMVECTOR</strong>や<strong>XMMATRIX</strong>は使うのに結構厄介だったりするので、<strong>BaseCrossDx12</strong>では、汎用的な型は<strong>XMFLOAT3</strong>や<strong>XMFLOAT4X4</strong>などを使うようにしています。ただそうすると計算関数を呼ぶために<strong>XMVECTOR</strong>や<strong>XMMATRIX</strong>に、いったん変換しなければいけません。ですのでそういった<strong>変換処理</strong>をする関数などを<strong>bsmネームスペース</strong>に記述しています。<strong>Scene::CreateAssetResources()関数</strong>における<strong>bsm::makeF4()関数</strong>などがそうです。この関数は<strong>XMVECTORからXMFLOAT4</strong>を作り出します。
-<h5>GameObjectクラス</h5>
-　<strong>Scene::AddGameObject()関数</strong>によって追加される<strong>GameObject</strong>は<strong>GameObject.h/cpp</strong>に記述されています。<br>
-　<strong>GameObjectクラス</strong>のコンストラクタは<strong>protected</strong>メンバになっており、直接は作成できません。<br>
-　派生クラスを作り、それを<strong>Scene::AddGameObject()関数</strong>で追加します。以下は<strong>WallBoxクラス</strong>の宣言部です。
+<h5>MyObjectクラス</h5>
+　<strong>Scene::AddMyObject()関数</strong>によって追加される<strong>MyObject</strong>は<strong>MyObject.h/cpp</strong>に記述されています。<br>
+　<strong>MyObjectクラス</strong>のコンストラクタは<strong>protected</strong>メンバになっており、直接は作成できません。<br>
+　派生クラスを作り、それを<strong>Scene::AddMyObject()関数</strong>で追加します。以下は<strong>WallBoxクラス</strong>の宣言部です。
 <pre class="my-3 p-3">
-	class WallBox : public  GameObject {
+	class WallBox : public  MyObject {
 		double m_totalTime;
 	protected:
 	public:
@@ -148,7 +148,7 @@
 　<strong>WallBox::OnCreate()関数</strong>は、以下のような記述です。
 <pre class="my-3 p-3">
 	void WallBox::OnCreate(ID3D12GraphicsCommandList* pCommandList){
-		<span class="red">GameObject::OnCreate(pCommandList);</span>
+		<span class="red">MyObject::OnCreate(pCommandList);</span>
 		//メッシュ
 		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
 		//テクスチャ
@@ -158,12 +158,12 @@
 </pre>
 　関数の先頭に
 <pre class="my-3 p-3">
-		<span class="red">GameObject::OnCreate(pCommandList);</span>
+		<span class="red">MyObject::OnCreate(pCommandList);</span>
 </pre>
-　という記述がありますが、これは<strong>親クラス（GameObjectクラス）</strong>の<strong>OnCreate()関数</strong>を呼び出しています。<br>
-　<strong>GameObject::OnCreate()関数</strong>は、<strong>WallBoxクラス</strong>、<strong>SkyStageクラス</strong>共通の処理をまとめてあります。最初にその関数を呼び出しています。以下のような記述になっています。
+　という記述がありますが、これは<strong>親クラス（MyObjectクラス）</strong>の<strong>OnCreate()関数</strong>を呼び出しています。<br>
+　<strong>MyObject::OnCreate()関数</strong>は、<strong>WallBoxクラス</strong>、<strong>SkyStageクラス</strong>共通の処理をまとめてあります。最初にその関数を呼び出しています。以下のような記述になっています。
 <pre class="my-3 p-3">
-	void GameObject::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
+	void MyObject::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pBaseDevice = BaseDevice::GetBaseDevice();
@@ -184,7 +184,7 @@
 　<strong>FrameResources</strong>はそれぞれの<strong>バッファ</strong>に対応します。<strong>バッファ</strong>が入れ替わっても、<strong>GPU側コンスタントバッファ</strong>への書き込みができるように<strong>BaseDevice::FrameCount</strong>の数だけ（すなわち3つ）、<strong>GPU側コンスタントバッファ</strong>を作成します。<br>
 　<strong>AddBaseConstantBufferSet()テンプレート関数</strong>は、<strong>GPU側コンスタントバッファと書き込みオンリーのバッファ</strong>を作成し、シェーダーに渡せるようにします。<br>
 　戻り値が、<strong>m_constantBufferIndex（シーン用）</strong>、<strong>m_shadowConstantBufferIndex（シャドウマップ用）</strong>に上書きされながらループしますが、フレームごとに同じインデックスを持つので、安全です。<br>
-　<strong>WallBox::OnCreate()関数</strong>では、上記の<strong>GameObject::OnCreate()関数</strong>を呼び出した後、個別のクリエイト処理を行います。
+　<strong>WallBox::OnCreate()関数</strong>では、上記の<strong>MyObject::OnCreate()関数</strong>を呼び出した後、個別のクリエイト処理を行います。
 <pre class="my-3 p-3">
 		//メッシュ
 		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
@@ -197,7 +197,7 @@
  <strong>Scene::Update()関数</strong>は、以下のような内容です。
 <pre class="my-3 p-3">
 	void Scene::Update(double elapsedTime) {
-		for (auto& v : m_gameObjectvec) {
+		for (auto& v : m_myObjectvec) {
 			v->OnUpdate(elapsedTime);
 		}
 		UpdateConstantBuffers();
@@ -206,11 +206,11 @@
 </pre>
 　ここでは、
 <pre class="my-3 p-3">
-		for (auto& v : m_gameObjectvec) {
+		for (auto& v : m_myObjectvec) {
 			v->OnUpdate(elapsedTime);
 		}
 </pre>
-　と、それぞれの<strong>GameObject::OnUpdate()関数</strong>を呼び出します。<br>
+　と、それぞれの<strong>MyObject::OnUpdate()関数</strong>を呼び出します。<br>
 　この関数は仮想関数なので<strong>WallBox::OnUpdate()関数</strong>もしくは<strong>SkyStage::OnUpdate()関数</strong>が呼ばれます。<br>
 　以下は<strong>WallBox::OnUpdate()関数</strong>ですが
 <pre class="my-3 p-3">
@@ -236,19 +236,19 @@
 </pre>
 　と、位置情報の<strong>x要素</strong>を変更してます。
 <h5>UpdateConstantBuffers()関数</h5>
-　<strong>Scene::UpdateConstantBuffers()関数</strong>では、以下のように各GameObjectの<strong>UpdateConstantBuffers()関数</strong>を呼び出しています。
+　<strong>Scene::UpdateConstantBuffers()関数</strong>では、以下のように各MyObjectの<strong>UpdateConstantBuffers()関数</strong>を呼び出しています。
 <pre class="my-3 p-3">
 	void Scene::UpdateConstantBuffers()
 	{
-		for (auto& v : m_gameObjectvec) {
+		for (auto& v : m_myObjectvec) {
 			v->UpdateConstantBuffers(this);
 		}
 	}
 </pre>
-　これは共通処理でいいので<strong>GameObject::UpdateConstantBuffers()</strong>に記述されています。<br>
+　これは共通処理でいいので<strong>MyObject::UpdateConstantBuffers()</strong>に記述されています。<br>
 　結構大きな関数なので、省略して以下に記述します。
 <pre class="my-3 p-3">
-	void GameObject::UpdateConstantBuffers(Scene* scene) {
+	void MyObject::UpdateConstantBuffers(Scene* scene) {
 		//シーンのコンスタントバッファ
 		{
 			auto& frameResources = scene->GetFrameResources();
@@ -292,9 +292,9 @@
 　このように、シーン用のコンスタントバッファとシャドウマップ用のコンスタントバッファを記述します。<br>
 　細かい内容についてはサンプルのコードを参照してください。
 <h5>CommitConstantBuffers()関数</h5>
-　この関数も同様、<strong>Scene::CommitConstantBuffers()関数</strong>では、<strong>各GameObjectのCommitConstantBuffers()関数</strong>を呼び出します。内容は以下です。シンプルです。
+　この関数も同様、<strong>Scene::CommitConstantBuffers()関数</strong>では、<strong>各MyObjectのCommitConstantBuffers()関数</strong>を呼び出します。内容は以下です。シンプルです。
 <pre class="my-3 p-3">
-	void GameObject::CommitConstantBuffers(Scene* scene) {
+	void MyObject::CommitConstantBuffers(Scene* scene) {
 		auto pCurrentFrameResource = scene->GetCurrentFrameResource();
 		//シーン
 		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_pBaseConstantBufferWO,
@@ -323,15 +323,15 @@
 		// No render target needed for the shadow pass.
 		<span class="red">pCommandList->OMSetRenderTargets(0, nullptr, FALSE, &m_depthDsvs[DepthGenPass::Shadow]);</span>
 		//以下は各オブジェクト
-		for (auto& v : m_gameObjectvec) {
+		for (auto& v : m_myObjectvec) {
 			v->OnShadowDraw(pCommandList);
 		}
 	}
 </pre>
-　その後、各<strong>GameObject::OnShadowDraw()関数</strong>に処理を任せます。<br>
-　GameObjectでは、以下のように記述されます。
+　その後、各<strong>MyObject::OnShadowDraw()関数</strong>に処理を任せます。<br>
+　MyObjectでは、以下のように記述されます。
 <pre class="my-3 p-3">
-	void GameObject::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
+	void MyObject::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
@@ -398,7 +398,7 @@
 		);
 		pCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"s1"), samplerHandle2);
 
-		for (auto& v : m_gameObjectvec) {
+		for (auto& v : m_myObjectvec) {
 			v->OnSceneDraw(pCommandList);
 		}
 	}
@@ -406,7 +406,7 @@
 　ここでは、<strong>ルートシグネチャ、シャドウマップ、サンプラー、パイプラインステート</strong>などを設定し、各<strong>GemaObject::OnSceneDraw()関数</strong>を呼びます。<br>
 　<strong>GemaObject::OnSceneDraw()関数</strong>は以下です。
 <pre class="my-3 p-3">
-	void GameObject::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
+	void MyObject::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
 
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
@@ -442,9 +442,7 @@
 　と描画処理をします。
 <h5>まとめ</h5>
 　このサンプルでは、シンプルながらも<strong>シャドウマップ</strong>や<strong>オブジェクトの動的な変化</strong>をさせる、3D描画の内容となっています。<br>
-　ここでは、オブジェクトは2つですが、これが100個になっても、大きく処理は変わりません。いろんな種類の<strong>ゲームオブジェクト</strong>を作成するためには<strong>GameObjectクラス</strong>を継承すれば作成できます。<br>
-　ただ、この設計がベストなのかどうかは、わかりません。<strong>BaseCross64</strong>に合わせ<strong>GameObjectクラス</strong>を実装しましたが、ゲームによっては別の設計のほうが、しっくりいく場合もあります。<br>
-　いろいろな設計を試してみるのもいいでしょう。<br>
+　ここでは、オブジェクトは2つですが、これが100個になっても、大きく処理は変わりません。いろんな種類の<strong>ゲームオブジェクト</strong>を作成するためには<strong>MyObjectクラス</strong>を継承すれば作成できます。<br>
 <footer class="py-3 my-4">
 <ul class="nav justify-content-center border-top pb-3 mb-3">
 <li class="nav-item"><a href="000.html" class="nav-link px-2 text-success">前へ</a></li>

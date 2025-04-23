@@ -1,5 +1,5 @@
 /*!
-@file GameObject.cpp
+@file MyObject.cpp
 @brief ゲームオブジェクトクラス　実体
 */
 
@@ -10,7 +10,7 @@ namespace basecross {
 
 	using namespace std;
 
-	void GameObject::UpdateConstantBuffers(Scene* scene) {
+	void MyObject::UpdateConstantBuffers(Scene* scene) {
 		//シーンのコンスタントバッファ
 		{
 			auto& frameResources = scene->GetFrameResources();
@@ -164,7 +164,7 @@ namespace basecross {
 	}
 
 
-	void GameObject::CommitConstantBuffers(Scene* scene) {
+	void MyObject::CommitConstantBuffers(Scene* scene) {
 		auto pCurrentFrameResource = scene->GetCurrentFrameResource();
 		//シーン
 		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_pBaseConstantBufferWO,
@@ -174,7 +174,7 @@ namespace basecross {
 			&m_shadowConstantBuffer, sizeof(m_shadowConstantBuffer));
 	}
 
-	void GameObject::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
+	void MyObject::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pBaseDevice = BaseDevice::GetBaseDevice();
@@ -191,7 +191,7 @@ namespace basecross {
 	}
 
 
-	void GameObject::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
+	void MyObject::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
@@ -205,7 +205,7 @@ namespace basecross {
 		pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
 	
 	}
-	void GameObject::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
+	void MyObject::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
 
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
@@ -232,8 +232,8 @@ namespace basecross {
 		pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
 		pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
 	}
-	void GameObject::OnPostprocessDraw(ID3D12GraphicsCommandList* pCommandList) {}
-	void GameObject::OnDestroy() {}
+	void MyObject::OnPostprocessDraw(ID3D12GraphicsCommandList* pCommandList) {}
+	void MyObject::OnDestroy() {}
 
 
 
@@ -241,13 +241,13 @@ namespace basecross {
 	// 四角のオブジェクト
 	//--------------------------------------------------------------------------------------
 	WallBox::WallBox(const TransParam& param):
-		GameObject(param),
+		MyObject(param),
 		m_totalTime(0.0)
 	{}
 	WallBox::~WallBox(){}
 
 	void WallBox::OnCreate(ID3D12GraphicsCommandList* pCommandList){
-		GameObject::OnCreate(pCommandList);
+		MyObject::OnCreate(pCommandList);
 		//メッシュ
 		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
 		//テクスチャ
@@ -273,14 +273,14 @@ namespace basecross {
 	// ステージのオブジェクト
 	//--------------------------------------------------------------------------------------
 	SkyStage::SkyStage(const TransParam& param) :
-		GameObject(param)
+		MyObject(param)
 	{
 	}
 	SkyStage::~SkyStage() {}
 
 
 	void SkyStage::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
-		GameObject::OnCreate(pCommandList);
+		MyObject::OnCreate(pCommandList);
 		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
 		auto texFile = App::GetRelativeAssetsDir() + L"sky.jpg";
 		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);

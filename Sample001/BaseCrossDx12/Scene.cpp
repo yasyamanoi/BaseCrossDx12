@@ -34,16 +34,16 @@ namespace basecross {
 		auto quat = XMQuaternionIdentity();
 		param.quaternion = bsm::makeF4(quat);
 		param.position = XMFLOAT3(0.0, 5.0, 0.0f);
-		AddGameObject<WallBox>(pCommandList, param);
+		AddMyObject<WallBox>(pCommandList, param);
 		param.scale = XMFLOAT3(50, 1, 50);
 		param.position = XMFLOAT3(0, -0.5, 0.0f);
-		AddGameObject<SkyStage>(pCommandList, param);
+		AddMyObject<SkyStage>(pCommandList, param);
 	}
 
 
 
 	void Scene::Update(double elapsedTime) {
-		for (auto& v : m_gameObjectvec) {
+		for (auto& v : m_myObjectvec) {
 			v->OnUpdate(elapsedTime);
 		}
 		UpdateConstantBuffers();
@@ -52,14 +52,14 @@ namespace basecross {
 
 	void Scene::UpdateConstantBuffers()
 	{
-		for (auto& v : m_gameObjectvec) {
+		for (auto& v : m_myObjectvec) {
 			v->UpdateConstantBuffers(this);
 		}
 	}
 
 	void Scene::CommitConstantBuffers()
 	{
-		for (auto& v : m_gameObjectvec) {
+		for (auto& v : m_myObjectvec) {
 			v->CommitConstantBuffers(this);
 		}
 	}
@@ -77,7 +77,7 @@ namespace basecross {
 		// No render target needed for the shadow pass.
 		pCommandList->OMSetRenderTargets(0, nullptr, FALSE, &m_depthDsvs[DepthGenPass::Shadow]);
 		//以下は各オブジェクト
-		for (auto& v : m_gameObjectvec) {
+		for (auto& v : m_myObjectvec) {
 			v->OnShadowDraw(pCommandList);
 		}
 	}
@@ -131,7 +131,7 @@ namespace basecross {
 		);
 		pCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"s1"), samplerHandle2);
 
-		for (auto& v : m_gameObjectvec) {
+		for (auto& v : m_myObjectvec) {
 			v->OnSceneDraw(pCommandList);
 		}
 	}
