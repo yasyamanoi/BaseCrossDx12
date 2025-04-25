@@ -58,7 +58,7 @@ using namespace DirectX;
 
 
 //BaseLib
-//基本レベルオブジェクト
+//シンプルオブジェクト
 #include "Basic/BaseMath.h"
 #include "Basic/DxHelper.h"
 #include "Basic/BaseHelper.h"
@@ -81,6 +81,14 @@ using namespace DirectX;
 #include "Basic/FrameResource.h"
 #include "Basic/Shadowmap.h"
 #include "Basic/BaseScene.h"
+//スタンダードオブジェクト
+#include "Standerd/Component.h"
+#include "Standerd/Transform.h"
+#include "Standerd/GameObject.h"
+#include "Standerd/Stage.h"
+#include "Standerd/MiddleScene.h"
+
+
 
 #pragma comment( lib, "dxgi.lib" )
 #pragma comment( lib, "d3d12.lib" )

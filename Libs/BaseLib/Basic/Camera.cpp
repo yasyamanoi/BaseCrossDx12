@@ -108,9 +108,9 @@ namespace basecross {
 		float height = (float)device->GetHeight();
 		m_aspect = width / height;
 		m_viewMatrix 
-			= bsm::makeF4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
+			= bsm::Mat4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
 		m_projMatrix 
-			= bsm::makeF4x4(XMMatrixPerspectiveFovLH(m_fovY, m_aspect, m_near, m_far));
+			= bsm::Mat4x4(XMMatrixPerspectiveFovLH(m_fovY, m_aspect, m_near, m_far));
 	}
 
 	//--------------------------------------------------------------------------------------
@@ -140,9 +140,9 @@ namespace basecross {
 
 	void OrthoCamera::CalculateMatrix() {
 		m_viewMatrix
-			= bsm::makeF4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
+			= bsm::Mat4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
 		m_projMatrix
-			= bsm::makeF4x4(XMMatrixOrthographicLH(m_width, m_height, m_near, m_far));
+			= bsm::Mat4x4(XMMatrixOrthographicLH(m_width, m_height, m_near, m_far));
 	}
 
 }

@@ -9,6 +9,7 @@
 namespace basecross {
 
 	using namespace std;
+	using namespace bsm;
 
 	void MyObject::UpdateConstantBuffers(Scene* scene) {
 		//シーンのコンスタントバッファ
@@ -24,12 +25,18 @@ namespace basecross {
 			m_constantBuffer = {};
 			m_constantBuffer.activeFlg.x = 3;
 			m_constantBuffer.activeFlg.y = 1;
+
 			//ワールド行列の設定
-			auto world = bsm::affineTransformation(m_param);
-			auto view = bsm::makeXMMat(myCamera->GetViewMatrix());
-			auto proj = bsm::makeXMMat(myCamera->GetProjMatrix());
+			auto world = XMMatrixAffineTransformation(
+				Vec3(m_param.scale),
+				Vec3(m_param.rotOrigin),
+				Quat(m_param.quaternion),
+				Vec3(m_param.position)
+			);
+			auto view = (XMMATRIX)((Mat4x4)myCamera->GetViewMatrix());
+			auto proj = (XMMATRIX)((Mat4x4)myCamera->GetProjMatrix());
 			auto worldView = world * view;
-			m_constantBuffer.worldViewProj = bsm::makeF4x4(XMMatrixTranspose(XMMatrixMultiply(worldView, proj)));
+			m_constantBuffer.worldViewProj = Mat4x4(XMMatrixTranspose(XMMatrixMultiply(worldView, proj)));
 			//フォグの設定
 			if (m_fogEnabled)
 			{
@@ -39,7 +46,7 @@ namespace basecross {
 				{
 					// Degenerate case: force everything to 100% fogged if start and end are the same.
 					static const XMVECTORF32 fullyFogged = { 0, 0, 0, 1 };
-					m_constantBuffer.fogVector = bsm::makeF4(fullyFogged);
+					m_constantBuffer.fogVector = Vec4(fullyFogged);
 				}
 				else
 				{
@@ -48,68 +55,69 @@ namespace basecross {
 					XMVECTOR worldViewZ = XMVectorMergeXY(XMVectorMergeZW(worldViewTrans.r[0], worldViewTrans.r[2]),
 						XMVectorMergeZW(worldViewTrans.r[1], worldViewTrans.r[3]));
 					XMVECTOR wOffset = XMVectorSwizzle<1, 2, 3, 0>(XMLoadFloat(&start));
-					m_constantBuffer.fogVector = bsm::makeF4((worldViewZ + wOffset) / (start - end));
+					m_constantBuffer.fogVector = Vec4((worldViewZ + wOffset) / (start - end));
 				}
 				m_constantBuffer.fogColor = m_fogColor;
 			}
 			else
 			{
-				m_constantBuffer.fogVector = bsm::makeF4(g_XMZero);
-				m_constantBuffer.fogColor = bsm::makeF4(g_XMZero);
+				m_constantBuffer.fogVector = Vec4(g_XMZero);
+				m_constantBuffer.fogColor = Vec4(g_XMZero);
 			}
-
 			//ライトの決定
 			for (int i = 0; i < myLightSet->GetNumLights(); i++) {
-				m_constantBuffer.lightDirection[i] = bsm::F3ToF4(myLightSet->GetLight(i).m_directional);
+				m_constantBuffer.lightDirection[i] = Vec4(myLightSet->GetLight(i).m_directional);
 				m_constantBuffer.lightDiffuseColor[i] = myLightSet->GetLight(i).m_diffuseColor;
 				m_constantBuffer.lightSpecularColor[i] = myLightSet->GetLight(i).m_specularColor;
 			}
 			//ワールド行列
-			m_constantBuffer.world = bsm::makeF4x4(XMMatrixTranspose(world));
+			m_constantBuffer.world = Mat4x4(XMMatrixTranspose(world));
 
 			XMMATRIX worldInverse = XMMatrixInverse(nullptr, world);
-			m_constantBuffer.worldInverseTranspose[0] = bsm::makeF4(worldInverse.r[0]);
-			m_constantBuffer.worldInverseTranspose[1] = bsm::makeF4(worldInverse.r[1]);
-			m_constantBuffer.worldInverseTranspose[2] = bsm::makeF4(worldInverse.r[2]);
+			m_constantBuffer.worldInverseTranspose[0] = Vec4(worldInverse.r[0]);
+			m_constantBuffer.worldInverseTranspose[1] = Vec4(worldInverse.r[1]);
+			m_constantBuffer.worldInverseTranspose[2] = Vec4(worldInverse.r[2]);
 
 			XMMATRIX viewInverse = XMMatrixInverse(nullptr, view);
-			m_constantBuffer.eyePosition = bsm::makeF4(viewInverse.r[3]);
+			m_constantBuffer.eyePosition = Vec4(viewInverse.r[3]);
 
-			XMVECTOR diffuse = bsm::makeXM(1);
-			XMVECTOR alphaVector = XMVectorReplicate(1.0);
-			XMVECTOR emissiveColor = bsm::makeXM(0.0f);
-			XMVECTOR ambientLightColor = bsm::makeXM(myLightSet->GetAmbient());
+			XMVECTOR diffuse = Col4(1.0f);
+			XMVECTOR alphaVector = XMVectorReplicate(1.0f);
+			XMVECTOR emissiveColor = Col4(0.0f);
+			XMVECTOR ambientLightColor = Col4(myLightSet->GetAmbient());
 			// emissive と ambientとライトをマージする
-			m_constantBuffer.emissiveColor = bsm::makeF4((emissiveColor + ambientLightColor * diffuse) * alphaVector);
+			m_constantBuffer.emissiveColor = Col4((emissiveColor + ambientLightColor * diffuse) * alphaVector);
 			m_constantBuffer.specularColorAndPower = XMFLOAT4(0, 0, 0, 1);
 
 			// xyz = diffuse * alpha, w = alpha.
-			m_constantBuffer.diffuseColor = bsm::makeF4(XMVectorSelect(alphaVector, diffuse * alphaVector, g_XMSelect1110));
+			m_constantBuffer.diffuseColor = Col4(XMVectorSelect(alphaVector, diffuse * alphaVector, g_XMSelect1110));
 
 			auto mainLight = myLightSet->GetMainBaseLight();
-			XMFLOAT3 calcLightDir = bsm::f3multi(mainLight.m_directional, -1.0f);
+			XMFLOAT3 calcLightDir = (XMFLOAT3)(Vec3(mainLight.m_directional) * Vec3(-1.0f));
+
 			XMFLOAT3 lightAt(myCamera->GetAt());
 			XMFLOAT3 lightEye(calcLightDir);
-			lightEye = bsm::f3multi(lightEye, Shadowmap::GetLightHeight());
-			lightEye = bsm::f3add(lightAt, lightEye);
+			lightEye = (XMFLOAT3)(Vec3(lightEye) * Vec3(Shadowmap::GetLightHeight()));
+			lightEye = (XMFLOAT3)(Vec3(lightAt) + Vec3(lightEye));
 
-			XMFLOAT4 LightEye4 = bsm::F3ToF4(lightEye, 1.0f);
+			XMFLOAT4 LightEye4 = Vec4((Vec3)lightEye, 1.0f);
 			LightEye4.w = 1.0f;
 			m_constantBuffer.lightPos = LightEye4;
-			XMFLOAT4 eyePos4 = bsm::F3ToF4(myCamera->GetEye(), 1.0f);
+			XMFLOAT4 eyePos4 = Vec4((Vec3)myCamera->GetEye(), 1.0f);
 			eyePos4.w = 1.0f;
 			m_constantBuffer.eyePos = eyePos4;
 			XMMATRIX LightView, LightProj;
 			//ライトのビューと射影を計算
 			LightView = XMMatrixLookAtLH(
-				bsm::makeXM(lightEye),
-				bsm::makeXM(lightAt),
-				bsm::makeXM(0, 1.0f, 0)
+				Vec3(lightEye),
+				Vec3(lightAt),
+				Vec3(0, 1.0f, 0)
 			);
 			LightProj = XMMatrixOrthographicLH(Shadowmap::GetViewWidth(), Shadowmap::GetViewHeight(),
 				Shadowmap::GetLightNear(), Shadowmap::GetLightFar());
-			m_constantBuffer.lightView = bsm::makeF4x4(XMMatrixTranspose(LightView));
-			m_constantBuffer.lightProjection = bsm::makeF4x4(XMMatrixTranspose(LightProj));
+			m_constantBuffer.lightView = bsm::Mat4x4(XMMatrixTranspose(LightView));
+			m_constantBuffer.lightProjection = bsm::Mat4x4(XMMatrixTranspose(LightProj));
+
 		}
 		//シャドウマップのコンスタントバッファ
 		{
@@ -129,40 +137,44 @@ namespace basecross {
 			//位置の取得
 			XMFLOAT3 pos = m_param.position;
 			XMFLOAT3 posSpan = light.m_directional;
-			posSpan = bsm::f3multi(posSpan, Shadowmap::GetPosAdjustment());
-			pos = bsm::f3add(pos, posSpan);
+			posSpan = (XMFLOAT3)(Vec3(posSpan) * Vec3(Shadowmap::GetPosAdjustment()));
+			pos = (XMFLOAT3)(Vec3(pos) +  Vec3(posSpan));
 			//ワールド行列の決定
 			auto param_tmp = m_param;
 			param_tmp.position = pos;
-			XMMATRIX world = bsm::affineTransformation(param_tmp);
 
+			auto world = XMMatrixAffineTransformation(
+				Vec3(param_tmp.scale),
+				Vec3(param_tmp.rotOrigin),
+				Quat(param_tmp.quaternion),
+				Vec3(param_tmp.position)
+			);
 
-			XMFLOAT3 lightDir = bsm::f3multi(light.m_directional, -1.0f);
+			XMFLOAT3 lightDir = (XMFLOAT3)(Vec3(light.m_directional) * Vec3(-1.0f));
 
 			auto camera = myCamera;
 			XMFLOAT3 lightAt = camera->GetAt();
-			XMFLOAT3 lightDirTmp = bsm::f3multi(lightDir, Shadowmap::GetLightHeight());
-			XMFLOAT3 lightEye = bsm::f3add(lightAt, lightDirTmp);
+			XMFLOAT3 lightDirTmp = (XMFLOAT3)(Vec3(lightDir) * Vec3(Shadowmap::GetLightHeight()));
+			XMFLOAT3 lightEye = (XMFLOAT3)(Vec3(lightAt) + Vec3(lightDirTmp));
 			auto width = viewport.Width;
 			auto height = viewport.Height;
 
-			auto lightView 
-				= XMMatrixLookAtLH(bsm::makeXM(lightEye), bsm::makeXM(lightAt), bsm::makeXM(XMFLOAT3(0, 1.0f, 0)));
+			auto lightView
+				= XMMatrixLookAtLH(Vec3(lightEye), Vec3(lightAt), Vec3(XMFLOAT3(0, 1.0f, 0)));
 
-			auto lightProj = 
+			auto lightProj =
 				XMMatrixOrthographicLH(
 					Shadowmap::GetViewWidth(),
-					Shadowmap::GetViewHeight(), 
+					Shadowmap::GetViewHeight(),
 					Shadowmap::GetLightNear(),
 					Shadowmap::GetLightFar());
-			m_shadowConstantBuffer.world = bsm::makeF4x4(XMMatrixTranspose(world));
-			m_shadowConstantBuffer.view = bsm::makeF4x4(XMMatrixTranspose(lightView));
-			m_shadowConstantBuffer.projection = bsm::makeF4x4(XMMatrixTranspose(lightProj));
-
+			m_shadowConstantBuffer.world = bsm::Mat4x4(XMMatrixTranspose(world));
+			m_shadowConstantBuffer.view = bsm::Mat4x4(XMMatrixTranspose(lightView));
+			m_shadowConstantBuffer.projection = bsm::Mat4x4(XMMatrixTranspose(lightProj));
 
 		}
-	}
 
+	}
 
 	void MyObject::CommitConstantBuffers(Scene* scene) {
 		auto pCurrentFrameResource = scene->GetCurrentFrameResource();
@@ -260,12 +272,10 @@ namespace basecross {
 		if (m_totalTime >= XM_2PI) {
 			m_totalTime = 0.0;
 		}
-		XMFLOAT3 f(1, 1, 0);
-		auto axis = XMLoadFloat3(&f);
-		auto spanQt = XMQuaternionRotationAxis(axis, (float)(elapsedTime * 4));
-		XMVECTOR quaternion = bsm::makeXM(m_param.quaternion);
-		quaternion = XMQuaternionMultiply(quaternion, spanQt);
-		m_param.quaternion = bsm::makeF4(quaternion);
+		Quat spanQt(Vec3(1.0f, 1.0f, 0.0f), (float)(elapsedTime * 4));
+		Quat quaternion(m_param.quaternion);
+		quaternion *= spanQt;
+		m_param.quaternion = quaternion;
 		m_param.position.x = (float)sin(m_totalTime) * 2.0f;
 	}
 

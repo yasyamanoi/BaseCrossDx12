@@ -22,16 +22,17 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class ObjectInterface : public std::enable_shared_from_this<ObjectInterface> {
 		friend class ObjectFactory;
+	protected:
+		ObjectInterface() {}
+		virtual ~ObjectInterface() {}
+	public:
 		//クリエイト済みかどうか
 		//Create関数が呼び出し後にtrueになる
 		bool m_created{ false };
 		void SetCreated(bool b) {
 			m_created = b;
 		}
-	protected:
-		ObjectInterface() {}
-		virtual ~ObjectInterface() {}
-	public:
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief thisポインタ（shared_ptr）の取得

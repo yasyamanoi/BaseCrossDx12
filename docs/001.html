@@ -117,8 +117,32 @@
 </pre>
 　という記述です。<strong>BaseCross64</strong>を使ったことがある人はわかると思いますが、<strong>MyObjectクラス</strong>は<strong>ObjectInterface</strong>の派生クラスになっており、<strong>AddMyObject()関数</strong>を使うことで、<strong>MyObject::OnCreate()関数</strong>を自動的に呼び出すことができます。<br>
 <h5>計算ライブラリ</h5>
-　<strong>BaseCross64</strong>を使った人はわかるかと思いますが、<strong>BaseCross64</strong>では、計算ライブラリとして<strong>bsm::Vec3、bsm::Vec4クラス</strong>などがありました。これらは<strong>DirectXMath</strong>をラッピングするクラスで、<strong>DirectXMath</strong>のクラスを渡しても動くようになっていたのですが、<strong>BaseCrossDx12</strong>では、これらのクラスはなくして<strong>DirectXMath</strong>だけで計算するようにしました。<br>
-　とはいえ<strong>DirectXMath</strong>は多機能なのですが、ほとんど<strong>関数呼び出し</strong>で記述しなければならず、また、その根っこにある<strong>XMVECTOR</strong>や<strong>XMMATRIX</strong>は使うのに結構厄介だったりするので、<strong>BaseCrossDx12</strong>では、汎用的な型は<strong>XMFLOAT3</strong>や<strong>XMFLOAT4X4</strong>などを使うようにしています。ただそうすると計算関数を呼ぶために<strong>XMVECTOR</strong>や<strong>XMMATRIX</strong>に、いったん変換しなければいけません。ですのでそういった<strong>変換処理</strong>をする関数などを<strong>bsmネームスペース</strong>に記述しています。<strong>Scene::CreateAssetResources()関数</strong>における<strong>bsm::makeF4()関数</strong>などがそうです。この関数は<strong>XMVECTORからXMFLOAT4</strong>を作り出します。
+　<strong>BaseCrossDx12</strong>にも、計算ライブラリとして<strong>BaseCross64</strong>にある、<strong>bsm::Vec3、bsm::Vec4、bsm::Mat4x4クラス</strong>などがあります。<br>
+　ただ、多くの部分を<strong>XMVECTOR、XMMATRIX</strong>への<strong>XMFLOAT3、XMFLOAT4X4</strong>からのキャストやその逆、そして四則演算などが実装されており、<strong>BaseCross64版</strong>よりは簡略化されております。<br>
+　これらは<strong>DirectXMath</strong>をラッピングするクラスで、<strong>DirectXMath</strong>の関数に、そのまま渡しても動くようになっています。<br>
+　例えば、以下のような書き方ができます。
+<pre class="my-3 p-3">
+	using namespace bsm; //bsmを省略できる
+	//中略
+	//Quatを、回転軸と回転値で生成
+	Quat spanQt(Vec3(1.0f, 1.0f, 0.0f), (float)(elapsedTime * 4));
+	//Quatを、XMFLOAT4から生成
+	Quat quaternion(m_param.quaternion);
+	//追掛け算（これで、回転が加わる）
+	<span class="red">quaternion *= spanQt;</span>
+	//XMFLOAT4に戻して代入
+	m_param.quaternion = quaternion;
+</pre>
+　これを、<strong>DirectXMath</strong>の<strong>XMLoadFloat4()やXMStoreFloat4()関数</strong>などで変換しながら計算するのは、かなり厄介です。ですので<strong>bsm計算ライブラリ</strong>では、これらの負担をできるだけ少なくできるようになっています。<br>
+　関数呼び出しも例えば上記の
+<pre class="my-3 p-3">
+	<span class="red">quaternion *= spanQt;</span>
+</pre>
+　も、内部では<strong>XMQuaternionMultiply()関数</strong>が呼ばれています。演算子を使いたくなければ
+<pre class="my-3 p-3">
+	<span class="red">quaternion = XMQuaternionMultiply(quaternion, spanQt);</span>
+</pre>
+　と書くことができます。
 <h5>MyObjectクラス</h5>
 　<strong>Scene::AddMyObject()関数</strong>によって追加される<strong>MyObject</strong>は<strong>MyObject.h/cpp</strong>に記述されています。<br>
 　<strong>MyObjectクラス</strong>のコンストラクタは<strong>protected</strong>メンバになっており、直接は作成できません。<br>
@@ -219,13 +243,11 @@
 		if (m_totalTime >= XM_2PI) {
 			m_totalTime = 0.0;
 		}
-		XMFLOAT3 f(1, 1, 0);
-		auto axis = XMLoadFloat3(&f);
-		<span class="red">auto spanQt = XMQuaternionRotationAxis(axis, (float)(elapsedTime * 4));</span>
-		XMVECTOR quaternion = bsm::makeXM(m_param.quaternion);
-		quaternion = XMQuaternionMultiply(quaternion, spanQt);
-		m_param.quaternion = bsm::makeF4(quaternion);
-		<span class="red">m_param.position.x = (float)sin(m_totalTime) * 2.0f;</span>
+		<span class="red">Quat spanQt(Vec3(1.0f, 1.0f, 0.0f), (float)(elapsedTime * 4));
+		Quat quaternion(m_param.quaternion);
+		quaternion *= spanQt;
+		m_param.quaternion = quaternion;
+		m_param.position.x = (float)sin(m_totalTime) * 2.0f;</span>
 	}
 </pre>
 　ここではまず<strong>m_totalTime</strong>に<strong>elapsedTime（前回のターンから経過時間）</strong>を足し、これが<strong>XM_2PI</strong>以上になったら<strong>0.0</strong>に初期化しています。これで<strong>m_totalTime</strong>をもとに<strong>サイン関数（三角関数のサイン）</strong>を計算します。<br>
@@ -246,7 +268,7 @@
 	}
 </pre>
 　これは共通処理でいいので<strong>MyObject::UpdateConstantBuffers()</strong>に記述されています。<br>
-　結構大きな関数なので、省略して以下に記述します。
+　結構大きな関数なので、省略して以下に記述します。ここでも<strong>bsm計算ライブラリ</strong>を多用しています。
 <pre class="my-3 p-3">
 	void MyObject::UpdateConstantBuffers(Scene* scene) {
 		//シーンのコンスタントバッファ
@@ -262,13 +284,21 @@
 			m_constantBuffer = {};
 			m_constantBuffer.activeFlg.x = 3;
 			m_constantBuffer.activeFlg.y = 1;
+
 			//ワールド行列の設定
-			auto world = bsm::affineTransformation(m_param);
-			auto view = bsm::makeXMMat(myCamera->GetViewMatrix());
-			auto proj = bsm::makeXMMat(myCamera->GetProjMatrix());
+			auto world = XMMatrixAffineTransformation(
+				Vec3(m_param.scale),
+				Vec3(m_param.rotOrigin),
+				Quat(m_param.quaternion),
+				Vec3(m_param.position)
+			);
+			auto view = (XMMATRIX)((Mat4x4)myCamera->GetViewMatrix());
+			auto proj = (XMMATRIX)((Mat4x4)myCamera->GetProjMatrix());
 			auto worldView = world * view;
-			m_constantBuffer.worldViewProj = bsm::makeF4x4(XMMatrixTranspose(XMMatrixMultiply(worldView, proj)));
+			m_constantBuffer.worldViewProj = Mat4x4(XMMatrixTranspose(XMMatrixMultiply(worldView, proj)));
+
 			//<span class="red">中略</span>
+
 		}
 		//シャドウマップのコンスタントバッファ
 		{
@@ -284,6 +314,23 @@
 
 			auto lights = myLightSet;
 			auto light = lights->GetMainBaseLight();
+
+			//位置の取得
+			XMFLOAT3 pos = m_param.position;
+			XMFLOAT3 posSpan = light.m_directional;
+			posSpan = (XMFLOAT3)(Vec3(posSpan) * Vec3(Shadowmap::GetPosAdjustment()));
+			pos = (XMFLOAT3)(Vec3(pos) +  Vec3(posSpan));
+			//ワールド行列の決定
+			auto param_tmp = m_param;
+			param_tmp.position = pos;
+
+			auto world = XMMatrixAffineTransformation(
+				Vec3(param_tmp.scale),
+				Vec3(param_tmp.rotOrigin),
+				Quat(param_tmp.quaternion),
+				Vec3(param_tmp.position)
+
+			);
 			//<span class="red">中略</span>
 
 		}

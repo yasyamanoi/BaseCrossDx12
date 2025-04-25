@@ -61,7 +61,7 @@ namespace basecross {
 			m_at = at;
 			auto dir = XMVectorSubtract(XMLoadFloat3(&at), XMLoadFloat3(&pos));
 			dir = XMVector3Normalize(dir);
-			m_directional = bsm::makeF3(dir);
+			m_directional = bsm::Vec3(dir);
 		}
 	};
 

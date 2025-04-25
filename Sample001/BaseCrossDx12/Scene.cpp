@@ -32,7 +32,7 @@ namespace basecross {
 		param.scale = XMFLOAT3(1, 1, 1);
 		param.rotOrigin = XMFLOAT3(0, 0, 0);
 		auto quat = XMQuaternionIdentity();
-		param.quaternion = bsm::makeF4(quat);
+		param.quaternion = bsm::Quat(quat);
 		param.position = XMFLOAT3(0.0, 5.0, 0.0f);
 		AddMyObject<WallBox>(pCommandList, param);
 		param.scale = XMFLOAT3(50, 1, 50);
