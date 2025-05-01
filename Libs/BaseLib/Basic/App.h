@@ -37,6 +37,7 @@ namespace basecross {
 		static ID3D12Device* GetD3D12Device();
 		static ComPtr<ID3D12Device> GetID3D12Device();
 
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	モジュール名フルパスを得る
@@ -87,6 +88,15 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		static const std::wstring& GetRelativeAssetsDir() { return m_wstrRelativeAssetsDir; }
 
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	入力デバイスを得る
+		@return 入力デバイス
+		*/
+		//--------------------------------------------------------------------------------------
+		static InputDevice& GetInputDevice() {
+			return m_inputDevice;
+		}
 
 
 	protected:
@@ -98,6 +108,7 @@ namespace basecross {
 		static const UINT m_windowStyle = WS_OVERLAPPEDWINDOW;
 		static RECT m_windowRect;
 		static PrimDevice* m_pPrimDevice;
+		static InputDevice m_inputDevice;
 
 		static std::wstring m_wstrModulePath;		///< モジュール名フルパス
 		static std::wstring m_wstrDir;				///< モジュールがあるディレクトリ

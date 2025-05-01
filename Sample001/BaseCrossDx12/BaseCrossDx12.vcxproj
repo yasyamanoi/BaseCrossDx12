@@ -100,7 +100,9 @@
     <ClInclude Include="Project.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SkyGround.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="WallBox.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BaseCrossDx12.rc" />
@@ -111,6 +113,8 @@
   <ItemGroup>
     <ClCompile Include="MyObject.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SkyGround.cpp" />
+    <ClCompile Include="WallBox.cpp" />
     <ClCompile Include="WinMain.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

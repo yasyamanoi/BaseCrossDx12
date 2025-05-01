@@ -60,12 +60,13 @@ using namespace DirectX;
 //BaseLib
 //シンプルオブジェクト
 #include "Basic/BaseMath.h"
+#include "Basic/BaseCommon.h"
 #include "Basic/DxHelper.h"
 #include "Basic/BaseHelper.h"
 #include "Basic/ObjectInterface.h"
-#include "Basic/BaseCommon.h"
 #include "Basic/VertexHelper.h"
 #include "Basic/MeshHelper.h"
+#include "Basic/InputDevice.h"
 #include "Basic/BaseMesh.h"
 #include "Basic/BaseTexture.h"
 #include "Basic/App.h"
@@ -81,13 +82,7 @@ using namespace DirectX;
 #include "Basic/FrameResource.h"
 #include "Basic/Shadowmap.h"
 #include "Basic/BaseScene.h"
-//スタンダードオブジェクト
-#include "Standerd/Component.h"
-#include "Standerd/Transform.h"
 #include "Standerd/GameObject.h"
-#include "Standerd/Stage.h"
-#include "Standerd/MiddleScene.h"
-
 
 
 #pragma comment( lib, "dxgi.lib" )

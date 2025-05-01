@@ -1,6 +1,7 @@
+#pragma once
 /*!
 @file MyObject.h
-@brief ゲームオブジェクトクラス
+@brief Myオブジェクトクラス
 */
 
 
@@ -11,17 +12,17 @@
 namespace basecross {
 
 	using namespace std;
+	using namespace bsm;
 
 	//--------------------------------------------------------------------------------------
 	// 配置されるオブジェクトの親
 	//--------------------------------------------------------------------------------------
-	class MyObject : public ObjectInterface {
+	class MyObject : public GameObject {
 	protected:
-		TransParam m_param;
-		BaseConstantBuffer m_constantBuffer;
+		BasicConstantBuffer m_constantBuffer;
 		size_t m_constantBufferIndex;
 
-		ShadowConstant m_shadowConstantBuffer;
+		ShadowConstantBuffer m_shadowConstantBuffer;
 		size_t m_shadowConstantBufferIndex;
 
 		//フォグが有効かどうか
@@ -34,7 +35,8 @@ namespace basecross {
 		XMFLOAT4 m_fogColor;
 		//フォグベクトル
 		XMFLOAT3 m_fogVector;
-		MyObject(const TransParam& param):m_param(param){
+		MyObject(const TransParam& param) :
+			GameObject(param){
 			m_fogColor = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 			m_fogVector = XMFLOAT3(0.0, 0.0, 1.0f);
 		}
@@ -47,39 +49,13 @@ namespace basecross {
 		virtual void UpdateConstantBuffers(Scene* scene);
 		virtual void CommitConstantBuffers(Scene* scene);
 
-		virtual void OnCreate(ID3D12GraphicsCommandList* pCommandList);
-		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList);
-		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList);
-		virtual void OnPostprocessDraw(ID3D12GraphicsCommandList* pCommandList);
-		virtual void OnDestroy();
+		virtual void OnCreate(ID3D12GraphicsCommandList* pCommandList)override;
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override;
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override;
+		virtual void OnPostprocessDraw(ID3D12GraphicsCommandList* pCommandList)override;
+		virtual void OnDestroy()override;
 
 	};
-
-	//--------------------------------------------------------------------------------------
-	// 四角のオブジェクト
-	//--------------------------------------------------------------------------------------
-	class WallBox : public  MyObject {
-		double m_totalTime;
-	protected:
-	public:
-		WallBox(const TransParam& param);
-		virtual ~WallBox();
-		virtual void OnCreate(ID3D12GraphicsCommandList* pCommandList);
-		virtual void OnUpdate(double elapsedTime);
-	};
-
-	//--------------------------------------------------------------------------------------
-	// ステージのオブジェクト
-	//--------------------------------------------------------------------------------------
-	class SkyStage : public MyObject {
-	public:
-		SkyStage(const TransParam& param);
-		virtual ~SkyStage();
-		virtual void OnCreate(ID3D12GraphicsCommandList* pCommandList);
-		virtual void OnUpdate(double elapsedTime);
-
-	};
-
 
 
 }

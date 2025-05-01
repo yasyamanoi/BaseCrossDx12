@@ -255,24 +255,8 @@ namespace basecross {
 
 	void BaseDevice::UpdateUI()
 	{
-		vector<wstring> labels;
-		{
-			wstringstream wLabel;
-			wLabel.precision(1);
-			wLabel << fixed << L"FPS: " << m_fps
-				<< L"\n";
-			wLabel.precision(6);
-			wLabel << L"ElapsedTime: " << m_elapsedTime
-				<< L"\n";
-			labels.push_back(wLabel.str());
-		}
-
-		wstring uiText = L"";
-		for (auto s : labels)
-		{
-			uiText += s;
-		}
-		m_uiLayer->UpdateLabels(uiText);
+		//UI•¶Žš—ñ‚ÍƒV[ƒ“‚É”C‚¹‚é
+		m_scene->UpdateUI(m_uiLayer);
 	}
 
 	// Release sample's D3D objects.

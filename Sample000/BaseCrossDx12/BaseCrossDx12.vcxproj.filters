@@ -52,41 +52,4 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Shaders\BcINCCommon.hlsli">
-      <Filter>シェーダーファイル</Filter>
-    </None>
-    <None Include="Shaders\BcINCConstant.hlsli">
-      <Filter>シェーダーファイル</Filter>
-    </None>
-    <None Include="Shaders\BcINCLighting.hlsli">
-      <Filter>シェーダーファイル</Filter>
-    </None>
-    <None Include="Shaders\BcINCStructs.hlsli">
-      <Filter>シェーダーファイル</Filter>
-    </None>
-    <None Include="Shaders\INCShadowmap.hlsli">
-      <Filter>シェーダーファイル</Filter>
-    </None>
-    <None Include="Shaders\BcINCShadow.hlsli">
-      <Filter>シェーダーファイル</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Shaders\BcPSPNTPL.hlsl">
-      <Filter>シェーダーファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\BcPSPNTPLShadow.hlsl">
-      <Filter>シェーダーファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\BcVSPNTStaticPL.hlsl">
-      <Filter>シェーダーファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\BcVSPNTStaticPLShadow.hlsl">
-      <Filter>シェーダーファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\VSShadowmap.hlsl">
-      <Filter>シェーダーファイル</Filter>
-    </FxCompile>
-  </ItemGroup>
 </Project>

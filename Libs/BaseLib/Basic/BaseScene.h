@@ -27,12 +27,6 @@ namespace basecross {
 	class FrameResource;
 	class PrimDevice;
 
-	DECLARE_DX12SHADER(BcVSPNTStaticPL)
-	DECLARE_DX12SHADER(BcPSPNTPL)
-	DECLARE_DX12SHADER(BcVSPNTStaticPLShadow)
-	DECLARE_DX12SHADER(BcPSPNTPLShadow)
-
-
 	class BaseScene
 	{
 	public:
@@ -46,6 +40,7 @@ namespace basecross {
 		void ReleaseD3DObjects();
 		void KeyDown(UINT8 key);
 		void KeyUp(UINT8 key);
+		virtual void UpdateUI(std::unique_ptr<UILayer>& uiLayer) {}
 		virtual void Update(double elapsedTime) = 0;
 		virtual void Render(ID3D12CommandQueue* pCommandQueue, bool setBackbufferReadyForPresent);
 		static BaseScene* Get(){ return s_baseScene; }
@@ -228,6 +223,8 @@ namespace basecross {
 		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList) = 0;
 		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList) = 0;
 		virtual void PostprocessPass(ID3D12GraphicsCommandList* pCommandList);
+
+
 
 		virtual void BeginFrame();
 		virtual void MidFrame();

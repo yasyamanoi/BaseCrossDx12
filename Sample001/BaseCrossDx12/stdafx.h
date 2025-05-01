@@ -6,9 +6,8 @@
 #pragma once
 
 //ライブラリ側
-#include "BaseInclude.h"
+#include "BasicInclude.h"
 //Sceneのインクルードは必要
 #include "Scene.h"
-
 //リソース
 #include "resource.h"

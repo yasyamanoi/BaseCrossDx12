@@ -5,17 +5,12 @@
  MIT License URL: https://opensource.org/license/mit
 */
 
-
-#pragma once
 #include "stdafx.h"
-
+#include "Project.h"
 
 namespace basecross {
 
-	GameObject::GameObject() {}
-	GameObject::~GameObject() {}
-	void GameObject::OnCreate(ID3D12GraphicsCommandList* pCommandList){}
-	void GameObject::OnUpdate(double elapsedTime){}
+
 
 }
 // end namespace basecross

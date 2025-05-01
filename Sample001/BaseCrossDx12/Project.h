@@ -7,4 +7,9 @@
 #pragma once
 
 ////コンテンツ側
+//個別オブジェクト等
 #include "MyObject.h"
+#include "SkyGround.h"
+#include "WallBox.h"
+
+

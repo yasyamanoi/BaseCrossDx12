@@ -1,0 +1,47 @@
+/*!
+@file WallBox.cpp
+@brief 四角のオブジェクト　実体
+*/
+
+#include "stdafx.h"
+#include "Project.h"
+
+namespace basecross {
+
+	using namespace std;
+	using namespace bsm;
+
+	//--------------------------------------------------------------------------------------
+	// 四角のオブジェクト
+	//--------------------------------------------------------------------------------------
+	WallBox::WallBox(const TransParam& param) :
+		MyObject(param),
+		m_totalTime(0.0)
+	{
+	}
+	WallBox::~WallBox() {}
+
+	void WallBox::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
+		MyObject::OnCreate(pCommandList);
+		//メッシュ
+		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
+		//テクスチャ
+		auto texFile = App::GetRelativeAssetsDir() + L"wall.jpg";
+		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
+
+	}
+
+	void WallBox::OnUpdate(double elapsedTime) {
+		m_totalTime += elapsedTime;
+		if (m_totalTime >= XM_2PI) {
+			m_totalTime = 0.0;
+		}
+		Quat spanQt(Vec3(1.0f, 1.0f, 0.0f), (float)(elapsedTime * 4));
+		Quat quaternion(m_param.quaternion);
+		quaternion *= spanQt;
+		m_param.quaternion = quaternion;
+		m_param.position.x = (float)sin(m_totalTime) * 2.0f;
+	}
+
+}
+// end namespace basecross

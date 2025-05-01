@@ -24,11 +24,6 @@ namespace basecross {
 	using namespace std;
 	using namespace SceneEnums;
 
-	IMPLEMENT_DX12SHADER(BcVSPNTStaticPL, App::GetShadersDir() + L"BcVSPNTStaticPL.cso")
-	IMPLEMENT_DX12SHADER(BcPSPNTPL, App::GetShadersDir() + L"BcPSPNTPL.cso")
-
-	IMPLEMENT_DX12SHADER(BcVSPNTStaticPLShadow, App::GetShadersDir() + L"BcVSPNTStaticPLShadow.cso")
-	IMPLEMENT_DX12SHADER(BcPSPNTPLShadow, App::GetShadersDir() + L"BcPSPNTPLShadow.cso")
 
 	BaseScene* BaseScene::s_baseScene = nullptr;
 	const float BaseScene::s_clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -280,90 +275,7 @@ namespace basecross {
 
 	}
 
-	void BaseScene::CreatePipelineStates(ID3D12Device* pDevice) {
-		// Create Shadowmap pipeline state.
-		{
-			ComPtr<ID3D12PipelineState> PNTShadowmapPipelineState
-				= PipelineStatePool::GetPipelineState(L"PNTShadowmap");
-			auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
-
-			// シャドウマップ用
-			CD3DX12_DEPTH_STENCIL_DESC depthStencilDesc(D3D12_DEFAULT);
-			depthStencilDesc.DepthEnable = TRUE;
-			depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-			depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-			depthStencilDesc.StencilEnable = FALSE;
-
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-			psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };;
-			psoDesc.pRootSignature = rootSignature.Get();
-			psoDesc.VS =
-			{
-				reinterpret_cast<UINT8*>(PNTShadowmap::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				PNTShadowmap::GetPtr()->GetShaderComPtr()->GetBufferSize()
-
-			};
-			psoDesc.PS =
-			{
-				CD3DX12_SHADER_BYTECODE(0, 0)
-			};
-			psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-			psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-			psoDesc.DepthStencilState = depthStencilDesc;
-			psoDesc.SampleMask = UINT_MAX;
-			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			psoDesc.NumRenderTargets = 0;
-			psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
-			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-			psoDesc.SampleDesc.Count = 1;
-			if (!PNTShadowmapPipelineState) {
-				ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&PNTShadowmapPipelineState)));
-				NAME_D3D12_OBJECT(PNTShadowmapPipelineState);
-				PipelineStatePool::AddPipelineState(L"PNTShadowmap", PNTShadowmapPipelineState);
-			}
-		}
-		// Create Scene pipeline state.
-		{
-			ComPtr<ID3D12PipelineState> PNTPipelineState
-				= PipelineStatePool::GetPipelineState(L"BcPNTStaticShadow");
-
-			//ラスタライザステート
-			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
-			//カリング
-			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
-			//パイプラインステート
-			ComPtr<ID3D12PipelineState> bcPNTStaticShadowPipelineState;
-			auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault");
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-			ZeroMemory(&psoDesc, sizeof(psoDesc));
-			psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };
-			psoDesc.pRootSignature = rootSignature.Get();
-			psoDesc.VS =
-			{
-				reinterpret_cast<UINT8*>(BcVSPNTStaticPLShadow::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				BcVSPNTStaticPLShadow::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.PS =
-			{
-				reinterpret_cast<UINT8*>(BcPSPNTPLShadow::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-				BcPSPNTPLShadow::GetPtr()->GetShaderComPtr()->GetBufferSize()
-			};
-			psoDesc.RasterizerState = rasterizerStateDesc;
-			psoDesc.BlendState = BlendState::GetOpaqueBlend();
-			psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-			psoDesc.SampleMask = UINT_MAX;
-			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			psoDesc.NumRenderTargets = 1;
-			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-			psoDesc.SampleDesc.Count = 1;
-			if (!PNTPipelineState) {
-				ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&bcPNTStaticShadowPipelineState)));
-				NAME_D3D12_OBJECT(bcPNTStaticShadowPipelineState);
-				PipelineStatePool::AddPipelineState(L"BcPNTStaticShadow", bcPNTStaticShadowPipelineState);
-			}
-		}
-	}
+	void BaseScene::CreatePipelineStates(ID3D12Device* pDevice) {}
 
 	void BaseScene::CreateSamplers(ID3D12Device* pDevice)
 	{
@@ -814,21 +726,15 @@ namespace basecross {
 	// describing the worker's thread index.
 	void BaseScene::WorkerThread()
 	{
-
-
 		//
 		// Shadow pass
 		//
 		{
 			ID3D12GraphicsCommandList* pShadowCommandList = m_shadowCommandList.Get();
-
-			// Reset the command list.
-			auto shadowPipeline = PipelineStatePool::GetPipelineState(L"PNTShadowmap",true);
-			ThrowIfFailed(pShadowCommandList->Reset(m_pCurrentFrameResource->m_contextCommandAllocator.Get(), shadowPipeline.Get()));
-
+			// Reset the command list.(nullptr)
+			ThrowIfFailed(pShadowCommandList->Reset(m_pCurrentFrameResource->m_contextCommandAllocator.Get(),nullptr));
 			// Performance tip: Only set descriptor heaps if you need access to them.
 			ShadowPass(pShadowCommandList);
-
 			// Close the command list.
 			ThrowIfFailed(pShadowCommandList->Close());
 		}
@@ -838,18 +744,12 @@ namespace basecross {
 		//
 		{
 			ID3D12GraphicsCommandList* pSceneCommandList = m_sceneCommandList.Get();
-
-			auto scenePipelineState = PipelineStatePool::GetPipelineState(L"BcPNTStaticShadow", true);
-
-			// Reset the command list.
-			ThrowIfFailed(pSceneCommandList->Reset(m_pCurrentFrameResource->m_contextCommandAllocator.Get(), scenePipelineState.Get()));
-
+			// Reset the command list.(nullptr)
+			ThrowIfFailed(pSceneCommandList->Reset(m_pCurrentFrameResource->m_contextCommandAllocator.Get(), nullptr));
 			// Set descriptor heaps.
 			ID3D12DescriptorHeap* ppHeaps[] = { m_cbvSrvHeap.Get(), m_samplerHeap.Get() };
 			pSceneCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
 			ScenePass(pSceneCommandList);
-
 			// Close the command list.
 			ThrowIfFailed(pSceneCommandList->Close());
 

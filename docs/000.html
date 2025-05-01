@@ -38,6 +38,37 @@
 　シャドウマップ描画時に呼び出されます。具体的には次項以降のサンプルを参考にしてください。
 <h6>ScenePass()関数</h6>
 　各オブジェクト描画時に呼び出されます。具体的には次項以降のサンプルを参考にしてください。
+<h6>UpdateUI()関数</h6>
+　このサンプルの中で、唯一内容がある関数です。UI文字列です。左上の文字列で、ここではFPS値とElapsedTime値を出しています。以下のような内容になっています。
+<pre class="my-3 p-3">
+	void Scene::UpdateUI(unique_ptr&lt;UILayer>& uiLayer) {
+		vector&lt;wstring> labels;
+		{
+			auto device = BaseDevice::GetBaseDevice();
+			//1秒間に１回更新される安定したfpsを得る
+			auto fps = device->GetStableFps();
+			//1秒間に１回更新される安定したelapsedTimeを得る
+			auto elapsedTime = device->GetStableElapsedTime();
+			wstringstream wLabel;
+			wLabel.precision(1);
+			wLabel &lt;&lt; fixed &lt;&lt; L"FPS: " &lt;&lt; fps
+				&lt;&lt; L"\n";
+			wLabel.precision(6);
+			wLabel &lt;&lt; L"ElapsedTime: " &lt;&lt; elapsedTime
+				&lt;&lt; L"\n";
+			labels.push_back(wLabel.str());
+		}
+
+		wstring uiText = L"";
+		for (auto s : labels)
+		{
+			uiText += s;
+		}
+		uiLayer->UpdateLabels(uiText);
+
+	}
+</pre>
+　コードを見るとわかると思いますが、uiLayer->UpdateLabels()関数に、表示すべき文字列を渡せば、表示されます。
 <h5>開発を進めるにあたって</h5>
 　次項からは、実際にオブジェクトを配置したり、動的に動かしたりするサンプルを紹介します。<br>
 　しかしながら、このドキュメントに述べられているサンプルは、<strong>あくまで一例</strong>にすぎません。ですので、できれば、他サンプルを参考にしつつも、この<strong>Emptyプロジェクト</strong>に機能を追加していく形で開発を進めたほうが、設計の自由度が増しますし、学習用の教材として利用している方なら、なおさらだと思います。

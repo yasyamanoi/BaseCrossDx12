@@ -1,27 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Basic">
-      <UniqueIdentifier>{f1b63cba-cfc4-4ccd-bae8-fcdb6cbdce14}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Headers">
-      <UniqueIdentifier>{2670f7fb-dd21-4687-9eeb-fdbbddd81a83}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Basic\Sources">
-      <UniqueIdentifier>{300938d8-290a-4702-b6ab-1670a79d3bf3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Standerd">
-      <UniqueIdentifier>{50ea4468-6926-436e-a21d-7acfe7437529}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Standerd\Headers">
-      <UniqueIdentifier>{4d51989a-0099-437c-888d-da5db45e8e4d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Standerd\Sources">
-      <UniqueIdentifier>{7e7b485b-cafa-4327-8bb3-dec40e90c3a4}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)BaseInclude.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BasicInclude.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\App.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
@@ -37,6 +17,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMath.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMathInc.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMesh.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
@@ -49,6 +32,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BlendState.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Camera.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\d3dx12.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
@@ -58,7 +44,16 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\FrameResource.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\InputDevice.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Light.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\ObjectInterface.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\PipelineState.h">
@@ -68,6 +63,9 @@
       <Filter>Basic\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\RootSignature.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Shadowmap.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\StepTimer.h">
@@ -82,36 +80,29 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\ObjectInterface.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Camera.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Light.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Shadowmap.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\GameObject.h">
       <Filter>Standerd\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Component.h">
-      <Filter>Standerd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Transform.h">
-      <Filter>Standerd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMathInc.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Stage.h">
-      <Filter>Standerd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\MiddleScene.h">
-      <Filter>Standerd\Headers</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Basic">
+      <UniqueIdentifier>{3c2a9139-496b-4d63-885a-ebabee9d9c5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Basic\Sources">
+      <UniqueIdentifier>{4af9ea80-6f1f-44f3-98ca-3714e84d28b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Basic\Headers">
+      <UniqueIdentifier>{56d51648-1fb2-4263-a134-09f65ab8257b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Standerd">
+      <UniqueIdentifier>{ab7b9c41-2f9b-49dc-9d4c-87fe20e3f760}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Standerd\Headers">
+      <UniqueIdentifier>{d9643c2f-e730-446c-b018-c9d4501a88b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Standerd\Sources">
+      <UniqueIdentifier>{5240e64d-5cb7-4af5-a5de-52a971d42c4f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\App.cpp">
@@ -135,7 +126,13 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BlendState.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Camera.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\FrameResource.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Light.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.cpp">
@@ -150,34 +147,16 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\RootSignature.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Shadowmap.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\UILayer.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Light.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Camera.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Shadowmap.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GameObject.cpp">
-      <Filter>Standerd\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Component.cpp">
-      <Filter>Standerd\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Transform.cpp">
-      <Filter>Standerd\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Stage.cpp">
-      <Filter>Standerd\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\MiddleScene.cpp">
       <Filter>Standerd\Sources</Filter>
     </ClCompile>
   </ItemGroup>

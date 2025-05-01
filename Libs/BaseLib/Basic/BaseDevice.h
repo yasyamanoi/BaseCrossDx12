@@ -49,6 +49,12 @@ namespace basecross {
 		static BaseDevice* GetBaseDevice() {
 			return s_app;
 		}
+		float GetStableFps() const {
+			return m_fps;
+		}
+		double GetStableElapsedTime() const {
+			return m_elapsedTime;
+		}
 	protected:
 		virtual void OnInit();
 		virtual void OnKeyDown(UINT8 key);

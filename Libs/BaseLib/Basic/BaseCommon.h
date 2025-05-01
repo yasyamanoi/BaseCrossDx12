@@ -66,57 +66,6 @@ namespace basecross {
 	};
 
 
-	//--------------------------------------------------------------------------------------
-	///	Shadowコンスタントバッファ構造体
-	//--------------------------------------------------------------------------------------
-	struct ShadowConstant
-	{
-		/// ワールド行列
-		XMFLOAT4X4 world;
-		/// ビュー行列
-		XMFLOAT4X4 view;
-		/// 射影行列
-		XMFLOAT4X4 projection;
-		/// bone用
-		XMFLOAT4 bones[3 * 72];
-		ShadowConstant() {
-			memset(this, 0, sizeof(ShadowConstant));
-		};
-	};
-
-	//--------------------------------------------------------------------------------------
-	///	Baseシェーダー用コンスタントバッファ
-	//--------------------------------------------------------------------------------------
-	struct BaseConstantBuffer
-	{
-		XMFLOAT4 diffuseColor;
-		XMFLOAT4 emissiveColor;
-		XMFLOAT4 specularColorAndPower;
-
-		XMFLOAT4 lightDirection[3];
-		XMFLOAT4 lightDiffuseColor[3];
-		XMFLOAT4 lightSpecularColor[3];
-
-		XMFLOAT4 eyePosition;
-
-		XMFLOAT4 fogColor;
-		XMFLOAT4 fogVector;
-
-		XMFLOAT4X4 world;
-		XMFLOAT4 worldInverseTranspose[3];
-		XMFLOAT4X4 worldViewProj;
-		//汎用フラグ
-		XMUINT4 activeFlg;
-		//以下影
-		XMFLOAT4 lightPos;
-		XMFLOAT4 eyePos;
-		XMFLOAT4X4 lightView;
-		XMFLOAT4X4 lightProjection;
-
-		XMFLOAT4 bones[3 * 72];
-	};
-
-
 }
 // end namespace basecross
 

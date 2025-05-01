@@ -105,16 +105,16 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) = 0;
-		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) = 0;
-		virtual void OnPostprocessDraw(ID3D12GraphicsCommandList* pCommandList) = 0;
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList){}
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {}
+		virtual void OnPostprocessDraw(ID3D12GraphicsCommandList* pCommandList){}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	破棄時処理
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnDestroy() = 0;
+		virtual void OnDestroy(){}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	キーボード押された処理

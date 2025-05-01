@@ -10,12 +10,253 @@
 <!-- container -->
 <div class="container bg-light">
 <h2>BaseCrossDx12ドキュメント</h2>
-<h4>【Sample001】単純な3D空間の描画</h4>
+<h4>【Sample001】GameObjectと単純な3D空間の描画</h4>
 　このサンプルは<strong>Sample001</strong>ディレクトリ内にあります。VisualStdioで該当ソリューション（VS2022で<strong>BaseCrossDx12VS2022.sln</strong>）を開いてください。<br>
 　ビルド後実行すると、以下の画面が現れます。
 <div class="py-3">
 <img src="img/0001a.png" width="80%" />
 </div>
+<h5>GameObjectについて</h5>
+　ゲームのミドルウェアにおいて、画面上になんらかのオブジェクトを表示する場合、<strong>オブジェクト指向</strong>的にひとまとめにできると便利です。多くの場合<strong>GameObjectクラス</strong>といった親クラスを持ち、各オブジェクトはそこから継承して作成します。<br>
+　前のバージョンの<strong>BaseCross64</strong>においては<strong>GameObjectクラス</strong>は多くの機能を持ち、各ゲーム制作者は、それを継承して、<strong>プレイヤー</strong>だったり<strong>敵</strong>だったりのオブジェクトを作成しました。<br>
+　しかしその構造はコンテンツ側のコードの記述量は少なく済むのですが、その反面、<strong>BaaseLib</strong>に縛られることが多く、どうしても自由度が低くなります。そのため<strong>BaseCrossDx12</strong>では、<strong>GameObjectクラス</strong>は、存在はしますが、その機能は最小限に抑えてあります。<strong>GameObjectクラス</strong>は<strong>Libs/BaseLib/Standerd</strong>にあります。<br>
+　<strong>BaseCross64</strong>でもそうでしたが、アプリケーション全体が<strong>basecross</strong>という<strong>namespace</strong>に含まれます。<br>
+　こうすることで他の環境との名前の衝突を避けることができます（完全ではないですが）。また
+<pre class="my-3 p-3">
+	<span class="red">using namespace std;
+	using namespace bsm;</span>
+</pre>
+　と記述すことで、<strong>STLとbsm計算ライブラリ</strong>の<strong>namespace名</strong>を省略できます。<br>
+　<strong>GameObjectクラス</strong>はさまざまな仮想関数があります。これらは派生クラスで多重定義可能です。
+<h5>シェーダーについて</h5>
+　<strong>シェーダー</strong>は、コンテンツ側のフィルタ<strong>シェーダーファイル</strong>フィルタにあります。ディレクトリ的には、<strong>コンテンツ側プロジェクト</strong>の<strong>Shaders</strong>に入っています。新しくシェーダーを作成する場合は<strong>ビルド時にcsoファイルにコンパイルされるよう</strong>設定してください。その際<strong>csoファイル</strong>は<strong>media/Shaders</strong>に保存されるようにします。<br>
+　そうすることで、例えば<strong>Scene.h</strong>に
+<pre class="my-3 p-3">
+	DECLARE_DX12SHADER(BcVSPNTStaticPL)
+	DECLARE_DX12SHADER(BcPSPNTPL)
+	DECLARE_DX12SHADER(BcVSPNTStaticPLShadow)
+	DECLARE_DX12SHADER(BcPSPNTPLShadow)
+</pre>
+　のように<strong>DECLARE_DX12SHADERマクロ</strong>を記述し、<strong>Scene.cpp</strong>に
+<pre class="my-3 p-3">
+	IMPLEMENT_DX12SHADER(BcVSPNTStaticPL, App::GetShadersDir() + L"BcVSPNTStaticPL.cso")
+	IMPLEMENT_DX12SHADER(BcPSPNTPL, App::GetShadersDir() + L"BcPSPNTPL.cso")
+	IMPLEMENT_DX12SHADER(BcVSPNTStaticPLShadow, App::GetShadersDir() + L"BcVSPNTStaticPLShadow.cso")
+	IMPLEMENT_DX12SHADER(BcPSPNTPLShadow, App::GetShadersDir() + L"BcPSPNTPLShadow.cso")
+</pre>
+　と<strong>IMPLEMENT_DX12SHADERマクロ</strong>を記述すれば、これらのシェーダーを描画処理に使えるようになります。
+<h5>GameObjectと派生クラス</h5>
+　このサンプルでは<strong>GameObjectを継承</strong>して、<strong>MyObject</strong>という、中間的な派生クラスを作っています。多くの処理をこの<strong>MyObject</strong>で行い、土台である<strong>SkyGround</strong>や、くるくる回転する<strong>WallBoxクラス</strong>は<strong>MyObject</strong>から継承しています。<br>
+<h5>MyObject::OnCreate()関数</h5>
+<pre class="my-3 p-3">
+	void MyObject::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
+		auto pBaseScene = BaseScene::Get();
+		auto& frameResources = pBaseScene->GetFrameResources();
+		auto pBaseDevice = BaseDevice::GetBaseDevice();
+		//デフォルトのコンスタントバッファ
+		for (size_t i = 0; i &lt; BaseDevice::FrameCount; i++) {
+			m_constantBufferIndex =
+				frameResources[i]->AddBaseConstantBufferSet&lt;BasicConstantBuffer>(pBaseDevice->GetD3D12Device());
+		}
+		//シャドウマップのコンスタントバッファ
+		for (size_t i = 0; i &lt; BaseDevice::FrameCount; i++) {
+			m_shadowConstantBufferIndex =
+				frameResources[i]->AddBaseConstantBufferSet&lt;ShadowConstantBuffer>(pBaseDevice->GetD3D12Device());
+		}
+	}
+</pre>
+　ここでは<strong>コンスタントバッファ</strong>作りだしています。<strong>AddBaseConstantBufferSet()関数</strong>は<strong>BaseLib</strong>の<strong>FrameResource.h</strong>にあり、以下のような内容です。
+<pre class="my-3 p-3">
+		template&lt;typename T>
+		size_t AddBaseConstantBufferSet(ID3D12Device* pDevice) {
+			BaseConstantBufferSet cbSet;
+			const CD3DX12_RANGE readRange(0, 0); // We do not intend to read from this resource on the CPU.
+			auto size = m_baseConstantBufferSetVec.size();
+			ThrowIfFailed(CreateConstantBuffer(pDevice, sizeof(T), &cbSet.m_baseConstantBuffer, nullptr, D3D12_RESOURCE_STATE_GENERIC_READ));
+			NAME_D3D12_OBJECT(cbSet.m_baseConstantBuffer);
+			ThrowIfFailed(cbSet.m_baseConstantBuffer->Map(0, &readRange, reinterpret_cast&lt;void**>(&cbSet.m_pBaseConstantBufferWO)));
+			m_baseConstantBufferSetVec.push_back(cbSet);
+			return size;
+		}
+</pre>
+　これで、指定のサイズのGPU側コンスタントバッファを作り出し、そのインデックスを返します。
+<h5>MyObject::UpdateConstantBuffers()関数</h5>
+<pre class="my-3 p-3">
+	void GameObject::UpdateConstantBuffers(Scene* scene) {
+		//シーンのコンスタントバッファ
+		{
+			auto& frameResources = scene->GetFrameResources();
+			auto pBaseDevice = BaseDevice::GetBaseDevice();
+			auto& viewport = scene->GetViewport();
+
+			auto myCamera = scene->GetMyCamera();
+			auto myLightSet = scene->GetLightSet();
+
+			//初期化
+			m_constantBuffer = {};
+			m_constantBuffer.activeFlg.x = 3;
+			m_constantBuffer.activeFlg.y = 1;
+
+			//ワールド行列の設定
+			auto world = XMMatrixAffineTransformation(
+				m_param.scale,
+				m_param.rotOrigin,
+				m_param.quaternion,
+				m_param.position
+			);
+			auto view = (XMMATRIX)((Mat4x4)myCamera->GetViewMatrix());
+			auto proj = (XMMATRIX)((Mat4x4)myCamera->GetProjMatrix());
+			auto worldView = world * view;
+			m_constantBuffer.worldViewProj = Mat4x4(XMMatrixTranspose(XMMatrixMultiply(worldView, proj)));
+			<span class="red">//中略</span>
+		}
+		//シャドウマップのコンスタントバッファ
+		{
+			auto& frameResources = scene->GetFrameResources();
+			auto pBaseDevice = BaseDevice::GetBaseDevice();
+			auto& viewport = scene->GetViewport();
+
+			auto myCamera = scene->GetMyCamera();
+			myCamera->CalculateMatrix();
+			auto myLightSet = scene->GetLightSet();
+
+			m_shadowConstantBuffer = {};
+
+			auto lights = myLightSet;
+			auto light = lights->GetMainBaseLight();
+
+			//位置の取得
+			Vec3 pos = m_param.position;
+			Vec3 posSpan = (Vec3)light.m_directional;
+			posSpan *= Vec3(Shadowmap::GetPosAdjustment());
+			pos += posSpan;
+			//ワールド行列の決定
+			auto param_tmp = m_param;
+			param_tmp.position = pos;
+
+			auto world = XMMatrixAffineTransformation(
+				param_tmp.scale,
+				param_tmp.rotOrigin,
+				param_tmp.quaternion,
+				param_tmp.position
+			);
+			<span class="red">//中略</span>
+		}
+
+	}
+</pre>
+　長いので省略していますが、ここでは<strong>コンスタントバッファ</strong>を設定しています。
+<h5>MyObject::CommitConstantBuffers()関数</h5>
+　ここでは、コンスタントバッファを該当フレームのGPU側リソースに転送しています。
+<pre class="my-3 p-3">
+	void MyObject::CommitConstantBuffers(Scene* scene) {
+		auto pCurrentFrameResource = scene->GetCurrentFrameResource();
+		//シーン
+		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_pBaseConstantBufferWO,
+			&m_constantBuffer, sizeof(m_constantBuffer));
+		//シャドウマップ
+		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_shadowConstantBufferIndex].m_pBaseConstantBufferWO,
+			&m_shadowConstantBuffer, sizeof(m_shadowConstantBuffer));
+	}
+</pre>
+<h5>MyObject::OnShadowDraw()関数</h5>
+　ここでは、シャドウマップを描画します。
+<pre class="my-3 p-3">
+	void MyObject::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
+		auto pBaseScene = BaseScene::Get();
+		auto& frameResources = pBaseScene->GetFrameResources();
+		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
+
+		//Cbv
+		pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
+			pCurrentFrameResource->m_baseConstantBufferSetVec[m_shadowConstantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress());
+		 // Set shadow constant buffer.
+
+		pCommandList->IASetVertexBuffers(0, 1, &m_mesh->GetVertexBufferView());
+		pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
+		pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
+	
+	}
+</pre>
+<h5>MyObject::OnSceneDraw()関数</h5>
+　ここでは、シーンを描画します。
+<pre class="my-3 p-3">
+	void MyObject::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
+
+		auto pBaseScene = BaseScene::Get();
+		auto& frameResources = pBaseScene->GetFrameResources();
+		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
+		auto pBaseDevice = BaseDevice::GetBaseDevice();
+		auto& viewport = pBaseScene->GetViewport();
+		auto& scissorRect = pBaseScene->GetScissorRect();
+		auto depthDsvs = pBaseScene->GetDepthDsvs();
+
+		//シェーダリソースのハンドルの設定
+		CD3DX12_GPU_DESCRIPTOR_HANDLE srvHandle(
+			pBaseScene->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
+			m_texture->GetSrvIndex(),
+			pBaseScene->GetCbvSrvUavDescriptorHandleIncrementSize()
+		);
+		pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t1"), srvHandle);
+
+		//Cbv
+		// Set scene constant buffer.
+		pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
+			pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress()); 
+		//Draw
+		pCommandList->IASetVertexBuffers(0, 1, &m_mesh->GetVertexBufferView());
+		pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
+		pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
+	}
+</pre>
+　このように、共通処理を<strong>GameObject側</strong>に書いておくことで、派生クラスの負担が減ります。
+<h5>SkyGroundクラス</h5>
+　ここでは、<strong>OnCreate()関数</strong>さえ書けば問題ありません。
+<pre class="my-3 p-3">
+	void SkyGround::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
+		<span class="red">MyObject::OnCreate(pCommandList);</span>
+		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
+		auto texFile = App::GetRelativeAssetsDir() + L"sky.jpg";
+		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
+	}
+</pre>
+　ここでは
+<pre class="my-3 p-3">
+		<span class="red">MyObject::OnCreate(pCommandList);</span>
+</pre>
+　と親クラスの<strong>OnCreate()関数</strong>を呼び出しています。ここでは、前述したように<strong>コンスタントバッファ</strong>を構築してました。
+<h5>WallBoxクラス</h5>
+　ここでは、<strong>OnCreate()、OnUpdate関数</strong>を記述します。
+<pre class="my-3 p-3">
+	void WallBox::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
+		MyObject::OnCreate(pCommandList);
+		//メッシュ
+		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
+		//テクスチャ
+		auto texFile = App::GetRelativeAssetsDir() + L"wall.jpg";
+		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
+
+	}
+
+	void WallBox::OnUpdate(double elapsedTime) {
+		m_totalTime += elapsedTime;
+		if (m_totalTime >= XM_2PI) {
+			m_totalTime = 0.0;
+		}
+		Quat spanQt(Vec3(1.0f, 1.0f, 0.0f), (float)(elapsedTime * 4));
+		Quat quaternion(m_param.quaternion);
+		quaternion *= spanQt;
+		m_param.quaternion = quaternion;
+		<span class="red">m_param.position.x = (float)sin(m_totalTime) * 2.0f;</span>
+	}
+</pre>
+　<strong>WallBox::OnUpdate()関数</strong>ではまず<strong>m_totalTime</strong>に<strong>elapsedTime（前回のターンから経過時間）</strong>を足し、これが<strong>XM_2PI</strong>以上になったら<strong>0.0</strong>に初期化しています。これで<strong>m_totalTime</strong>をもとに<strong>サイン関数（三角関数のサイン）</strong>を計算します。<br>
+　その後<strong>1ターンの差分クォータニオン</strong>を<strong>spanQt</strong>に作成し、現在の<strong>quaternion</strong>に掛けてます。これで、指定の軸に従ってちょっとだけ回転するようになります。<br>
+　また行ったり来たりの処理は、<strong>m_totalTime</strong>をもとに
+<pre class="my-3 p-3">
+		<span class="red">m_param.position.x = (float)sin(m_totalTime) * 2.0f;</span>
+</pre>
+　と、位置情報の<strong>x要素</strong>を変更してます。
 <h5>シーンクラス（Scene.h、Scene.cpp）</h5>
 　ソリューションエクスプローラを見ると<strong>BaseCrossDx12</strong>フィルタの中に<strong>ソース ファイル</strong>フィルタ、および<strong>ヘッダー ファイル</strong>フィルタに、いくつかのファイルがあります。これらを記述することで、上記のような画面が表示されます。<br>
 　表示しているだけで、コントローラやキーボードに反応するわけでもありません。壁模様のオブジェクトが行ったり来たりしています、<strong>Escキー</strong>で終了させることができます。<br>
@@ -28,15 +269,15 @@
 	//--------------------------------------------------------------------------------------
 	class Scene : public BaseScene
 	{
-		<span class="red">vector&lt;shared_ptr&lt;MyObject>> m_myObjectvec;</span>
+		<span class="red">vector&lt;shared_ptr&lt;GameObject>> m_gameObjectvec;</span>
 	public:
 		Scene(UINT frameCount, PrimDevice* pSample);
 		virtual ~Scene();
 		template&lt;typename T, typename... Ts>
-		shared_ptr&lt;T> AddMyObject(ID3D12GraphicsCommandList* pCommandList, Ts&&... params) {
+		shared_ptr&lt;T> AddGameObject(ID3D12GraphicsCommandList* pCommandList, Ts&&... params) {
 			try {
 				auto Ptr = ObjectFactory::Create&lt;T>(pCommandList, params...);
-				m_myObjectvec.push_back(Ptr);
+				m_gameObjectvec.push_back(Ptr);
 				return Ptr;
 			}
 			catch (...) {
@@ -77,37 +318,36 @@
 		m_myLightSet = shared_ptr&lt;LightSet>(new LightSet());
 
 		TransParam param;
-		param.scale = XMFLOAT3(1, 1, 1);
-		param.rotOrigin = XMFLOAT3(0, 0, 0);
+		param.scale = Vec3(1, 1, 1);
+		param.rotOrigin = Vec3(0, 0, 0);
 		auto quat = XMQuaternionIdentity();
-		param.quaternion = bsm::makeF4(quat);
-		param.position = XMFLOAT3(0.0, 5.0, 0.0f);
-		<span class="red">AddMyObject&lt;WallBox>(pCommandList, param);</span>
-		param.scale = XMFLOAT3(50, 1, 50);
-		param.position = XMFLOAT3(0, -0.5, 0.0f);
-		<span class="red">AddMyObject&lt;SkyStage>(pCommandList, param);</span>
+		param.quaternion = bsm::Quat(quat);
+		param.position = Vec3(0.0, 5.0, 0.0f);
+		AddGameObject&lt;WallBox>(pCommandList, param);
+		param.scale = Vec3(50, 1, 50);
+		param.position = Vec3(0, -0.5, 0.0f);
+		AddGameObject&lt;SkyGround>(pCommandList, param);
 	}
 </pre>
 　<strong>CreateAssetResources()関数</strong>をはじめ、<strong>BaseSceneクラス</strong>から継承する関数は、こう書かなければいけない、というわけでもなく、各オブジェクトを効率よく管理できる設計であれば、サンプル通りでなくても構いません。<br>
 　このサンプルでは、あらかじめ<strong>Sceneクラス</strong>に
 <pre class="my-3 p-3">
-		<span class="red">vector&lt;shared_ptr&lt;MyObject>> m_myObjectvec;</span>
+		<span class="red">vector&lt;shared_ptr&lt;GameObject>> m_gameObjectvec;</span>
 </pre>
-　という<strong>MyObjectの配列</strong>を持っており、それを使って各オブジェクトを管理します。<br>
-　<strong>MyObjectクラス</strong>は<strong>MyObject.h/cpp</strong>に記述されています。<br>
+　という<strong>GameObjectの配列</strong>を持っており、それを使って各オブジェクトを管理します。<br>
  <strong>CreateAssetResources()関数</strong>では、最初に
 <pre class="my-3 p-3">
 		m_myCamera = shared_ptr&lt;PerspecCamera>(new PerspecCamera());
 		m_myLightSet = shared_ptr&lt;LightSet>(new LightSet());
 </pre>
 　という形で<strong>カメラとライト</strong>を作成しています。<br>
-　その後<strong>WallBox</strong>クラスと<strong>SkyStage</strong>クラスの、2つのインスタンスを<strong>AddMyObject()関数</strong>を使って作成しています。<strong>AddMyObject()関数</strong>はテンプレート関数になっていて、<strong>Scene.h</strong>に記述されている通り
+　その後<strong>WallBox</strong>クラスと<strong>SkyGround</strong>クラスの、2つのインスタンスを<strong>AddGameObject()関数</strong>を使って作成しています。<strong>AddGameObject()関数</strong>はテンプレート関数になっていて、<strong>Scene.h</strong>に記述されている通り
 <pre class="my-3 p-3">
 		template&lt;typename T, typename... Ts>
-		shared_ptr&lt;T> AddMyObject(ID3D12GraphicsCommandList* pCommandList, Ts&&... params) {
+		shared_ptr&lt;T> AddGameObject(ID3D12GraphicsCommandList* pCommandList, Ts&&... params) {
 			try {
 				auto Ptr = ObjectFactory::Create&lt;T>(pCommandList, params...);
-				m_myObjectvec.push_back(Ptr);
+				m_gameObjectvec.push_back(Ptr);
 				return Ptr;
 			}
 			catch (...) {
@@ -115,113 +355,12 @@
 			}
 		}
 </pre>
-　という記述です。<strong>BaseCross64</strong>を使ったことがある人はわかると思いますが、<strong>MyObjectクラス</strong>は<strong>ObjectInterface</strong>の派生クラスになっており、<strong>AddMyObject()関数</strong>を使うことで、<strong>MyObject::OnCreate()関数</strong>を自動的に呼び出すことができます。<br>
-<h5>計算ライブラリ</h5>
-　<strong>BaseCrossDx12</strong>にも、計算ライブラリとして<strong>BaseCross64</strong>にある、<strong>bsm::Vec3、bsm::Vec4、bsm::Mat4x4クラス</strong>などがあります。<br>
-　ただ、多くの部分を<strong>XMVECTOR、XMMATRIX</strong>への<strong>XMFLOAT3、XMFLOAT4X4</strong>からのキャストやその逆、そして四則演算などが実装されており、<strong>BaseCross64版</strong>よりは簡略化されております。<br>
-　これらは<strong>DirectXMath</strong>をラッピングするクラスで、<strong>DirectXMath</strong>の関数に、そのまま渡しても動くようになっています。<br>
-　例えば、以下のような書き方ができます。
-<pre class="my-3 p-3">
-	using namespace bsm; //bsmを省略できる
-	//中略
-	//Quatを、回転軸と回転値で生成
-	Quat spanQt(Vec3(1.0f, 1.0f, 0.0f), (float)(elapsedTime * 4));
-	//Quatを、XMFLOAT4から生成
-	Quat quaternion(m_param.quaternion);
-	//追掛け算（これで、回転が加わる）
-	<span class="red">quaternion *= spanQt;</span>
-	//XMFLOAT4に戻して代入
-	m_param.quaternion = quaternion;
-</pre>
-　これを、<strong>DirectXMath</strong>の<strong>XMLoadFloat4()やXMStoreFloat4()関数</strong>などで変換しながら計算するのは、かなり厄介です。ですので<strong>bsm計算ライブラリ</strong>では、これらの負担をできるだけ少なくできるようになっています。<br>
-　関数呼び出しも例えば上記の
-<pre class="my-3 p-3">
-	<span class="red">quaternion *= spanQt;</span>
-</pre>
-　も、内部では<strong>XMQuaternionMultiply()関数</strong>が呼ばれています。演算子を使いたくなければ
-<pre class="my-3 p-3">
-	<span class="red">quaternion = XMQuaternionMultiply(quaternion, spanQt);</span>
-</pre>
-　と書くことができます。
-<h5>MyObjectクラス</h5>
-　<strong>Scene::AddMyObject()関数</strong>によって追加される<strong>MyObject</strong>は<strong>MyObject.h/cpp</strong>に記述されています。<br>
-　<strong>MyObjectクラス</strong>のコンストラクタは<strong>protected</strong>メンバになっており、直接は作成できません。<br>
-　派生クラスを作り、それを<strong>Scene::AddMyObject()関数</strong>で追加します。以下は<strong>WallBoxクラス</strong>の宣言部です。
-<pre class="my-3 p-3">
-	class WallBox : public  MyObject {
-		double m_totalTime;
-	protected:
-	public:
-		WallBox(const TransParam& param);
-		virtual ~WallBox();
-		virtual void OnCreate(ID3D12GraphicsCommandList* pCommandList);
-		virtual void OnUpdate(double elapsedTime);
-	};
-</pre>
-　コンストラクタの引数は<strong>TransParam型</strong>となっており、これは構造体です。<strong>BaseMath.h</strong>に記述されています。<strong>world行列</strong>を作り出すのに便利な構造体です。
-<pre class="my-3 p-3">
-	struct TransParam {
-		XMFLOAT3 scale;
-		XMFLOAT3 rotOrigin;
-		XMFLOAT4 quaternion;
-		XMFLOAT3 position;
-	};
-</pre>
-　<strong>bsmネームスペース</strong>には、この構造体を渡すと<strong>world行列</strong>を作り出す<strong>bsm::affineTransformation()関数</strong>が用意されています。
-<h5>OnCreate()関数</h5>
-　<strong>WallBox::OnCreate()関数</strong>は、以下のような記述です。
-<pre class="my-3 p-3">
-	void WallBox::OnCreate(ID3D12GraphicsCommandList* pCommandList){
-		<span class="red">MyObject::OnCreate(pCommandList);</span>
-		//メッシュ
-		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
-		//テクスチャ
-		auto texFile = App::GetRelativeAssetsDir() + L"wall.jpg";
-		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
-	}
-</pre>
-　関数の先頭に
-<pre class="my-3 p-3">
-		<span class="red">MyObject::OnCreate(pCommandList);</span>
-</pre>
-　という記述がありますが、これは<strong>親クラス（MyObjectクラス）</strong>の<strong>OnCreate()関数</strong>を呼び出しています。<br>
-　<strong>MyObject::OnCreate()関数</strong>は、<strong>WallBoxクラス</strong>、<strong>SkyStageクラス</strong>共通の処理をまとめてあります。最初にその関数を呼び出しています。以下のような記述になっています。
-<pre class="my-3 p-3">
-	void MyObject::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
-		auto pBaseScene = BaseScene::Get();
-		auto& frameResources = pBaseScene->GetFrameResources();
-		auto pBaseDevice = BaseDevice::GetBaseDevice();
-		//デフォルトのコンスタントバッファ
-		for (size_t i = 0; i &lt; BaseDevice::FrameCount; i++) {
-			<span class="red">m_constantBufferIndex = 
-				frameResources[i]->AddBaseConstantBufferSet&lt;BaseConstantBuffer>(pBaseDevice->GetD3D12Device());</span>
-		}
-		//シャドウマップのコンスタントバッファ
-		for (size_t i = 0; i &lt; BaseDevice::FrameCount; i++) {
-			<span class="red">m_shadowConstantBufferIndex =
-				frameResources[i]->AddBaseConstantBufferSet&lt;ShadowConstant>(pBaseDevice->GetD3D12Device());</span>
-		}
-	}
-</pre>
-　ここでは<strong>デフォルトのコンスタントバッファ（シーン用）</strong>と<strong>シャドウマップのコンスタントバッファ</strong>を作り出しています。<br>
-　ここで<strong>FrameResources</strong>という新しい概念が出てきました。Dx12プログラムでは<strong>バックバッファ</strong>と<strong>フロントバッファ</strong>という複数の<strong>レンダーターゲット</strong>をを持っています。<strong>BaseCrossDx12</strong>では、3つのバッファを持ち、ターンごとの描画が終了するたびに、バックバッファとフロントバッファを入れ替えます。3つあるので、つねにバックバッファ状態のは2つあるということです（描画するのはそのうちどちらかですが。）<br>
-　<strong>FrameResources</strong>はそれぞれの<strong>バッファ</strong>に対応します。<strong>バッファ</strong>が入れ替わっても、<strong>GPU側コンスタントバッファ</strong>への書き込みができるように<strong>BaseDevice::FrameCount</strong>の数だけ（すなわち3つ）、<strong>GPU側コンスタントバッファ</strong>を作成します。<br>
-　<strong>AddBaseConstantBufferSet()テンプレート関数</strong>は、<strong>GPU側コンスタントバッファと書き込みオンリーのバッファ</strong>を作成し、シェーダーに渡せるようにします。<br>
-　戻り値が、<strong>m_constantBufferIndex（シーン用）</strong>、<strong>m_shadowConstantBufferIndex（シャドウマップ用）</strong>に上書きされながらループしますが、フレームごとに同じインデックスを持つので、安全です。<br>
-　<strong>WallBox::OnCreate()関数</strong>では、上記の<strong>MyObject::OnCreate()関数</strong>を呼び出した後、個別のクリエイト処理を行います。
-<pre class="my-3 p-3">
-		//メッシュ
-		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
-		//テクスチャ
-		auto texFile = App::GetRelativeAssetsDir() + L"wall.jpg";
-		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
-</pre>
-　です。メッシュは、大きさ1.0fの立方体であり、テクスチャは壁模様のテクスチャです。
+　という記述です。<strong>BaseCross64</strong>を使ったことがある人はわかると思いますが、<strong>GameObjectクラス</strong>は<strong>ObjectInterface</strong>の派生クラスになっており、<strong>AddGameObject()関数</strong>を使うことで、<strong>MyObject::OnCreate()関数</strong>を自動的に呼び出すことができます。
 <h5>Update()関数</h5>
  <strong>Scene::Update()関数</strong>は、以下のような内容です。
 <pre class="my-3 p-3">
 	void Scene::Update(double elapsedTime) {
-		for (auto& v : m_myObjectvec) {
+		for (auto& v : m_gameObjectvec) {
 			v->OnUpdate(elapsedTime);
 		}
 		UpdateConstantBuffers();
@@ -230,12 +369,12 @@
 </pre>
 　ここでは、
 <pre class="my-3 p-3">
-		for (auto& v : m_myObjectvec) {
+		for (auto& v : m_gameObjectvec) {
 			v->OnUpdate(elapsedTime);
 		}
 </pre>
-　と、それぞれの<strong>MyObject::OnUpdate()関数</strong>を呼び出します。<br>
-　この関数は仮想関数なので<strong>WallBox::OnUpdate()関数</strong>もしくは<strong>SkyStage::OnUpdate()関数</strong>が呼ばれます。<br>
+　と、それぞれの<strong>GameObject::OnUpdate()関数</strong>を呼び出します。<br>
+　この関数は仮想関数なので<strong>WallBox::OnUpdate()関数</strong>もしくは<strong>SkyGround::OnUpdate()関数</strong>が呼ばれます。<br>
 　以下は<strong>WallBox::OnUpdate()関数</strong>ですが
 <pre class="my-3 p-3">
 	void WallBox::OnUpdate(double elapsedTime) {
@@ -262,93 +401,9 @@
 <pre class="my-3 p-3">
 	void Scene::UpdateConstantBuffers()
 	{
-		for (auto& v : m_myObjectvec) {
+		for (auto& v : m_gameObjectvec) {
 			v->UpdateConstantBuffers(this);
 		}
-	}
-</pre>
-　これは共通処理でいいので<strong>MyObject::UpdateConstantBuffers()</strong>に記述されています。<br>
-　結構大きな関数なので、省略して以下に記述します。ここでも<strong>bsm計算ライブラリ</strong>を多用しています。
-<pre class="my-3 p-3">
-	void MyObject::UpdateConstantBuffers(Scene* scene) {
-		//シーンのコンスタントバッファ
-		{
-			auto& frameResources = scene->GetFrameResources();
-			auto pBaseDevice = BaseDevice::GetBaseDevice();
-			auto& viewport = scene->GetViewport();
-
-			auto myCamera = scene->GetMyCamera();
-			auto myLightSet = scene->GetLightSet();
-
-			//初期化
-			m_constantBuffer = {};
-			m_constantBuffer.activeFlg.x = 3;
-			m_constantBuffer.activeFlg.y = 1;
-
-			//ワールド行列の設定
-			auto world = XMMatrixAffineTransformation(
-				Vec3(m_param.scale),
-				Vec3(m_param.rotOrigin),
-				Quat(m_param.quaternion),
-				Vec3(m_param.position)
-			);
-			auto view = (XMMATRIX)((Mat4x4)myCamera->GetViewMatrix());
-			auto proj = (XMMATRIX)((Mat4x4)myCamera->GetProjMatrix());
-			auto worldView = world * view;
-			m_constantBuffer.worldViewProj = Mat4x4(XMMatrixTranspose(XMMatrixMultiply(worldView, proj)));
-
-			//<span class="red">中略</span>
-
-		}
-		//シャドウマップのコンスタントバッファ
-		{
-			auto& frameResources = scene->GetFrameResources();
-			auto pBaseDevice = BaseDevice::GetBaseDevice();
-			auto& viewport = scene->GetViewport();
-
-			auto myCamera = scene->GetMyCamera();
-			myCamera->CalculateMatrix();
-			auto myLightSet = scene->GetLightSet();
-
-			m_shadowConstantBuffer = {};
-
-			auto lights = myLightSet;
-			auto light = lights->GetMainBaseLight();
-
-			//位置の取得
-			XMFLOAT3 pos = m_param.position;
-			XMFLOAT3 posSpan = light.m_directional;
-			posSpan = (XMFLOAT3)(Vec3(posSpan) * Vec3(Shadowmap::GetPosAdjustment()));
-			pos = (XMFLOAT3)(Vec3(pos) +  Vec3(posSpan));
-			//ワールド行列の決定
-			auto param_tmp = m_param;
-			param_tmp.position = pos;
-
-			auto world = XMMatrixAffineTransformation(
-				Vec3(param_tmp.scale),
-				Vec3(param_tmp.rotOrigin),
-				Quat(param_tmp.quaternion),
-				Vec3(param_tmp.position)
-
-			);
-			//<span class="red">中略</span>
-
-		}
-	}
-</pre>
-　このように、シーン用のコンスタントバッファとシャドウマップ用のコンスタントバッファを記述します。<br>
-　細かい内容についてはサンプルのコードを参照してください。
-<h5>CommitConstantBuffers()関数</h5>
-　この関数も同様、<strong>Scene::CommitConstantBuffers()関数</strong>では、<strong>各MyObjectのCommitConstantBuffers()関数</strong>を呼び出します。内容は以下です。シンプルです。
-<pre class="my-3 p-3">
-	void MyObject::CommitConstantBuffers(Scene* scene) {
-		auto pCurrentFrameResource = scene->GetCurrentFrameResource();
-		//シーン
-		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_pBaseConstantBufferWO,
-			&m_constantBuffer, sizeof(m_constantBuffer));
-		//シャドウマップ
-		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_shadowConstantBufferIndex].m_pBaseConstantBufferWO,
-			&m_shadowConstantBuffer, sizeof(m_shadowConstantBuffer));
 	}
 </pre>
 　ここでは、ターゲットとなるフレーム<strong>scene->GetCurrentFrameResource()で取得</strong>を使って、そのフレームの、該当インデックスの<strong>m_pBaseConstantBufferWO</strong>に対して、各コンスタントバッファをコピーします。
@@ -370,30 +425,12 @@
 		// No render target needed for the shadow pass.
 		<span class="red">pCommandList->OMSetRenderTargets(0, nullptr, FALSE, &m_depthDsvs[DepthGenPass::Shadow]);</span>
 		//以下は各オブジェクト
-		for (auto& v : m_myObjectvec) {
+		for (auto& v : m_gameObjectvec) {
 			v->OnShadowDraw(pCommandList);
 		}
 	}
 </pre>
-　その後、各<strong>MyObject::OnShadowDraw()関数</strong>に処理を任せます。<br>
-　MyObjectでは、以下のように記述されます。
-<pre class="my-3 p-3">
-	void MyObject::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
-		auto pBaseScene = BaseScene::Get();
-		auto& frameResources = pBaseScene->GetFrameResources();
-		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
-
-		//Cbv
-		pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
-			pCurrentFrameResource->m_baseConstantBufferSetVec[m_shadowConstantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress()); // Set shadow constant buffer.
-
-		pCommandList->IASetVertexBuffers(0, 1, &m_mesh->GetVertexBufferView());
-		pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
-		pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
-	
-	}
-</pre>
-　ここでは<strong>コンスタントバッファ</strong>を、シェーダーの<strong>b0</strong>というスロットに渡し、<strong>m_mesh</strong>を描画します。
+　その後、各<strong>GameObject::OnShadowDraw()関数</strong>に処理を任せます。<br>
 <h5>ScenePass()関数</h5>
 　<strong>Scene::ScenePass()関数</strong>では、
 <pre class="my-3 p-3">
@@ -445,48 +482,12 @@
 		);
 		pCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"s1"), samplerHandle2);
 
-		for (auto& v : m_myObjectvec) {
+		for (auto& v : m_gameObjectvec) {
 			v->OnSceneDraw(pCommandList);
 		}
 	}
 </pre>
 　ここでは、<strong>ルートシグネチャ、シャドウマップ、サンプラー、パイプラインステート</strong>などを設定し、各<strong>GemaObject::OnSceneDraw()関数</strong>を呼びます。<br>
-　<strong>GemaObject::OnSceneDraw()関数</strong>は以下です。
-<pre class="my-3 p-3">
-	void MyObject::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
-
-		auto pBaseScene = BaseScene::Get();
-		auto& frameResources = pBaseScene->GetFrameResources();
-		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
-		auto pBaseDevice = BaseDevice::GetBaseDevice();
-		auto& viewport = pBaseScene->GetViewport();
-		auto& scissorRect = pBaseScene->GetScissorRect();
-		auto depthDsvs = pBaseScene->GetDepthDsvs();
-
-		//シェーダリソースのハンドルの設定
-		CD3DX12_GPU_DESCRIPTOR_HANDLE srvHandle(
-			pBaseScene->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
-			m_texture->GetSrvIndex(),
-			pBaseScene->GetCbvSrvUavDescriptorHandleIncrementSize()
-		);
-		pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t1"), srvHandle);
-
-		//Cbv
-		// Set scene constant buffer.
-		pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
-			pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress()); 
-		//Draw
-		pCommandList->IASetVertexBuffers(0, 1, &m_mesh->GetVertexBufferView());
-		pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
-		pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
-	}
-</pre>
-　ここでは、<strong>テクスチャおよびコンスタントバッファ</strong>をシェーダーのスロットに入れます。<br>
-　それで、メッシュを渡して、
-<pre class="my-3 p-3">
-		pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
-</pre>
-　と描画処理をします。
 <h5>まとめ</h5>
 　このサンプルでは、シンプルながらも<strong>シャドウマップ</strong>や<strong>オブジェクトの動的な変化</strong>をさせる、3D描画の内容となっています。<br>
 　ここでは、オブジェクトは2つですが、これが100個になっても、大きく処理は変わりません。いろんな種類の<strong>ゲームオブジェクト</strong>を作成するためには<strong>MyObjectクラス</strong>を継承すれば作成できます。<br>

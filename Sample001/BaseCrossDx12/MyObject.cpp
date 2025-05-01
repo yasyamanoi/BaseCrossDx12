@@ -28,10 +28,10 @@ namespace basecross {
 
 			//ワールド行列の設定
 			auto world = XMMatrixAffineTransformation(
-				Vec3(m_param.scale),
-				Vec3(m_param.rotOrigin),
-				Quat(m_param.quaternion),
-				Vec3(m_param.position)
+				m_param.scale,
+				m_param.rotOrigin,
+				m_param.quaternion,
+				m_param.position
 			);
 			auto view = (XMMATRIX)((Mat4x4)myCamera->GetViewMatrix());
 			auto proj = (XMMATRIX)((Mat4x4)myCamera->GetProjMatrix());
@@ -57,7 +57,7 @@ namespace basecross {
 					XMVECTOR wOffset = XMVectorSwizzle<1, 2, 3, 0>(XMLoadFloat(&start));
 					m_constantBuffer.fogVector = Vec4((worldViewZ + wOffset) / (start - end));
 				}
-				m_constantBuffer.fogColor = m_fogColor;
+				m_constantBuffer.fogColor = (Col4)m_fogColor;
 			}
 			else
 			{
@@ -66,12 +66,13 @@ namespace basecross {
 			}
 			//ライトの決定
 			for (int i = 0; i < myLightSet->GetNumLights(); i++) {
-				m_constantBuffer.lightDirection[i] = Vec4(myLightSet->GetLight(i).m_directional);
-				m_constantBuffer.lightDiffuseColor[i] = myLightSet->GetLight(i).m_diffuseColor;
-				m_constantBuffer.lightSpecularColor[i] = myLightSet->GetLight(i).m_specularColor;
+				m_constantBuffer.lightDirection[i] = (Vec4)myLightSet->GetLight(i).m_directional;
+				m_constantBuffer.lightDiffuseColor[i] = (Vec4)myLightSet->GetLight(i).m_diffuseColor;
+				m_constantBuffer.lightSpecularColor[i] = (Vec4)myLightSet->GetLight(i).m_specularColor;
 			}
 			//ワールド行列
-			m_constantBuffer.world = Mat4x4(XMMatrixTranspose(world));
+			m_constantBuffer.world = Mat4x4(world);
+			m_constantBuffer.world.transpose();
 
 			XMMATRIX worldInverse = XMMatrixInverse(nullptr, world);
 			m_constantBuffer.worldInverseTranspose[0] = Vec4(worldInverse.r[0]);
@@ -81,30 +82,31 @@ namespace basecross {
 			XMMATRIX viewInverse = XMMatrixInverse(nullptr, view);
 			m_constantBuffer.eyePosition = Vec4(viewInverse.r[3]);
 
-			XMVECTOR diffuse = Col4(1.0f);
-			XMVECTOR alphaVector = XMVectorReplicate(1.0f);
-			XMVECTOR emissiveColor = Col4(0.0f);
-			XMVECTOR ambientLightColor = Col4(myLightSet->GetAmbient());
+			Col4 diffuse = Col4(1.0f);
+			Col4 alphaVector = (Col4)XMVectorReplicate(1.0f);
+			Col4 emissiveColor = Col4(0.0f);
+			Col4 ambientLightColor = (Col4)myLightSet->GetAmbient();
+
 			// emissive と ambientとライトをマージする
-			m_constantBuffer.emissiveColor = Col4((emissiveColor + ambientLightColor * diffuse) * alphaVector);
-			m_constantBuffer.specularColorAndPower = XMFLOAT4(0, 0, 0, 1);
+			m_constantBuffer.emissiveColor = (emissiveColor + (ambientLightColor * diffuse)) * alphaVector;
+			m_constantBuffer.specularColorAndPower = Col4(0, 0, 0, 1);
 
 			// xyz = diffuse * alpha, w = alpha.
 			m_constantBuffer.diffuseColor = Col4(XMVectorSelect(alphaVector, diffuse * alphaVector, g_XMSelect1110));
 
 			auto mainLight = myLightSet->GetMainBaseLight();
-			XMFLOAT3 calcLightDir = (XMFLOAT3)(Vec3(mainLight.m_directional) * Vec3(-1.0f));
+			Vec3 calcLightDir = Vec3(mainLight.m_directional) * Vec3(-1.0f);
 
-			XMFLOAT3 lightAt(myCamera->GetAt());
-			XMFLOAT3 lightEye(calcLightDir);
-			lightEye = (XMFLOAT3)(Vec3(lightEye) * Vec3(Shadowmap::GetLightHeight()));
-			lightEye = (XMFLOAT3)(Vec3(lightAt) + Vec3(lightEye));
+			Vec3 lightAt(myCamera->GetAt());
 
-			XMFLOAT4 LightEye4 = Vec4((Vec3)lightEye, 1.0f);
-			LightEye4.w = 1.0f;
+			Vec3 lightEye(calcLightDir);
+
+			lightEye *= Vec3(Shadowmap::GetLightHeight());
+			lightEye += lightAt;
+
+			Vec4 LightEye4 = Vec4(lightEye, 1.0f);
 			m_constantBuffer.lightPos = LightEye4;
-			XMFLOAT4 eyePos4 = Vec4((Vec3)myCamera->GetEye(), 1.0f);
-			eyePos4.w = 1.0f;
+			Vec4 eyePos4 = Vec4((Vec3)myCamera->GetEye(), 1.0f);
 			m_constantBuffer.eyePos = eyePos4;
 			XMMATRIX LightView, LightProj;
 			//ライトのビューと射影を計算
@@ -115,8 +117,8 @@ namespace basecross {
 			);
 			LightProj = XMMatrixOrthographicLH(Shadowmap::GetViewWidth(), Shadowmap::GetViewHeight(),
 				Shadowmap::GetLightNear(), Shadowmap::GetLightFar());
-			m_constantBuffer.lightView = bsm::Mat4x4(XMMatrixTranspose(LightView));
-			m_constantBuffer.lightProjection = bsm::Mat4x4(XMMatrixTranspose(LightProj));
+			m_constantBuffer.lightView = Mat4x4(XMMatrixTranspose(LightView));
+			m_constantBuffer.lightProjection = Mat4x4(XMMatrixTranspose(LightProj));
 
 		}
 		//シャドウマップのコンスタントバッファ
@@ -135,32 +137,32 @@ namespace basecross {
 			auto light = lights->GetMainBaseLight();
 
 			//位置の取得
-			XMFLOAT3 pos = m_param.position;
-			XMFLOAT3 posSpan = light.m_directional;
-			posSpan = (XMFLOAT3)(Vec3(posSpan) * Vec3(Shadowmap::GetPosAdjustment()));
-			pos = (XMFLOAT3)(Vec3(pos) +  Vec3(posSpan));
+			Vec3 pos = m_param.position;
+			Vec3 posSpan = (Vec3)light.m_directional;
+			posSpan *= Vec3(Shadowmap::GetPosAdjustment());
+			pos += posSpan;
 			//ワールド行列の決定
 			auto param_tmp = m_param;
 			param_tmp.position = pos;
 
 			auto world = XMMatrixAffineTransformation(
-				Vec3(param_tmp.scale),
-				Vec3(param_tmp.rotOrigin),
-				Quat(param_tmp.quaternion),
-				Vec3(param_tmp.position)
+				param_tmp.scale,
+				param_tmp.rotOrigin,
+				param_tmp.quaternion,
+				param_tmp.position
 			);
 
-			XMFLOAT3 lightDir = (XMFLOAT3)(Vec3(light.m_directional) * Vec3(-1.0f));
+			Vec3 lightDir = Vec3(light.m_directional) * Vec3(-1.0f);
 
 			auto camera = myCamera;
-			XMFLOAT3 lightAt = camera->GetAt();
-			XMFLOAT3 lightDirTmp = (XMFLOAT3)(Vec3(lightDir) * Vec3(Shadowmap::GetLightHeight()));
-			XMFLOAT3 lightEye = (XMFLOAT3)(Vec3(lightAt) + Vec3(lightDirTmp));
+			Vec3 lightAt(camera->GetAt());
+			Vec3 lightDirTmp(lightDir* Vec3(Shadowmap::GetLightHeight()));
+			Vec3 lightEye(lightAt + lightDirTmp);
 			auto width = viewport.Width;
 			auto height = viewport.Height;
 
 			auto lightView
-				= XMMatrixLookAtLH(Vec3(lightEye), Vec3(lightAt), Vec3(XMFLOAT3(0, 1.0f, 0)));
+				= XMMatrixLookAtLH(lightEye, lightAt, Vec3(0, 1.0f, 0));
 
 			auto lightProj =
 				XMMatrixOrthographicLH(
@@ -168,9 +170,9 @@ namespace basecross {
 					Shadowmap::GetViewHeight(),
 					Shadowmap::GetLightNear(),
 					Shadowmap::GetLightFar());
-			m_shadowConstantBuffer.world = bsm::Mat4x4(XMMatrixTranspose(world));
-			m_shadowConstantBuffer.view = bsm::Mat4x4(XMMatrixTranspose(lightView));
-			m_shadowConstantBuffer.projection = bsm::Mat4x4(XMMatrixTranspose(lightProj));
+			m_shadowConstantBuffer.world = Mat4x4(XMMatrixTranspose(world));
+			m_shadowConstantBuffer.view = Mat4x4(XMMatrixTranspose(lightView));
+			m_shadowConstantBuffer.projection = Mat4x4(XMMatrixTranspose(lightProj));
 
 		}
 
@@ -192,13 +194,13 @@ namespace basecross {
 		auto pBaseDevice = BaseDevice::GetBaseDevice();
 		//デフォルトのコンスタントバッファ
 		for (size_t i = 0; i < BaseDevice::FrameCount; i++) {
-			m_constantBufferIndex = 
-				frameResources[i]->AddBaseConstantBufferSet<BaseConstantBuffer>(pBaseDevice->GetD3D12Device());
+			m_constantBufferIndex =
+				frameResources[i]->AddBaseConstantBufferSet<BasicConstantBuffer>(pBaseDevice->GetD3D12Device());
 		}
 		//シャドウマップのコンスタントバッファ
 		for (size_t i = 0; i < BaseDevice::FrameCount; i++) {
 			m_shadowConstantBufferIndex =
-				frameResources[i]->AddBaseConstantBufferSet<ShadowConstant>(pBaseDevice->GetD3D12Device());
+				frameResources[i]->AddBaseConstantBufferSet<ShadowConstantBuffer>(pBaseDevice->GetD3D12Device());
 		}
 	}
 
@@ -215,7 +217,7 @@ namespace basecross {
 		pCommandList->IASetVertexBuffers(0, 1, &m_mesh->GetVertexBufferView());
 		pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
 		pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
-	
+
 	}
 	void MyObject::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
 
@@ -238,7 +240,7 @@ namespace basecross {
 		//Cbv
 		// Set scene constant buffer.
 		pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
-			pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress()); 
+			pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress());
 		//Draw
 		pCommandList->IASetVertexBuffers(0, 1, &m_mesh->GetVertexBufferView());
 		pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
@@ -249,54 +251,7 @@ namespace basecross {
 
 
 
-	//--------------------------------------------------------------------------------------
-	// 四角のオブジェクト
-	//--------------------------------------------------------------------------------------
-	WallBox::WallBox(const TransParam& param):
-		MyObject(param),
-		m_totalTime(0.0)
-	{}
-	WallBox::~WallBox(){}
 
-	void WallBox::OnCreate(ID3D12GraphicsCommandList* pCommandList){
-		MyObject::OnCreate(pCommandList);
-		//メッシュ
-		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
-		//テクスチャ
-		auto texFile = App::GetRelativeAssetsDir() + L"wall.jpg";
-		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
-	}
-
-	void WallBox::OnUpdate(double elapsedTime) {
-		m_totalTime += elapsedTime;
-		if (m_totalTime >= XM_2PI) {
-			m_totalTime = 0.0;
-		}
-		Quat spanQt(Vec3(1.0f, 1.0f, 0.0f), (float)(elapsedTime * 4));
-		Quat quaternion(m_param.quaternion);
-		quaternion *= spanQt;
-		m_param.quaternion = quaternion;
-		m_param.position.x = (float)sin(m_totalTime) * 2.0f;
-	}
-
-	//--------------------------------------------------------------------------------------
-	// ステージのオブジェクト
-	//--------------------------------------------------------------------------------------
-	SkyStage::SkyStage(const TransParam& param) :
-		MyObject(param)
-	{
-	}
-	SkyStage::~SkyStage() {}
-
-
-	void SkyStage::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
-		MyObject::OnCreate(pCommandList);
-		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
-		auto texFile = App::GetRelativeAssetsDir() + L"sky.jpg";
-		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
-	}
-
-	void SkyStage::OnUpdate(double elapsedTime) {}
 
 }
 // end namespace basecross
