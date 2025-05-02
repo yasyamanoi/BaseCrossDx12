@@ -114,6 +114,7 @@ namespace basecross {
 
 	}
 
+	bool primDeviceActive = false;
 
 	int App::Run(PrimDevice* pPrimDevice, HINSTANCE hInstance, int nCmdShow)
 	{
@@ -173,6 +174,7 @@ namespace basecross {
 
 			// Initialize the sample. OnInit is defined in each child-implementation of DXSample.
 			pPrimDevice->OnInit();
+			primDeviceActive = true;
 			ShowWindow(m_hwnd, nCmdShow);
 
 			MSG msg = {};
@@ -192,7 +194,9 @@ namespace basecross {
 			//デバッグ出力をする。
 			std::string str = e.what_m() + "\n";
 			OutputDebugStringA(str.c_str());
-			pPrimDevice->OnDestroy();
+			if (primDeviceActive) {
+				pPrimDevice->OnDestroy();
+			}
 			if (GetWindowInfo(m_hwnd, &winInfo)) {
 				//実行失敗した
 				MessageBoxA(m_hwnd, e.what_m().c_str(), "エラー", MB_OK);
@@ -208,7 +212,9 @@ namespace basecross {
 			std::string str(e.what());
 			str += "\n";
 			OutputDebugStringA(str.c_str());
-			pPrimDevice->OnDestroy();
+			if (primDeviceActive) {
+				pPrimDevice->OnDestroy();
+			}
 			if (GetWindowInfo(m_hwnd, &winInfo)) {
 				//実行失敗した
 				MessageBoxA(m_hwnd, e.what(), "エラー", MB_OK);
@@ -224,7 +230,9 @@ namespace basecross {
 			std::string str(e.what());
 			str += "\n";
 			OutputDebugStringA(str.c_str());
-			pPrimDevice->OnDestroy();
+			if (primDeviceActive) {
+				pPrimDevice->OnDestroy();
+			}
 			//STLエラー
 			//マルチバイトバージョンのメッセージボックスを呼ぶ
 			if (GetWindowInfo(m_hwnd, &winInfo)) {
@@ -238,7 +246,9 @@ namespace basecross {
 		catch (...) {
 			//デバッグ出力をする。
 			OutputDebugStringA("原因不明のエラー\n");
-			pPrimDevice->OnDestroy();
+			if (primDeviceActive) {
+				pPrimDevice->OnDestroy();
+			}
 			//原因不明失敗した
 			if (GetWindowInfo(m_hwnd, &winInfo)) {
 				MessageBox(m_hwnd, L"原因不明のエラーです", L"エラー", MB_OK);
