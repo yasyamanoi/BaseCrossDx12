@@ -32,23 +32,12 @@ namespace basecross {
 
 	void Scene::CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)
 	{
-		m_myCamera = shared_ptr<PerspecCamera>(new PerspecCamera());
-		m_myLightSet = shared_ptr<LightSet>(new LightSet());
-
-		TransParam param;
-		param.scale = Vec3(1, 1, 1);
-		param.rotOrigin = Vec3(0, 0, 0);
-		auto quat = XMQuaternionIdentity();
-		param.quaternion = bsm::Quat(quat);
-		param.position = Vec3(0.0, 5.0, 0.0f);
-		AddGameObject<WallBox>(pCommandList, param);
-		param.scale = Vec3(50, 1, 50);
-		param.position = Vec3(0, -0.5, 0.0f);
-		AddGameObject<SkyGround>(pCommandList, param);
+		m_pTgtCommandList = pCommandList;
+		m_activeStage = ObjectFactory::Create<GameStage>(pDevice);
 	}
 
 	void Scene::CreatePipelineStates(ID3D12Device* pDevice) {
-		// Create Shadowmap pipeline state.
+		// シャドウマップパイプラインステート
 		{
 			ComPtr<ID3D12PipelineState> PNTShadowmapPipelineState
 				= PipelineStatePool::GetPipelineState(L"PNTShadowmap");
@@ -84,12 +73,12 @@ namespace basecross {
 			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 			psoDesc.SampleDesc.Count = 1;
 			if (!PNTShadowmapPipelineState) {
-				ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&PNTShadowmapPipelineState)));
+				ThrowIfFailed(pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&PNTShadowmapPipelineState)));
 				NAME_D3D12_OBJECT(PNTShadowmapPipelineState);
 				PipelineStatePool::AddPipelineState(L"PNTShadowmap", PNTShadowmapPipelineState);
 			}
 		}
-		// Create Scene pipeline state.
+		// シーンパイプラインステート
 		{
 			ComPtr<ID3D12PipelineState> PNTPipelineState
 				= PipelineStatePool::GetPipelineState(L"BcPNTStaticShadow");
@@ -98,7 +87,7 @@ namespace basecross {
 			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
 			//カリング
 			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
-			//パイプラインステート
+			//シーンパイプラインステート
 			ComPtr<ID3D12PipelineState> bcPNTStaticShadowPipelineState;
 			auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault");
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
@@ -125,7 +114,7 @@ namespace basecross {
 			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 			psoDesc.SampleDesc.Count = 1;
 			if (!PNTPipelineState) {
-				ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&bcPNTStaticShadowPipelineState)));
+				ThrowIfFailed(pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&bcPNTStaticShadowPipelineState)));
 				NAME_D3D12_OBJECT(bcPNTStaticShadowPipelineState);
 				PipelineStatePool::AddPipelineState(L"BcPNTStaticShadow", bcPNTStaticShadowPipelineState);
 			}
@@ -133,26 +122,26 @@ namespace basecross {
 	}
 
 	void Scene::Update(double elapsedTime) {
-		for (auto& v : m_gameObjectvec) {
-			v->OnUpdate(elapsedTime);
-		}
-		UpdateConstantBuffers();
-		CommitConstantBuffers();
-	}
-
-	void Scene::UpdateConstantBuffers()
-	{
-		for (auto& v : m_gameObjectvec) {
-			v->UpdateConstantBuffers(this);
+		if (m_activeStage) {
+			m_activeStage->OnUpdate(elapsedTime);
+			m_activeStage->OnUpdate2(elapsedTime);
+			UpdateConstantBuffers();
+			CommitConstantBuffers();
 		}
 	}
 
-	void Scene::CommitConstantBuffers()
-	{
-		for (auto& v : m_gameObjectvec) {
-			v->CommitConstantBuffers(this);
+	void Scene::UpdateConstantBuffers() {
+		if (m_activeStage) {
+			m_activeStage->OnUpdateConstantBuffers();
 		}
 	}
+
+	void Scene::CommitConstantBuffers() {
+		if (m_activeStage) {
+			m_activeStage->OnCommitConstantBuffers();
+		}
+	}
+
 
 	void Scene::ShadowPass(ID3D12GraphicsCommandList* pCommandList) {
 		// Set necessary state.
@@ -166,9 +155,10 @@ namespace basecross {
 		pCommandList->RSSetScissorRects(1, &m_scissorRect);
 		// No render target needed for the shadow pass.
 		pCommandList->OMSetRenderTargets(0, nullptr, FALSE, &m_depthDsvs[DepthGenPass::Shadow]);
-		//以下は各オブジェクト
-		for (auto& v : m_gameObjectvec) {
-			v->OnShadowDraw(pCommandList);
+
+		if (m_activeStage) {
+			m_pTgtCommandList = pCommandList;
+			m_activeStage->OnShadowDraw();
 		}
 	}
 
@@ -218,8 +208,10 @@ namespace basecross {
 			GetSamplerDescriptorHandleIncrementSize()
 		);
 		pCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"s1"), samplerHandle2);
-		for (auto& v : m_gameObjectvec) {
-			v->OnSceneDraw(pCommandList);
+
+		if (m_activeStage) {
+			m_pTgtCommandList = pCommandList;
+			m_activeStage->OnSceneDraw();
 		}
 	}
 

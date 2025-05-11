@@ -96,6 +96,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="GameStage.h" />
     <ClInclude Include="MyObject.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="resource.h" />
@@ -111,6 +112,7 @@
     <Image Include="icon1.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GameStage.cpp" />
     <ClCompile Include="MyObject.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SkyGround.cpp" />

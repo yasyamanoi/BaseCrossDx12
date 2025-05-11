@@ -82,7 +82,13 @@ using namespace DirectX;
 #include "Basic/FrameResource.h"
 #include "Basic/Shadowmap.h"
 #include "Basic/BaseScene.h"
+#include "Standerd/Component.h"
+#include "Standerd/Transform.h"
 #include "Standerd/GameObject.h"
+#include "Standerd/Stage.h"
+
+
+
 
 
 #pragma comment( lib, "dxgi.lib" )

@@ -11,5 +11,5 @@
 #include "MyObject.h"
 #include "SkyGround.h"
 #include "WallBox.h"
-
+#include "GameStage.h"
 

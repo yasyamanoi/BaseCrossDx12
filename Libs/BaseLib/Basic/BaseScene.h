@@ -32,6 +32,8 @@ namespace basecross {
 	public:
 		BaseScene(UINT frameCount, PrimDevice* pPrimDevice);
 		virtual ~BaseScene();
+		ID3D12GraphicsCommandList* m_pTgtCommandList;
+
 
 		virtual void Initialize(ID3D12Device* pDevice, ID3D12CommandQueue* pDirectCommandQueue, ID3D12GraphicsCommandList* pCommandList, UINT frameIndex);
 		virtual void LoadSizeDependentResources(ID3D12Device* pDevice, ComPtr<ID3D12Resource>* ppRenderTargets, UINT width, UINT height);
@@ -40,7 +42,7 @@ namespace basecross {
 		void ReleaseD3DObjects();
 		void KeyDown(UINT8 key);
 		void KeyUp(UINT8 key);
-		virtual void UpdateUI(std::unique_ptr<UILayer>& uiLayer) {}
+		virtual void UpdateUI(std::unique_ptr<UILayer>& uiLayer) = 0;
 		virtual void Update(double elapsedTime) = 0;
 		virtual void Render(ID3D12CommandQueue* pCommandQueue, bool setBackbufferReadyForPresent);
 		static BaseScene* Get(){ return s_baseScene; }
@@ -233,7 +235,7 @@ namespace basecross {
 		virtual void CreateDescriptorHeaps(ID3D12Device* pDevice);
 		virtual void CreateCommandLists(ID3D12Device* pDevice);
 		virtual void CreateRootSignatures(ID3D12Device* pDevice);
-		virtual void CreatePipelineStates(ID3D12Device* pDevice);
+		virtual void CreatePipelineStates(ID3D12Device* pDevice) = 0;
 		virtual void CreateFrameResources(ID3D12Device* pDevice, ID3D12CommandQueue* pCommandQueue);
 		virtual void CreateBasicResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList);
 		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) = 0;

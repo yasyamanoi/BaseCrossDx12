@@ -18,7 +18,7 @@ namespace basecross {
 	public:
 		WallBox(const TransParam& param);
 		virtual ~WallBox();
-		virtual void OnCreate(ID3D12GraphicsCommandList* pCommandList);
+		virtual void OnCreate();
 		virtual void OnUpdate(double elapsedTime);
 	};
 

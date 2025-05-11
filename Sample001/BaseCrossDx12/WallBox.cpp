@@ -21,14 +21,14 @@ namespace basecross {
 	}
 	WallBox::~WallBox() {}
 
-	void WallBox::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
-		MyObject::OnCreate(pCommandList);
+	void WallBox::OnCreate() {
+		MyObject::OnCreate();
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		//メッシュ
 		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
 		//テクスチャ
 		auto texFile = App::GetRelativeAssetsDir() + L"wall.jpg";
 		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
-
 	}
 
 	void WallBox::OnUpdate(double elapsedTime) {

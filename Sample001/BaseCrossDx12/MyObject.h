@@ -14,6 +14,8 @@ namespace basecross {
 	using namespace std;
 	using namespace bsm;
 
+	class Stage;
+
 	//--------------------------------------------------------------------------------------
 	///	Shadowコンスタントバッファ構造体
 	//--------------------------------------------------------------------------------------
@@ -92,20 +94,15 @@ namespace basecross {
 			m_fogVector = XMFLOAT3(0.0, 0.0, 1.0f);
 		}
 		virtual ~MyObject() {}
-
 		shared_ptr<BaseMesh> m_mesh;
 		shared_ptr < BaseTexture> m_texture;
-
 	public:
-		virtual void UpdateConstantBuffers(Scene* scene);
-		virtual void CommitConstantBuffers(Scene* scene);
-
-		virtual void OnCreate(ID3D12GraphicsCommandList* pCommandList)override;
-		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override;
-		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override;
-		virtual void OnPostprocessDraw(ID3D12GraphicsCommandList* pCommandList)override;
-		virtual void OnDestroy()override;
-
+		virtual void OnUpdateConstantBuffers(Scene* scene, shared_ptr<Stage>& stage)override;
+		virtual void OnCommitConstantBuffers(Scene* scene, shared_ptr<Stage>& stage)override;
+		virtual void OnCreate()override;
+		virtual void OnShadowDraw()override;
+		virtual void OnSceneDraw()override;
+		virtual void OnDestroy()override {}
 	};
 
 

@@ -20,12 +20,14 @@
 　このサンプルは、いわゆる<strong>空の</strong>プロジェクトです。<strong>BaseCrossDx12</strong>を実行するにあたって、最低限必要なコードが含まれます。<br>
 　<strong>BaseCrossDx12</strong>のライブラリは<strong>Libsフィルター</strong>に含まれます。コンテンツ側では例えば<strong>Sample000</strong>ディレクトリ内を記述すれば、ライブラリは変更せずにゲーム作成ができます。<br>
  <strong>Sample000ディレクトリ</strong>には<strong>BaseCrossDx12</strong>というディレクトリがあり、これが<strong>コンテンツ側（個別ゲーム側）</strong>になります。このサンプルでは<strong>Scene.h/cpp</strong>、<strong>stdafx.h/cpp</strong>、<strong>Project.h</strong>、<strong>WinMain.cpp</strong>、あとリソース関連として<strong>resource.hとicon1.ico</strong>があります。アイコンはデフォルトのアイコンを作ってありますが、修正したい場合は、ソリューションタブの<strong>リソース ファイル</strong>を修正してください。プログラムそのものの<strong>Scene.h/cpp</strong>などはソリューションタブの<strong>ヘッダー ファイル</strong>ならびに<strong>ソース ファイル</strong>に振り分けてあります。<br>
- <strong>Sample000ディレクトリ</strong>には<strong>Shaders</strong>ディレクトリがあり、あらかじめサンプルで使用するシェーダーが入ってます。これらはソリューションタブの<strong>シェーダーファイル</strong>に収められています。<br>
+ <strong>Sample000ディレクトリ</strong>には<strong>Shaders</strong>ディレクトリがあり、ソリューションタブの<strong>シェーダーファイル</strong>に追加し使用します。<br>
 <h5>最低限実装しなければいけないもの</h5>
-　<strong>Scene.h/cpp</strong>には、最低限実装しなければいけない純粋仮想関数が<strong>override</strong>されています。それぞれ、親クラスの<strong>BaseSceneクラス</strong>から呼び出される関数群です。このサンプルでは、用意はされていますが、内容は記述されていません。<br>
+　<strong>Scene.h/cpp</strong>には、最低限実装しなければいけない純粋仮想関数が<strong>override</strong>されています。それぞれ、親クラスの<strong>BaseSceneクラス</strong>から呼び出される関数群です。このサンプルでは、用意はされていますが、内容はほとんど記述されていません。<br>
 <h6>CreateAssetResources()関数</h6>
 　この関数は、シーンにオブジェクトを配置するタイミングで呼び出されます。<br>
 　<strong>カメラやライト</strong>、<strong>メッシュやテクスチャ</strong>、<strong>CPU側コンスタントバッファ</strong>などを構築します。
+<h6>CreatePipelineStates()関数</h6>
+　ここでは<strong>パイプラインステート</strong>を作成します。<strong>パイプラインステート</strong>ではシェーダーや<strong>メッシュ、インプットレイアウト</strong>などを記述します。<br>
 <h6>Update()関数</h6>
 　オブジェクトの内容を変化させるタイミングで呼び出されます。<br>
 　この中で<strong>UpdateConstantBuffers()関数とCommitConstantBuffers()関数</strong>を呼び出します。
@@ -41,7 +43,7 @@
 <h6>UpdateUI()関数</h6>
 　このサンプルの中で、唯一内容がある関数です。UI文字列です。左上の文字列で、ここではFPS値とElapsedTime値を出しています。以下のような内容になっています。
 <pre class="my-3 p-3">
-	void Scene::UpdateUI(unique_ptr&lt;UILayer>& uiLayer) {
+	void Scene::UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer) {
 		vector&lt;wstring> labels;
 		{
 			auto device = BaseDevice::GetBaseDevice();
@@ -58,17 +60,23 @@
 				&lt;&lt; L"\n";
 			labels.push_back(wLabel.str());
 		}
-
 		wstring uiText = L"";
 		for (auto s : labels)
 		{
 			uiText += s;
 		}
 		uiLayer->UpdateLabels(uiText);
-
 	}
 </pre>
-　コードを見るとわかると思いますが、uiLayer->UpdateLabels()関数に、表示すべき文字列を渡せば、表示されます。
+　コードを見るとわかると思いますが、uiLayer->UpdateLabels()関数に、表示すべき文字列を渡せば、表示されます。<br>
+　何も出力したくなければ
+<pre class="my-3 p-3">
+	void Scene::UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer) {
+		wstring uiText = L"";
+		uiLayer->UpdateLabels(uiText);
+	}
+</pre>
+　だけ書きます。<strong>uiLayer->UpdateLabels()関数呼び出し</strong>は省略できません。
 <h5>開発を進めるにあたって</h5>
 　次項からは、実際にオブジェクトを配置したり、動的に動かしたりするサンプルを紹介します。<br>
 　しかしながら、このドキュメントに述べられているサンプルは、<strong>あくまで一例</strong>にすぎません。ですので、できれば、他サンプルを参考にしつつも、この<strong>Emptyプロジェクト</strong>に機能を追加していく形で開発を進めたほうが、設計の自由度が増しますし、学習用の教材として利用している方なら、なおさらだと思います。

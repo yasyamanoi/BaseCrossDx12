@@ -275,7 +275,6 @@ namespace basecross {
 
 	}
 
-	void BaseScene::CreatePipelineStates(ID3D12Device* pDevice) {}
 
 	void BaseScene::CreateSamplers(ID3D12Device* pDevice)
 	{

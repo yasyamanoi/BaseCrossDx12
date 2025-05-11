@@ -18,9 +18,8 @@ namespace basecross {
 	public:
 		SkyGround(const TransParam& param);
 		virtual ~SkyGround();
-		virtual void OnCreate(ID3D12GraphicsCommandList* pCommandList);
-		virtual void OnUpdate(double elapsedTime);
-
+		virtual void OnCreate()override;
+		virtual void OnUpdate(double elapsedTime)override {}
 	};
 
 

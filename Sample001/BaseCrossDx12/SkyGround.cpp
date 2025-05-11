@@ -21,14 +21,13 @@ namespace basecross {
 	SkyGround::~SkyGround() {}
 
 
-	void SkyGround::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
-		MyObject::OnCreate(pCommandList);
+	void SkyGround::OnCreate() {
+		MyObject::OnCreate();
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
 		auto texFile = App::GetRelativeAssetsDir() + L"sky.jpg";
 		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
 	}
-
-	void SkyGround::OnUpdate(double elapsedTime) {}
 
 }
 // end namespace basecross

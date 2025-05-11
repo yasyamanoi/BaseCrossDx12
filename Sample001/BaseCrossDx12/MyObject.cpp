@@ -11,15 +11,23 @@ namespace basecross {
 	using namespace std;
 	using namespace bsm;
 
-	void MyObject::UpdateConstantBuffers(Scene* scene) {
+	void MyObject::OnUpdateConstantBuffers(Scene* scene, shared_ptr<Stage>& stage) {
+		auto& frameResources = scene->GetFrameResources();
+		auto pBaseDevice = BaseDevice::GetBaseDevice();
+		auto& viewport = scene->GetViewport();
+		shared_ptr<PerspecCamera> myCamera;
+		shared_ptr<LightSet> myLightSet;
+		auto gameStage = dynamic_pointer_cast<GameStage>(stage);
+		if (gameStage) {
+			myCamera = gameStage->GetMyCamera();
+			myLightSet = gameStage->GetLightSet();
+
+		}
+		else {
+			return;
+		}
 		//シーンのコンスタントバッファ
 		{
-			auto& frameResources = scene->GetFrameResources();
-			auto pBaseDevice = BaseDevice::GetBaseDevice();
-			auto& viewport = scene->GetViewport();
-
-			auto myCamera = scene->GetMyCamera();
-			auto myLightSet = scene->GetLightSet();
 
 			//初期化
 			m_constantBuffer = {};
@@ -123,13 +131,6 @@ namespace basecross {
 		}
 		//シャドウマップのコンスタントバッファ
 		{
-			auto& frameResources = scene->GetFrameResources();
-			auto pBaseDevice = BaseDevice::GetBaseDevice();
-			auto& viewport = scene->GetViewport();
-
-			auto myCamera = scene->GetMyCamera();
-			myCamera->CalculateMatrix();
-			auto myLightSet = scene->GetLightSet();
 
 			m_shadowConstantBuffer = {};
 
@@ -173,12 +174,11 @@ namespace basecross {
 			m_shadowConstantBuffer.world = Mat4x4(XMMatrixTranspose(world));
 			m_shadowConstantBuffer.view = Mat4x4(XMMatrixTranspose(lightView));
 			m_shadowConstantBuffer.projection = Mat4x4(XMMatrixTranspose(lightProj));
-
 		}
-
 	}
 
-	void MyObject::CommitConstantBuffers(Scene* scene) {
+
+	void MyObject::OnCommitConstantBuffers(Scene* scene, shared_ptr<Stage>& stage) {
 		auto pCurrentFrameResource = scene->GetCurrentFrameResource();
 		//シーン
 		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_pBaseConstantBufferWO,
@@ -188,7 +188,9 @@ namespace basecross {
 			&m_shadowConstantBuffer, sizeof(m_shadowConstantBuffer));
 	}
 
-	void MyObject::OnCreate(ID3D12GraphicsCommandList* pCommandList) {
+
+	void MyObject::OnCreate() {
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pBaseDevice = BaseDevice::GetBaseDevice();
@@ -204,23 +206,21 @@ namespace basecross {
 		}
 	}
 
-
-	void MyObject::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
+	void MyObject::OnShadowDraw() {
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		auto pBaseScene = BaseScene::Get();
-		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
-
 		//Cbv
+		// Set shadow constant buffer.
 		pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
-			pCurrentFrameResource->m_baseConstantBufferSetVec[m_shadowConstantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress()); // Set shadow constant buffer.
-
+			pCurrentFrameResource->m_baseConstantBufferSetVec[m_shadowConstantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress());
+		// Draw
 		pCommandList->IASetVertexBuffers(0, 1, &m_mesh->GetVertexBufferView());
 		pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
 		pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
-
 	}
-	void MyObject::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
-
+	void MyObject::OnSceneDraw() {
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
@@ -228,15 +228,13 @@ namespace basecross {
 		auto& viewport = pBaseScene->GetViewport();
 		auto& scissorRect = pBaseScene->GetScissorRect();
 		auto depthDsvs = pBaseScene->GetDepthDsvs();
-
-		//シェーダリソースのハンドルの設定
+		//シェーダリソース（テクスチャ）のハンドルの設定
 		CD3DX12_GPU_DESCRIPTOR_HANDLE srvHandle(
 			pBaseScene->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
 			m_texture->GetSrvIndex(),
 			pBaseScene->GetCbvSrvUavDescriptorHandleIncrementSize()
 		);
 		pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t1"), srvHandle);
-
 		//Cbv
 		// Set scene constant buffer.
 		pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
@@ -246,11 +244,6 @@ namespace basecross {
 		pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
 		pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
 	}
-	void MyObject::OnPostprocessDraw(ID3D12GraphicsCommandList* pCommandList) {}
-	void MyObject::OnDestroy() {}
-
-
-
 
 
 }

@@ -82,7 +82,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnCreate(ID3D12GraphicsCommandList* pCommandList) = 0;
+		virtual void OnCreate() = 0;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	更新処理
@@ -97,7 +97,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnUpdate2() {}
+		virtual void OnUpdate2(double elapsedTime) {}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	描画処理
@@ -105,9 +105,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList){}
-		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {}
-		virtual void OnPostprocessDraw(ID3D12GraphicsCommandList* pCommandList){}
+		virtual void OnShadowDraw(){}
+		virtual void OnSceneDraw() {}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	破棄時処理
@@ -154,14 +153,16 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		template<typename T, typename... Ts>
-		static std::shared_ptr<T> Create(ID3D12GraphicsCommandList* pCommandList, Ts&&... params) {
+		static std::shared_ptr<T> Create(Ts&&... params) {
 			std::shared_ptr<T> ptr = std::shared_ptr<T>(new T(params...));
 			//初期化関数呼び出し
 			ptr->OnPreCreate();
-			ptr->OnCreate(pCommandList);
+			ptr->OnCreate();
 			ptr->SetCreated(true);
 			return ptr;
 		}
+
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief オブジェクト作成（static関数）。パラメータはOnInitに渡される

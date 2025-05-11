@@ -83,6 +83,15 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\GameObject.h">
       <Filter>Standerd\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Component.h">
+      <Filter>Standerd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Transform.h">
+      <Filter>Standerd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Stage.h">
+      <Filter>Standerd\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Basic">
@@ -157,6 +166,18 @@
       <Filter>Basic\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GameObject.cpp">
+      <Filter>Standerd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Component.cpp">
+      <Filter>Standerd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Transform.cpp">
+      <Filter>Standerd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ObjectInterface.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Stage.cpp">
       <Filter>Standerd\Sources</Filter>
     </ClCompile>
   </ItemGroup>
