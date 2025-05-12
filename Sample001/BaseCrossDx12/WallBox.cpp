@@ -14,8 +14,8 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	// 四角のオブジェクト
 	//--------------------------------------------------------------------------------------
-	WallBox::WallBox(const TransParam& param) :
-		MyObject(param),
+	WallBox::WallBox(const shared_ptr<Stage>& stage, const TransParam& param) :
+		MyObject(stage,param),
 		m_totalTime(0.0)
 	{
 	}

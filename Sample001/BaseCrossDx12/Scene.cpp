@@ -30,10 +30,28 @@ namespace basecross {
 	{
 	}
 
+	shared_ptr<Stage> Scene::GetActiveStage(bool ExceptionActive) const {
+		if (!m_activeStage) {
+			//アクティブなステージが無効なら
+			if (ExceptionActive) {
+				throw BaseException(
+					L"アクティブなステージがありません",
+					L"if(!m_activeStage)",
+					L"BaseScene::GetActiveStage()"
+				);
+			}
+			else {
+				return nullptr;
+			}
+		}
+		return m_activeStage;
+	}
+
+
 	void Scene::CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)
 	{
 		m_pTgtCommandList = pCommandList;
-		m_activeStage = ObjectFactory::Create<GameStage>(pDevice);
+		ResetActiveStage<GameStage>(pDevice);
 	}
 
 	void Scene::CreatePipelineStates(ID3D12Device* pDevice) {

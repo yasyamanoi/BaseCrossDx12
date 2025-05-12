@@ -88,8 +88,8 @@ namespace basecross {
 		XMFLOAT4 m_fogColor;
 		//フォグベクトル
 		XMFLOAT3 m_fogVector;
-		MyObject(const TransParam& param) :
-			GameObject(param){
+		MyObject(const shared_ptr<Stage>& stage, const TransParam& param) :
+			GameObject(stage,param){
 			m_fogColor = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 			m_fogVector = XMFLOAT3(0.0, 0.0, 1.0f);
 		}

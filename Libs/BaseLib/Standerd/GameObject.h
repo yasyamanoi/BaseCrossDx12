@@ -21,9 +21,11 @@ namespace basecross {
 	// 配置されるオブジェクトの親
 	//--------------------------------------------------------------------------------------
 	class GameObject : public ObjectInterface {
+		weak_ptr<Stage> m_stage;
 	protected:
 		TransParam m_param;
-		GameObject(const TransParam& param):
+		GameObject(const shared_ptr<Stage>& stage,const TransParam& param):
+			m_stage(stage),
 			m_param(param){
 		}
 		virtual ~GameObject() {}
@@ -47,6 +49,7 @@ namespace basecross {
 		}
 
 	public:
+		shared_ptr<Stage> GetStage(bool exceptionActive = true) const;
 		template<typename T, typename... Ts>
 		shared_ptr<T> AddComponent(Ts&&... params) {
 			type_index t_index = type_index(typeid(T));

@@ -30,11 +30,35 @@
 	public:
 		Scene(UINT frameCount, PrimDevice* pPrimDevice);
 		virtual ~Scene();
+		shared_ptr&lt;Stage> GetActiveStage(bool ExceptionActive = true) const;
+		template&lt;typename T, typename... Ts>
+		shared_ptr&lt;T> ResetActiveStage(Ts&&... params) {
+			auto actStagePtr = GetActiveStage(false);
+			if (actStagePtr) {
+				//破棄を伝える
+				actStagePtr->OnDestroy();
+				actStagePtr = nullptr;
+			}
+			auto ptr = ObjectFactory::Create&lt;T>(params...);
+			auto stagePtr = dynamic_pointer_cast&lt;Stage>(ptr);
+			if (!stagePtr) {
+				throw BaseException(
+					L"以下はStageに型キャストできません。",
+					Util::GetWSTypeName&lt;T>(),
+					L"Scene::ResetActiveStage&lt;T>()"
+				);
+			}
+			SetActiveStage(stagePtr);
+			return ptr;
+		}
 	protected:
+		void SetActiveStage(const shared_ptr&lt;Stage>& stage) {
+			m_activeStage = stage;
+		}
 		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)override;
 		virtual void CreatePipelineStates(ID3D12Device* pDevice)override;
-		virtual void UpdateConstantBuffers()override {}
-		virtual void CommitConstantBuffers()override {}
+		virtual void UpdateConstantBuffers()override;
+		virtual void CommitConstantBuffers()override;
 		virtual void Update(double elapsedTime)override;
 		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList)override;
 		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList)override;
@@ -42,7 +66,31 @@
 	};
 </pre>
 　<strong><span class="red">shared_ptr&lt;Stage> m_activeStage;</span></strong>というのは<strong>ステージ</strong>です。<strong>GameStageクラス</strong>が設定されます。<br>
-　ここでは前項でも紹介した仮想関数群が宣言されています。ひとつずつ見ていきます。
+　まず<strong>仮想関数以外</strong>を説明します。<br>
+　ヘッダファイルには<strong>ResetActiveStageテンプレート関数</strong>が記述されています。<br>
+　これはステージが存在したら削除して、目的のステージを構築する関数です。
+<h6>Scene::GetActiveStage()関数</h6>
+　この関数は<strong>現在アクティブになっているステージ</strong>を取得する関数です。
+<pre class="my-3 p-3">
+	shared_ptr&lt;Stage> Scene::GetActiveStage(bool ExceptionActive) const {
+		if (!m_activeStage) {
+			//アクティブなステージが無効なら
+			if (ExceptionActive) {
+				throw BaseException(
+					L"アクティブなステージがありません",
+					L"if(!m_activeStage)",
+					L"BaseScene::GetActiveStage()"
+				);
+			}
+			else {
+				return nullptr;
+			}
+		}
+		return m_activeStage;
+	}
+</pre>
+　<strong>m_activeStage</strong>がnullだった場合は、例外を出すかnullptrを返すか選べます。<br>
+　その後前項でも紹介した仮想関数群が宣言されています。ひとつずつ見ていきます。
 <h6>Scene::CreateAssetResources()関数</h6>
 　この関数は<strong>オブジェクトの作成</strong>時に呼ばれる関数です。ここでは、まず<strong>GameStage</strong>を作成します。
 <pre class="my-3 p-3">
@@ -272,8 +320,8 @@
 		XMFLOAT4 m_fogColor;
 		//フォグベクトル
 		XMFLOAT3 m_fogVector;
-		MyObject(const TransParam& param) :
-			GameObject(param){
+		MyObject(<span class="red">const shared_ptr&lt;Stage>& stage, const TransParam& param</span>) :
+			GameObject(stage,param){
 			m_fogColor = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 			m_fogVector = XMFLOAT3(0.0, 0.0, 1.0f);
 		}
@@ -291,8 +339,25 @@
 </pre>
 　ここでは様々なメンバ変数があります。<strong>コンスタントバッファ</strong>を保持する<strong>m_constantBuffer、m_shadowConstantBuffer</strong><br>
 　そしてそのヒープ上のインデックス、他には、<strong>メッシュやテクスチャ、フォグ情報</strong>など。このサンプルでは細かな描画が行われますが、もっとシンプルな描画を記述することもできます。<br>
-　親クラスの<strong>GameObject</strong>は<strong>TransParam</strong>という<strong>ワールド変換</strong>に使うパラメータをコン数トラクタ引数にとります。<br>
-　実装する関数は赤くなっている関数です。ひとつずつ見ていきます。
+　親クラスの<strong>GameObject</strong>は、所属するステージのポインタ<strong>const shared_ptr&lt;Stage>& stage</strong>と<strong>TransParam</strong>という<strong>ワールド変換</strong>に使うパラメータをコンストラクタ引数にとります。<br>
+　ここで、先ほど<strong>GameStage::OnCreate()</strong>で行った<strong>AddGameObject&lt;WallBox>(param);</strong>が、なぜ引数が<strong>param</strong>だけなのかという疑問が残ります。<br>
+　これは<strong>Stage::AddGameObject()テンプレート関数</strong>が以下のようになっているからです。
+<pre class="my-3 p-3">
+		template&lt;typename T, typename... Ts>
+		shared_ptr&lt;T> AddGameObject(Ts&&... params) {
+			try {
+				auto ptr = ObjectFactory::Create&lt;T>(<span class="red">GetThis&lt;Stage>()</span>, params...);
+				m_gameObjectvec.push_back(ptr);
+				return ptr;
+			}
+			catch (...) {
+				throw;
+			}
+		}
+</pre>
+　赤くなっているところで、ステージのポインタを渡して<strong>ObjectFactory::Create()テンプレート関数</strong>を呼び出しています。<br>
+　ですから<strong>GameObjectの派生クラス</strong>は<strong>必ず第一引数は、const shared_ptr&lt;Stage>& stage、第二引数はconst TransParam& param</strong>にしなくてはいけません。第三引数以降は可変長なので引数を増やせます。<br>
+　それでは仮想関数の実装に移ります。実装する関数は赤くなっている関数です。ひとつずつ見ていきます。
 <h6>MyObject::OnUpdateConstantBuffers()関数</h6>
 　この関数はステージから呼ばれます。コンスタントバッファを更新します。
 <pre class="my-3 p-3">
@@ -462,7 +527,7 @@
 <pre class="my-3 p-3">
 	class SkyGround : public MyObject {
 	public:
-		SkyGround(const TransParam& param);
+		SkyGround(const shared_ptr&lt;Stage>& stage,const TransParam& param);
 		virtual ~SkyGround();
 		virtual void OnCreate()override;
 		virtual void OnUpdate(double elapsedTime)override {}
@@ -488,7 +553,7 @@
 		double m_totalTime;
 	protected:
 	public:
-		WallBox(const TransParam& param);
+		WallBox(const shared_ptr&lt;Stage>& stage,const TransParam& param);
 		virtual ~WallBox();
 		virtual void OnCreate();
 		virtual void OnUpdate(double elapsedTime);

@@ -29,7 +29,32 @@ namespace basecross {
 	public:
 		Scene(UINT frameCount, PrimDevice* pPrimDevice);
 		virtual ~Scene();
+		shared_ptr<Stage> GetActiveStage(bool ExceptionActive = true) const;
+
+		template<typename T, typename... Ts>
+		shared_ptr<T> ResetActiveStage(Ts&&... params) {
+			auto actStagePtr = GetActiveStage(false);
+			if (actStagePtr) {
+				//îjä¸Çì`Ç¶ÇÈ
+				actStagePtr->OnDestroy();
+				actStagePtr = nullptr;
+			}
+			auto ptr = ObjectFactory::Create<T>(params...);
+			auto stagePtr = dynamic_pointer_cast<Stage>(ptr);
+			if (!stagePtr) {
+				throw BaseException(
+					L"à»â∫ÇÕStageÇ…å^ÉLÉÉÉXÉgÇ≈Ç´Ç‹ÇπÇÒÅB",
+					Util::GetWSTypeName<T>(),
+					L"Scene::ResetActiveStage<T>()"
+				);
+			}
+			SetActiveStage(stagePtr);
+			return ptr;
+		}
 	protected:
+		void SetActiveStage(const shared_ptr<Stage>& stage) {
+			m_activeStage = stage;
+		}
 		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)override;
 		virtual void CreatePipelineStates(ID3D12Device* pDevice)override;
 		virtual void UpdateConstantBuffers()override;

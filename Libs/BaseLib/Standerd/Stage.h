@@ -27,7 +27,7 @@ namespace basecross {
 		template<typename T, typename... Ts>
 		shared_ptr<T> AddGameObject(Ts&&... params) {
 			try {
-				auto ptr = ObjectFactory::Create<T>(params...);
+				auto ptr = ObjectFactory::Create<T>(GetThis<Stage>(), params...);
 				m_gameObjectvec.push_back(ptr);
 				return ptr;
 			}

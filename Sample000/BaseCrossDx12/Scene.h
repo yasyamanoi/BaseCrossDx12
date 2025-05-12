@@ -14,7 +14,6 @@ namespace basecross {
 	class Stage;
 
 	using namespace std;
-//	using namespace SceneEnums;
 
 	//--------------------------------------------------------------------------------------
 	// ÉVÅ[Éì

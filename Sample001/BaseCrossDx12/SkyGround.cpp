@@ -14,8 +14,8 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	// 土台のオブジェクト
 	//--------------------------------------------------------------------------------------
-	SkyGround::SkyGround(const TransParam& param) :
-		MyObject(param)
+	SkyGround::SkyGround(const shared_ptr<Stage>& stage, const TransParam& param) :
+		MyObject(stage,param)
 	{
 	}
 	SkyGround::~SkyGround() {}

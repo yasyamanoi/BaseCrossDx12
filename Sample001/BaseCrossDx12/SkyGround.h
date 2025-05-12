@@ -16,7 +16,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class SkyGround : public MyObject {
 	public:
-		SkyGround(const TransParam& param);
+		SkyGround(const shared_ptr<Stage>& stage, const TransParam& param);
 		virtual ~SkyGround();
 		virtual void OnCreate()override;
 		virtual void OnUpdate(double elapsedTime)override {}

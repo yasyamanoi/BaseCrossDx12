@@ -16,7 +16,7 @@ namespace basecross {
 		double m_totalTime;
 	protected:
 	public:
-		WallBox(const TransParam& param);
+		WallBox(const shared_ptr<Stage>& stage, const TransParam& param);
 		virtual ~WallBox();
 		virtual void OnCreate();
 		virtual void OnUpdate(double elapsedTime);
