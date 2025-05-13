@@ -32,15 +32,19 @@ namespace basecross {
 	}
 
 	void WallBox::OnUpdate(double elapsedTime) {
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = GetComponent<Transform>();
+		auto& param = ptrTrans->GetTransParam();
+
 		m_totalTime += elapsedTime;
 		if (m_totalTime >= XM_2PI) {
 			m_totalTime = 0.0;
 		}
 		Quat spanQt(Vec3(1.0f, 1.0f, 0.0f), (float)(elapsedTime * 4));
-		Quat quaternion(m_param.quaternion);
+		Quat quaternion(param.quaternion);
 		quaternion *= spanQt;
-		m_param.quaternion = quaternion;
-		m_param.position.x = (float)sin(m_totalTime) * 2.0f;
+		param.quaternion = quaternion;
+		param.position.x = (float)sin(m_totalTime) * 2.0f;
 	}
 
 }

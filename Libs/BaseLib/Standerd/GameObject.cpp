@@ -29,6 +29,12 @@ namespace basecross {
 		return nullptr;
 	}
 
+	void GameObject::OnPreCreate() {
+		//TransformïKê{
+		AddComponent<Transform>(m_tempParam);
+	}
+
+
 
 }
 // end namespace basecross

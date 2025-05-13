@@ -26,6 +26,9 @@ namespace basecross {
 		else {
 			return;
 		}
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = GetComponent<Transform>();
+		auto& param = ptrTrans->GetTransParam();
 		//シーンのコンスタントバッファ
 		{
 
@@ -36,10 +39,10 @@ namespace basecross {
 
 			//ワールド行列の設定
 			auto world = XMMatrixAffineTransformation(
-				m_param.scale,
-				m_param.rotOrigin,
-				m_param.quaternion,
-				m_param.position
+				param.scale,
+				param.rotOrigin,
+				param.quaternion,
+				param.position
 			);
 			auto view = (XMMATRIX)((Mat4x4)myCamera->GetViewMatrix());
 			auto proj = (XMMATRIX)((Mat4x4)myCamera->GetProjMatrix());
@@ -138,12 +141,12 @@ namespace basecross {
 			auto light = lights->GetMainBaseLight();
 
 			//位置の取得
-			Vec3 pos = m_param.position;
+			Vec3 pos = param.position;
 			Vec3 posSpan = (Vec3)light.m_directional;
 			posSpan *= Vec3(Shadowmap::GetPosAdjustment());
 			pos += posSpan;
 			//ワールド行列の決定
-			auto param_tmp = m_param;
+			auto param_tmp = param;
 			param_tmp.position = pos;
 
 			auto world = XMMatrixAffineTransformation(

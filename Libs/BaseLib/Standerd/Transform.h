@@ -15,18 +15,6 @@ namespace basecross {
 	using namespace std;
 	using namespace bsm;
 
-	////--------------------------------------------------------------------------------------
-	/////	オブジェクト変換用
-	////--------------------------------------------------------------------------------------
-	//struct TransParam {
-	//	Vec3 scale;
-	//	Vec3 rotOrigin;
-	//	Quat quaternion;
-	//	Vec3 position;
-	//};
-
-
-
 	//--------------------------------------------------------------------------------------
 	///	座標変換コンポーネント
 	//--------------------------------------------------------------------------------------
@@ -34,7 +22,7 @@ namespace basecross {
 	protected:
 		TransParam m_param;
 	public:
-		explicit Transform(const shared_ptr<GameObject>& gameObjectPtr,const TransParam& param);
+		Transform(const shared_ptr<GameObject>& gameObjectPtr,const TransParam& param);
 		virtual ~Transform(){}
 		TransParam& GetTransParam(){
 			return m_param;

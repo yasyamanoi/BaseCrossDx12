@@ -43,6 +43,13 @@ namespace basecross {
 			m_gameObject = gameObjectPtr;
 		}
 
+		virtual void OnPreCreate() override{}
+		virtual void OnCreate()override {}
+		virtual void OnUpdate(double elapsedTime)override {}
+		virtual void OnShadowDraw()override {}
+		virtual void OnSceneDraw()override {}
+		virtual void OnDestroy()override {}
+
 	};
 
 

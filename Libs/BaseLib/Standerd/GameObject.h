@@ -22,11 +22,12 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class GameObject : public ObjectInterface {
 		weak_ptr<Stage> m_stage;
+		TransParam m_tempParam;
 	protected:
-		TransParam m_param;
 		GameObject(const shared_ptr<Stage>& stage,const TransParam& param):
 			m_stage(stage),
-			m_param(param){
+			m_tempParam(param)
+		{
 		}
 		virtual ~GameObject() {}
 
@@ -121,6 +122,7 @@ namespace basecross {
 		}
 		virtual void OnUpdateConstantBuffers(Scene* scene, shared_ptr<Stage>& stage) = 0;
 		virtual void OnCommitConstantBuffers(Scene * scene, shared_ptr<Stage>&stage) = 0;
+		virtual void OnPreCreate()override;
 		virtual void OnCreate()override {}
 		virtual void OnShadowDraw()override {}
 		virtual void OnSceneDraw()override {}
