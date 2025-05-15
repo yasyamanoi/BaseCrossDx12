@@ -10,10 +10,6 @@
 
 namespace basecross {
 
-	//--------------------------------------------------------------------------------------
-	///	Shadowmap
-	//--------------------------------------------------------------------------------------
-	IMPLEMENT_DX12SHADER(PNTShadowmap, App::GetShadersDir() + L"VSShadowmap.cso")
 
 	float Shadowmap::m_lightHeight(200.0f);
 	float Shadowmap::m_lightNear(1.0f);

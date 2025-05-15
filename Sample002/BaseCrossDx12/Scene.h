@@ -9,15 +9,6 @@
 
 namespace basecross {
 
-	DECLARE_DX12SHADER(BcVSPNTStaticPL)
-	DECLARE_DX12SHADER(BcPSPNTPL)
-	DECLARE_DX12SHADER(BcVSPNTStaticPLShadow)
-	DECLARE_DX12SHADER(BcPSPNTPLShadow)
-
-	DECLARE_DX12SHADER(PNTShadowmap)
-
-
-
 	class MyObject;
 	class Stage;
 

@@ -12,20 +12,14 @@ namespace basecross {
 	void Stage::OnUpdateConstantBuffers()
 	{
 		for (auto& v : m_gameObjectvec) {
-			auto scene = dynamic_cast<Scene*>(BaseScene::Get());
-			if (scene) {
-				v->OnUpdateConstantBuffers(scene, GetThis<Stage>());
-			}
+			v->OnUpdateConstantBuffers();
 		}
 	}
 
 	void Stage::OnCommitConstantBuffers()
 	{
 		for (auto& v : m_gameObjectvec) {
-			auto scene = dynamic_cast<Scene*>(BaseScene::Get());
-			if (scene) {
-				v->OnCommitConstantBuffers(scene, GetThis<Stage>());
-			}
+			v->OnCommitConstantBuffers();
 		}
 	}
 

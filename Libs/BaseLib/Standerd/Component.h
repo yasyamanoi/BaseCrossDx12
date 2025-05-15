@@ -42,6 +42,8 @@ namespace basecross {
 		void AttachGameObject(const shared_ptr<GameObject>& gameObjectPtr) {
 			m_gameObject = gameObjectPtr;
 		}
+		virtual void OnUpdateConstantBuffers(){}
+		virtual void OnCommitConstantBuffers(){}
 
 		virtual void OnPreCreate() override{}
 		virtual void OnCreate()override {}

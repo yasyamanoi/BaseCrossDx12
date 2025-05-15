@@ -120,8 +120,10 @@ namespace basecross {
 				it++;
 			}
 		}
-		virtual void OnUpdateConstantBuffers(Scene* scene, shared_ptr<Stage>& stage) = 0;
-		virtual void OnCommitConstantBuffers(Scene * scene, shared_ptr<Stage>&stage) = 0;
+		virtual void OnUpdateConstantBuffers() = 0;
+		virtual void OnCommitConstantBuffers() = 0;
+//		virtual void OnUpdateConstantBuffers(Scene* scene, shared_ptr<Stage>& stage) = 0;
+//		virtual void OnCommitConstantBuffers(Scene* scene, shared_ptr<Stage>& stage) = 0;
 		virtual void OnPreCreate()override;
 		virtual void OnCreate()override {}
 		virtual void OnShadowDraw()override {}

@@ -11,13 +11,14 @@ namespace basecross {
 	using namespace std;
 	using namespace bsm;
 
-	void MyObject::OnUpdateConstantBuffers(Scene* scene, shared_ptr<Stage>& stage) {
+	void MyObject::OnUpdateConstantBuffers() {
+		auto scene = dynamic_cast<Scene*>(BaseScene::Get());
+		auto gameStage = dynamic_pointer_cast<GameStage>(scene->GetActiveStage());
 		auto& frameResources = scene->GetFrameResources();
 		auto pBaseDevice = BaseDevice::GetBaseDevice();
 		auto& viewport = scene->GetViewport();
 		shared_ptr<PerspecCamera> myCamera;
 		shared_ptr<LightSet> myLightSet;
-		auto gameStage = dynamic_pointer_cast<GameStage>(stage);
 		if (gameStage) {
 			myCamera = gameStage->GetMyCamera();
 			myLightSet = gameStage->GetLightSet();
@@ -181,7 +182,8 @@ namespace basecross {
 	}
 
 
-	void MyObject::OnCommitConstantBuffers(Scene* scene, shared_ptr<Stage>& stage) {
+	void MyObject::OnCommitConstantBuffers() {
+		auto scene = dynamic_cast<Scene*>(BaseScene::Get());
 		auto pCurrentFrameResource = scene->GetCurrentFrameResource();
 		//ƒV[ƒ“
 		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_pBaseConstantBufferWO,

@@ -11,13 +11,8 @@
 
 namespace basecross {
 
-	//--------------------------------------------------------------------------------------
-	///	Shadowmap•`‰æ
-	//--------------------------------------------------------------------------------------
-	DECLARE_DX12SHADER(PNTShadowmap)
 
 	class Shadowmap {
-		void CreatePipelineStates();
 		static float m_lightHeight;
 		static float m_lightNear;
 		static float m_lightFar;

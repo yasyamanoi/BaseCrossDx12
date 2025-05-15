@@ -1,38 +1,22 @@
-#pragma once
 /*!
-@file MyObject.h
-@brief Myオブジェクトクラス
+@file BcSceneComp.h
+@brief ベイシックシーンコンポーネント
 */
 
 
 #pragma once
 #include "stdafx.h"
 
-
 namespace basecross {
 
 	using namespace std;
 	using namespace bsm;
 
-	class Stage;
+	DECLARE_DX12SHADER(BcVSPNTStaticPL)
+	DECLARE_DX12SHADER(BcPSPNTPL)
+	DECLARE_DX12SHADER(BcVSPNTStaticPLShadow)
+	DECLARE_DX12SHADER(BcPSPNTPLShadow)
 
-	//--------------------------------------------------------------------------------------
-	///	Shadowコンスタントバッファ構造体
-	//--------------------------------------------------------------------------------------
-	struct ShadowConstantBuffer
-	{
-		/// ワールド行列
-		Mat4x4 world;
-		/// ビュー行列
-		Mat4x4 view;
-		/// 射影行列
-		Mat4x4 projection;
-		/// bone用
-		Vec4 bones[3 * 72];
-		ShadowConstantBuffer() {
-			memset(this, 0, sizeof(ShadowConstantBuffer));
-		};
-	};
 
 	//--------------------------------------------------------------------------------------
 	///	Basicシェーダー用コンスタントバッファ
@@ -68,15 +52,14 @@ namespace basecross {
 
 
 	//--------------------------------------------------------------------------------------
-	// 配置されるオブジェクトの親
+	///	ベイシックシーンコンポーネント
 	//--------------------------------------------------------------------------------------
-	class MyObject : public GameObject {
+	class BcSceneComp : public Component {
 	protected:
+		weak_ptr<BaseMesh> m_mesh;
+		weak_ptr <BaseTexture> m_texture;
 		BasicConstantBuffer m_constantBuffer;
 		size_t m_constantBufferIndex;
-
-		ShadowConstantBuffer m_shadowConstantBuffer;
-		size_t m_shadowConstantBufferIndex;
 
 		//フォグが有効かどうか
 		bool m_fogEnabled = true;
@@ -88,23 +71,21 @@ namespace basecross {
 		XMFLOAT4 m_fogColor;
 		//フォグベクトル
 		XMFLOAT3 m_fogVector;
-		MyObject(const shared_ptr<Stage>& stage, const TransParam& param) :
-			GameObject(stage,param){
-			m_fogColor = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-			m_fogVector = XMFLOAT3(0.0, 0.0, 1.0f);
-		}
-		virtual ~MyObject() {}
-		shared_ptr<BaseMesh> m_mesh;
-		shared_ptr < BaseTexture> m_texture;
+
 	public:
+		void SetBaseMesh(const shared_ptr<BaseMesh>& mesh) {
+			m_mesh = mesh;
+		}
+		void SetBaseTexture(const shared_ptr<BaseTexture>& texture) {
+			m_texture = texture;
+		}
+		BcSceneComp(const shared_ptr<GameObject>& gameObjectPtr);
+		virtual ~BcSceneComp() {}
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;
 		virtual void OnCreate()override;
-		virtual void OnShadowDraw()override;
 		virtual void OnSceneDraw()override;
-		virtual void OnDestroy()override {}
 	};
-
 
 }
 // end namespace basecross
