@@ -1838,6 +1838,32 @@ namespace basecross {
 			return *this;
 		}
 
+		inline Vec3 Mat4x4::rotXInMatrix()const {
+			Vec3 ret(_11, _12, _13);
+			Vec3 Scale = scaleInMatrix();
+			ret.x /= Scale.x;
+			ret.y /= Scale.x;
+			ret.z /= Scale.x;
+			return ret;
+		}
+		inline Vec3 Mat4x4::rotYInMatrix()const {
+			Vec3 ret(_21, _22, _23);
+			Vec3 Scale = scaleInMatrix();
+			ret.x /= Scale.y;
+			ret.y /= Scale.y;
+			ret.z /= Scale.y;
+			return ret;
+		}
+		inline Vec3 Mat4x4::rotZInMatrix()const {
+			Vec3 ret(_31, _32, _33);
+			Vec3 Scale = scaleInMatrix();
+			ret.x /= Scale.z;
+			ret.y /= Scale.z;
+			ret.z /= Scale.z;
+			return ret;
+		}
+
+
 
 		using Pt2 = Vec2;
 		using Pt3 = Vec3;

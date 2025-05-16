@@ -129,6 +129,8 @@ namespace basecross {
 		virtual void OnShadowDraw()override {}
 		virtual void OnSceneDraw()override {}
 		virtual void OnDestroy()override {}
+		virtual void SetToBefore();
+
 	};
 
 

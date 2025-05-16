@@ -28,6 +28,7 @@
 #include <shellapi.h>
 //C++”ÅCéŒ¾
 #include <cfloat>
+#include <clocale>
 #include <cassert>
 #include <cwchar>
 #include <cmath>

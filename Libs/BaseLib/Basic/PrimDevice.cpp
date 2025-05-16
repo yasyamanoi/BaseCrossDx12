@@ -212,6 +212,7 @@ namespace basecross {
 #endif
 			OnUpdate();
 			OnRender();
+			SetToBefore();
 		}
 		catch (BaseException& e) {
 			//デバッグ出力をする。

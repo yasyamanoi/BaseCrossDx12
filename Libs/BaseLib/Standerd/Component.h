@@ -42,6 +42,21 @@ namespace basecross {
 		void AttachGameObject(const shared_ptr<GameObject>& gameObjectPtr) {
 			m_gameObject = gameObjectPtr;
 		}
+		shared_ptr<GameObject> GetGameObject() const {
+			auto ptr = m_gameObject.lock();
+			if (!ptr) {
+				throw BaseException(
+					L"GameObject‚Í—LŒø‚Å‚Í‚ ‚è‚Ü‚¹‚ñ",
+					L"if (!shptr)",
+					L"Component::GetGameObject()const"
+				);
+			}
+			else {
+				return ptr;
+			}
+			return nullptr;
+		}
+
 		virtual void OnUpdateConstantBuffers(){}
 		virtual void OnCommitConstantBuffers(){}
 

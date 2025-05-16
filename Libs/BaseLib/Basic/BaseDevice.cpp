@@ -454,6 +454,10 @@ namespace basecross {
 		}
 	}
 
+	void BaseDevice::SetToBefore() {
+		m_scene->SetToBefore();
+	}
+
 	// Tears down D3D resources and reinitializes them.
 	void BaseDevice::RecreateD3Dresources()
 	{

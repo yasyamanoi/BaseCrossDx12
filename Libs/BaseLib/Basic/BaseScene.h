@@ -45,6 +45,7 @@ namespace basecross {
 		virtual void UpdateUI(std::unique_ptr<UILayer>& uiLayer) = 0;
 		virtual void Update(double elapsedTime) = 0;
 		virtual void Render(ID3D12CommandQueue* pCommandQueue, bool setBackbufferReadyForPresent);
+		virtual void SetToBefore() {}
 		static BaseScene* Get(){ return s_baseScene; }
 		std::vector<std::unique_ptr<FrameResource>>& GetFrameResources() {
 			return m_frameResources;

@@ -31,6 +31,7 @@ namespace basecross {
 		virtual void OnInit() = 0;
 		virtual void OnUpdate() = 0;
 		virtual void OnRender() = 0;
+		virtual void SetToBefore() {}
 		virtual void OnUpdateDraw();
 		virtual void OnSizeChanged(UINT width, UINT height, bool minimized) = 0;
 		virtual void OnDestroy() = 0;

@@ -62,6 +62,7 @@ namespace basecross {
 		virtual void OnSizeChanged(UINT width, UINT height, bool minimized);
 		virtual void OnUpdate();
 		virtual void OnRender();
+		virtual void SetToBefore();
 		virtual void OnDestroy();
 
 	private:

@@ -34,6 +34,12 @@ namespace basecross {
 		AddComponent<Transform>(m_tempParam);
 	}
 
+	void GameObject::SetToBefore() {
+		auto transPtr = GetComponent<Transform>();
+		transPtr->SetToBefore();
+	}
+
+
 
 
 }

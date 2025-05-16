@@ -53,6 +53,16 @@ namespace basecross {
 		}
 	}
 
+	void Stage::SetToBefore() {
+		for (auto& v : m_gameObjectvec) {
+			v->SetToBefore();
+		}
+	}
+
+
+
+	
+
 
 
 }

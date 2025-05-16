@@ -38,6 +38,7 @@ namespace basecross {
 
 		virtual void OnUpdateConstantBuffers();
 		virtual void OnCommitConstantBuffers();
+		virtual void SetToBefore();
 
 		virtual void OnCreate()override {}
 		virtual void OnUpdate(double elapsedTime)override;

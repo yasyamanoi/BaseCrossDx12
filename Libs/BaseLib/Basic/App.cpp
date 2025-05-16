@@ -125,10 +125,13 @@ namespace basecross {
 		ZeroMemory(&winInfo, sizeof(winInfo));
 		try
 		{
+
 			// デバッグ時、deleteもれのチェック用
 			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 			//ロケールの設定
 			setlocale(LC_ALL, "JPN");
+
+			
 
 			// Parse the command line parameters
 			int argc;
