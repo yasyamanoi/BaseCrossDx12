@@ -92,6 +92,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Stage.h">
       <Filter>Standerd\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\TransHelper.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Basic">

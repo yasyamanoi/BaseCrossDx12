@@ -181,6 +181,13 @@ namespace basecross {
 		}
 	}
 
+	void Scene::Destroy() {
+		if (m_activeStage) {
+			m_activeStage->OnDestroy();
+		}
+	}
+
+
 	void Scene::UpdateConstantBuffers() {
 		if (m_activeStage) {
 			m_activeStage->OnUpdateConstantBuffers();

@@ -54,6 +54,8 @@ namespace basecross {
 		virtual void UpdateConstantBuffers()override;
 		virtual void CommitConstantBuffers()override;
 		virtual void Update(double elapsedTime)override;
+		virtual void Destroy() override;
+
 		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList)override;
 		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList)override;
 		virtual void UpdateUI(std::unique_ptr<UILayer>& uiLayer)override;

@@ -9,18 +9,74 @@
 namespace basecross {
 
 	void GameStage::OnCreate() {
+		m_pFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, m_defaultAllocator, m_defaultErrorCallback);
+		if (!m_pFoundation) {
+			return;
+		}
+		m_pPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_pFoundation, physx::PxTolerancesScale(), true);
+		if(!m_pPhysics){
+			return;
+		}
+		m_pDispatcher = physx::PxDefaultCpuDispatcherCreate(8);
+		physx::PxSceneDesc scene_desc(m_pPhysics->getTolerancesScale());
+		scene_desc.gravity = physx::PxVec3(0, -9, 0);
+		scene_desc.filterShader = physx::PxDefaultSimulationFilterShader;
+		scene_desc.cpuDispatcher = m_pDispatcher;
+		m_pScene = m_pPhysics->createScene(scene_desc);
+
 		m_myCamera = shared_ptr<PerspecCamera>(new PerspecCamera());
 		m_myLightSet = shared_ptr<LightSet>(new LightSet());
 		TransParam param;
 		param.scale = Vec3(1.0f, 1.0f, 1.0f);
 		param.rotOrigin = Vec3(0.0f, 0.0f, 0.0f);
-		auto quat = XMQuaternionIdentity();
-		param.quaternion = Quat(quat);
+		Quat quat(Vec3(1,1,0),1.0f);
+		param.quaternion = quat;
+		param.position = Vec3(-4.0f, 5.0f, 0.0f);
+		AddGameObject<WallBox>(param);
+
+		quat = Quat(Vec3(0, 1, 1), 2.0);
+		param.quaternion = quat;
+		param.position = Vec3(-2.0f, 5.0f, 0.0f);
+		AddGameObject<WallBox>(param);
+
+		quat = Quat(Vec3(1, 0, 1), 1.5);
+		param.quaternion = quat;
 		param.position = Vec3(0.0f, 5.0f, 0.0f);
 		AddGameObject<WallBox>(param);
+
+		quat = Quat(Vec3(1, 1, 1), 1.0);
+		param.quaternion = quat;
+		param.position = Vec3(2.0f, 5.0f, 0.0f);
+		AddGameObject<WallBox>(param);
+
+		quat = Quat(Vec3(1, 0, 1), 0.5);
+		param.quaternion = quat;
+		param.position = Vec3(4.0f, 5.0f, 0.0f);
+		AddGameObject<WallBox>(param);
+
+		param.quaternion = XMQuaternionIdentity();
 		param.scale = Vec3(50.0f, 1.0f, 50.0f);
-		param.position = Vec3(0.0f, -0.5, 0.0f);
+		param.position = Vec3(0.0f, +0.5, 0.0f);
 		AddGameObject<SkyGround>(param);
 	}
+
+	void GameStage::OnUpdate(double elapsedTime) {
+		// シミュレーション速度を指定する
+		m_pScene->simulate((float)elapsedTime);
+		// PhysXの処理が終わるまで待つ
+		m_pScene->fetchResults(true);
+		Stage::OnUpdate(elapsedTime);
+	}
+
+	void GameStage::OnDestroy() {
+		PxCloseExtensions();
+		m_pScene->release();
+		m_pDispatcher->release();
+		m_pPhysics->release();
+		m_pFoundation->release();
+		Stage::OnDestroy();
+	}
+
+
 }
 // end namespace basecross

@@ -44,6 +44,7 @@ namespace basecross {
 		void KeyUp(UINT8 key);
 		virtual void UpdateUI(std::unique_ptr<UILayer>& uiLayer) = 0;
 		virtual void Update(double elapsedTime) = 0;
+		virtual void Destroy() {}
 		virtual void Render(ID3D12CommandQueue* pCommandQueue, bool setBackbufferReadyForPresent);
 		virtual void SetToBefore() {}
 		static BaseScene* Get(){ return s_baseScene; }

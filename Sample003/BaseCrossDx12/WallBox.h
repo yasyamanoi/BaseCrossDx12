@@ -16,6 +16,8 @@ namespace basecross {
 		double m_totalTime;
 		shared_ptr<BaseMesh> m_mesh;
 		shared_ptr < BaseTexture> m_texture;
+
+		physx::PxRigidDynamic* m_rigid_dynamic = nullptr;
 	protected:
 	public:
 		WallBox(const shared_ptr<Stage>& stage, const TransParam& param);
@@ -26,6 +28,7 @@ namespace basecross {
 		virtual void OnUpdate(double elapsedTime);
 		virtual void OnShadowDraw()override;
 		virtual void OnSceneDraw()override;
+		virtual void OnDestroy();
 
 	};
 

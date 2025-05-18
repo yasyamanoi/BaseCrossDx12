@@ -1863,8 +1863,6 @@ namespace basecross {
 			return ret;
 		}
 
-
-
 		using Pt2 = Vec2;
 		using Pt3 = Vec3;
 		using Col4 = Vec4;

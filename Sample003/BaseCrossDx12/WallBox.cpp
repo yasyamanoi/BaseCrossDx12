@@ -22,12 +22,32 @@ namespace basecross {
 	WallBox::~WallBox() {}
 
 	void WallBox::OnCreate() {
+		auto ptrGameStage = dynamic_pointer_cast<GameStage>(GetStage());
+		auto ptrPxPhysics = ptrGameStage->GetPxPhysics();
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = GetComponent<Transform>();
+		auto& param = ptrTrans->GetTransParam();
+		//PhysX関連
+		physx::PxTransform pose = bsmUtil::ToPxTransform(param.position, param.quaternion);
+		m_rigid_dynamic
+			= ptrPxPhysics->createRigidDynamic(physx::PxTransform(
+				pose
+			)
+		);
+		physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);
+		auto box_shape
+			= ptrPxPhysics->createShape(
+				scale,
+				*ptrPxPhysics->createMaterial(0.5f, 0.5f, 0.5f)
+			);
+		box_shape->setLocalPose(physx::PxTransform(physx::PxIdentity));
+		m_rigid_dynamic->attachShape(*box_shape);
+		ptrGameStage->GetPxScene()->addActor(*m_rigid_dynamic);
+		//BaseCross関連
 		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
-		//メッシュ
 		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
 		auto ptrShadow = AddComponent<ShadowmapComp>();
 		ptrShadow->SetBaseMesh(m_mesh);
-		//テクスチャ
 		auto texFile = App::GetRelativeAssetsDir() + L"wall.jpg";
 		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
 		auto ptrScene = AddComponent<SpSceneComp>();
@@ -54,16 +74,9 @@ namespace basecross {
 		//Transformコンポーネントを取り出す
 		auto ptrTrans = GetComponent<Transform>();
 		auto& param = ptrTrans->GetTransParam();
-
-		m_totalTime += elapsedTime;
-		if (m_totalTime >= XM_2PI) {
-			m_totalTime = 0.0;
-		}
-		Quat spanQt(Vec3(1.0f, 1.0f, 0.0f), (float)(elapsedTime * 4));
-		Quat quaternion(param.quaternion);
-		quaternion *= spanQt;
-		param.quaternion = quaternion;
-		param.position.x = (float)sin(m_totalTime) * 2.0f;
+		physx::PxTransform pose = m_rigid_dynamic->getGlobalPose();
+		param.position = bsmUtil::ToVec3(pose.p);
+		param.quaternion = bsmUtil::ToQuat(pose.q);
 	}
 
 	void WallBox::OnShadowDraw() {
@@ -72,9 +85,15 @@ namespace basecross {
 	}
 	void WallBox::OnSceneDraw() {
 		auto ptrScene = GetComponent<SpSceneComp>();
-//		auto ptrScene = GetComponent<BcSceneComp>();
 		ptrScene->OnSceneDraw();
 	}
+
+	void WallBox::OnDestroy() {
+		if (m_rigid_dynamic) {
+			m_rigid_dynamic->release();
+		}
+	}
+
 
 
 }

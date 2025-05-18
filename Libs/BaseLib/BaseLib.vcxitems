@@ -39,6 +39,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Shadowmap.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\StepTimer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\targetver.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\TransHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\UILayer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Component.h" />

@@ -2323,6 +2323,70 @@ namespace basecross {
 		};
 
 
+		//--------------------------------------------------------------------------------------
+		///	ユーティリティ（static呼び出しをする）
+		//--------------------------------------------------------------------------------------
+		struct bsmUtil {
+			template<typename T>
+			static float length(const T& v) {
+				return v.length();
+			}
+
+			template<typename T>
+			static float dot(const T& v1, const T& v2) {
+				T temp(v1);
+				return temp.dot(v2);
+			}
+
+			static Vec3 cross(const Vec3& v1, const Vec3& v2) {
+				Vec3 temp(v1);
+				return temp.cross(v2);
+			}
+
+			template<typename T>
+			static T normalize(const T& v) {
+				T tmp(v);
+				tmp.normalize();
+				return tmp;
+			}
+
+			template<typename T>
+			static float lengthSqr(const T& v) {
+				T tmp(v);
+				return tmp.lengthSqr();
+
+			}
+
+
+			static physx::PxVec3 ToPxVec3(const Vec3& v) {
+				return physx::PxVec3(v.x, v.y, v.z);
+			}
+
+			static physx::PxQuat ToPxQuat(const Quat& q) {
+				return physx::PxQuat(q.x, q.y, q.z, q.w);
+			}
+
+			static physx::PxTransform ToPxTransform(const Vec3& position, const Quat& quaternion) {
+				return physx::PxTransform(ToPxVec3(position), ToPxQuat(quaternion));
+			}
+
+			static Vec3 ToVec3(const physx::PxVec3& v) {
+				return Vec3(v.x, v.y, v.z);
+			}
+
+			static Quat ToQuat(const physx::PxQuat& q) {
+				return Quat(q.x, q.y, q.z, q.w);
+			}
+
+
+
+
+
+
+
+		};
+
+
 
 	}
 	// end namespace bsm

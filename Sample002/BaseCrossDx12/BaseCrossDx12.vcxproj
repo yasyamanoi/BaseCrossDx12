@@ -47,14 +47,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)\$(SolutionName)\</IntDir>
-    <IncludePath>$(SolutionDir)..\Libs\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\Libs\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\Libs\include;$(SolutionDir)..\Libs\PhysX\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\Libs\lib\$(Configuration)\;$(SolutionDir)..\Libs\PhysX\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)\$(SolutionName)\</IntDir>
-    <IncludePath>$(SolutionDir)..\Libs\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\Libs\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\Libs\include;$(SolutionDir)..\Libs\PhysX\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\Libs\lib\$(Configuration)\;$(SolutionDir)..\Libs\PhysX\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -64,7 +64,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>Default</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

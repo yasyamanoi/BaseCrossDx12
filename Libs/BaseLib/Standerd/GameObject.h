@@ -132,7 +132,25 @@ namespace basecross {
 		virtual void SetToBefore();
 
 	};
-
-
+/*
+	//--------------------------------------------------------------------------------------
+	///	ゲームオブジェクトのweak_ptrをグループ化したもの
+	//--------------------------------------------------------------------------------------
+	class GameObjectGroup : public ObjectInterface {
+		vector< weak_ptr<GameObject> > m_Group;
+	public:
+		GameObjectGroup();
+		virtual ~GameObjectGroup();
+		const vector< weak_ptr<GameObject> >& GetGroupVector() const;
+		shared_ptr<GameObject> at(size_t index);
+		size_t size() const;
+		void IntoGroup(const shared_ptr<GameObject>& Obj);
+		void AllClear();
+		virtual void OnCreate()override {}
+		virtual void OnUpdate()override {}
+		virtual void OnDraw() override {}
+		virtual void OnDestroy() override {}
+	};
+*/
 }
 // end namespace basecross
