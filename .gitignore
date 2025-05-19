@@ -22,10 +22,8 @@ mono_crash.*
 
 # Build results
 *.exe
-
-# [Dd]ebug/
-[Dd]ebugPublic/
-# [Rr]elease/
+/**/Temp/
+Libs/lib/
 x64/
 x86/
 [Aa][Rr][Mm]/
