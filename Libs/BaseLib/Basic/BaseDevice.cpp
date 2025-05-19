@@ -480,6 +480,7 @@ namespace basecross {
 		// cleaned up by the destructor.
 		try
 		{
+			m_scene->Destroy();
 			WaitForGpu(m_commandQueue.Get());
 		}
 		catch (HrException&)

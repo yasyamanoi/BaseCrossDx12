@@ -100,6 +100,7 @@
   <ItemGroup>
     <ClInclude Include="ContentsLib\BcSceneComp.h" />
     <ClInclude Include="ContentsLib\GravityComp.h" />
+    <ClInclude Include="ContentsLib\RigidComp.h" />
     <ClInclude Include="ContentsLib\ShadowmapComp.h" />
     <ClInclude Include="ContentsLib\SpSceneComp.h" />
     <ClInclude Include="GameStage.h" />
@@ -119,6 +120,7 @@
   <ItemGroup>
     <ClCompile Include="ContentsLib\BcSceneComp.cpp" />
     <ClCompile Include="ContentsLib\GravityComp.cpp" />
+    <ClCompile Include="ContentsLib\RigidComp.cpp" />
     <ClCompile Include="ContentsLib\ShadowmapComp.cpp" />
     <ClCompile Include="ContentsLib\SpSceneComp.cpp" />
     <ClCompile Include="GameStage.cpp" />

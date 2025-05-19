@@ -23,26 +23,19 @@ namespace basecross {
 
 	void WallBox::OnCreate() {
 		auto ptrGameStage = dynamic_pointer_cast<GameStage>(GetStage());
-		auto ptrPxPhysics = ptrGameStage->GetPxPhysics();
 		//Transformコンポーネントを取り出す
 		auto ptrTrans = GetComponent<Transform>();
 		auto& param = ptrTrans->GetTransParam();
 		//PhysX関連
-		physx::PxTransform pose = bsmUtil::ToPxTransform(param.position, param.quaternion);
-		m_rigid_dynamic
-			= ptrPxPhysics->createRigidDynamic(physx::PxTransform(
-				pose
-			)
-		);
+		PhysxCreateParam pxParam;
 		physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);
-		auto box_shape
-			= ptrPxPhysics->createShape(
-				scale,
-				*ptrPxPhysics->createMaterial(0.5f, 0.5f, 0.5f)
-			);
-		box_shape->setLocalPose(physx::PxTransform(physx::PxIdentity));
-		m_rigid_dynamic->attachShape(*box_shape);
-		ptrGameStage->GetPxScene()->addActor(*m_rigid_dynamic);
+		pxParam.pGeometry = &scale;
+		auto pRigDynamicComp = AddComponent<RigidDynamicComp>(pxParam);
+		auto pRigDynamic = pRigDynamicComp->GetRigidDynamic();
+		//ジャンプさせる
+		pRigDynamic->addForce(physx::PxVec3(0, 10, 0), physx::PxForceMode::eIMPULSE);
+
+
 		//BaseCross関連
 		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
@@ -53,6 +46,12 @@ namespace basecross {
 		auto ptrScene = AddComponent<SpSceneComp>();
 		ptrScene->SetBaseMesh(m_mesh);
 		ptrScene->SetBaseTexture(m_texture);
+	}
+
+	void WallBox::OnUpdate(double elapsedTime) {
+		//RigidDynamicCompコンポーネントを取り出す
+		auto ptrRigid = GetComponent<RigidDynamicComp>();
+		ptrRigid->OnUpdate(elapsedTime);
 	}
 
 	void WallBox::OnUpdateConstantBuffers() {
@@ -69,14 +68,10 @@ namespace basecross {
 		ptrScene->OnCommitConstantBuffers();
 	}
 
-
-	void WallBox::OnUpdate(double elapsedTime) {
-		//Transformコンポーネントを取り出す
-		auto ptrTrans = GetComponent<Transform>();
-		auto& param = ptrTrans->GetTransParam();
-		physx::PxTransform pose = m_rigid_dynamic->getGlobalPose();
-		param.position = bsmUtil::ToVec3(pose.p);
-		param.quaternion = bsmUtil::ToQuat(pose.q);
+	void WallBox::OnDestroy() {
+		//RigidDynamicCompコンポーネントを取り出す
+		auto ptrRigid = GetComponent<RigidDynamicComp>();
+		ptrRigid->OnDestroy();
 	}
 
 	void WallBox::OnShadowDraw() {
@@ -86,12 +81,6 @@ namespace basecross {
 	void WallBox::OnSceneDraw() {
 		auto ptrScene = GetComponent<SpSceneComp>();
 		ptrScene->OnSceneDraw();
-	}
-
-	void WallBox::OnDestroy() {
-		if (m_rigid_dynamic) {
-			m_rigid_dynamic->release();
-		}
 	}
 
 

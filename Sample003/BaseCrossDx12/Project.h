@@ -10,6 +10,7 @@
 #include "ContentsLib/ShadowmapComp.h"
 #include "ContentsLib/SpSceneComp.h"
 #include "ContentsLib/BcSceneComp.h"
+#include "ContentsLib/RigidComp.h"
 #include "ContentsLib/GravityComp.h"
 //個別オブジェクト等
 #include "SkyGround.h"

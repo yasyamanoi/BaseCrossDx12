@@ -69,12 +69,12 @@ namespace basecross {
 	}
 
 	void GameStage::OnDestroy() {
+		Stage::OnDestroy();
 		PxCloseExtensions();
 		m_pScene->release();
 		m_pDispatcher->release();
 		m_pPhysics->release();
 		m_pFoundation->release();
-		Stage::OnDestroy();
 	}
 
 

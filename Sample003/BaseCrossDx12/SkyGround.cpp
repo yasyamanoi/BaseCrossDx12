@@ -22,25 +22,14 @@ namespace basecross {
 
 	void SkyGround::OnCreate() {
 		auto ptrGameStage = dynamic_pointer_cast<GameStage>(GetStage());
-		auto ptrPxPhysics = ptrGameStage->GetPxPhysics();
 		//Transformコンポーネントを取り出す
 		auto ptrTrans = GetComponent<Transform>();
 		auto& param = ptrTrans->GetTransParam();
 		//PhysX関連
-		auto pose = bsmUtil::ToPxTransform(param.position,Quat());
-		physx::PxRigidStatic* rigid_static
-			= ptrPxPhysics->createRigidStatic(
-				pose
-			);
+		PhysxCreateParam pxParam;
 		physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);
-		physx::PxShape* box_shape
-			= ptrPxPhysics->createShape(
-				scale,
-				*ptrPxPhysics->createMaterial(0.5f, 0.5f, 0.5f)
-			);
-		box_shape->setLocalPose(physx::PxTransform(physx::PxIdentity));
-		rigid_static->attachShape(*box_shape);
-		ptrGameStage->GetPxScene()->addActor(*rigid_static);
+		pxParam.pGeometry = &scale;
+		AddComponent<RigidStaticComp>(pxParam);
 		//BaseCross関連
 		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
@@ -54,7 +43,17 @@ namespace basecross {
 
 	}
 
+	void SkyGround::OnUpdate(double elapsedTime) {
+		//RigidStaticCompコンポーネントを取り出す
+		auto ptrRigid = GetComponent<RigidStaticComp>();
+		ptrRigid->OnUpdate(elapsedTime);
+	}
+
+
 	void SkyGround::OnDestroy() {
+		//RigidStaticCompコンポーネントを取り出す
+		auto ptrRigid = GetComponent<RigidStaticComp>();
+		ptrRigid->OnDestroy();
 	}
 
 

@@ -23,7 +23,7 @@ namespace basecross {
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;
 		virtual void OnCreate()override;
-		virtual void OnUpdate(double elapsedTime)override {}
+		virtual void OnUpdate(double elapsedTime)override;
 		virtual void OnShadowDraw()override;
 		virtual void OnSceneDraw()override;
 		virtual void OnDestroy()override;

@@ -60,6 +60,9 @@
     <ClInclude Include="ContentsLib\SpSceneComp.h">
       <Filter>ContentsLib\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="ContentsLib\RigidComp.h">
+      <Filter>ContentsLib\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BaseCrossDx12.rc">
@@ -100,6 +103,9 @@
       <Filter>ContentsLib\Sources</Filter>
     </ClCompile>
     <ClCompile Include="ContentsLib\GravityComp.cpp">
+      <Filter>ContentsLib\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ContentsLib\RigidComp.cpp">
       <Filter>ContentsLib\Sources</Filter>
     </ClCompile>
   </ItemGroup>
