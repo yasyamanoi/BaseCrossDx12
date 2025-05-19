@@ -21,10 +21,11 @@ Compiled/
 mono_crash.*
 
 # Build results
+*.exe
+
 # [Dd]ebug/
 [Dd]ebugPublic/
 # [Rr]elease/
-[Rr]eleases/
 x64/
 x86/
 [Aa][Rr][Mm]/
@@ -78,6 +79,8 @@ StyleCopReport.xml
 *.iobj
 *.pch
 *.pdb
+!/**/PhysX/lib/[Dd]ebug/*.pdb
+!/**/PhysX/lib/[Rr]elease/*.pdb
 *.ipdb
 *.pgc
 *.pgd
