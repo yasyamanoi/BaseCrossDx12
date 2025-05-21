@@ -11,7 +11,8 @@
 namespace basecross {
 
 	using namespace std;
-	using namespace bsm;
+	using namespace basecross::bsm;
+	
 	using namespace SceneEnums;
 
 	IMPLEMENT_DX12SHADER(SpVSPNTStatic, App::GetShadersDir() + L"SpVSPNTStatic.cso")
@@ -116,7 +117,7 @@ namespace basecross {
 					LightEye = LightAt + LightEye;
 					m_constantBuffer.lightPos = LightEye;
 					m_constantBuffer.lightPos.w = 1.0f;
-					bsm::Mat4x4 lightView, lightProj;
+					Mat4x4 lightView, lightProj;
 					//ライトのビューと射影を計算
 					lightView = XMMatrixLookAtLH(LightEye, LightAt, Vec3(0, 1.0f, 0));
 					lightProj = XMMatrixOrthographicLH(Shadowmap::GetViewWidth(), Shadowmap::GetViewHeight(),

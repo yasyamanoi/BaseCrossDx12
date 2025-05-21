@@ -18,14 +18,14 @@ namespace basecross {
 	class Stage : public ObjectInterface {
 	protected:
 		ID3D12Device* m_pDevice;
-		vector<shared_ptr<GameObject>> m_gameObjectvec;
+		std::vector<std::shared_ptr<GameObject>> m_gameObjectvec;
 		Stage(ID3D12Device* pDevice) :
 			m_pDevice(pDevice)
 		{}
 		virtual ~Stage() {}
 	public:
 		template<typename T, typename... Ts>
-		shared_ptr<T> AddGameObject(Ts&&... params) {
+		std::shared_ptr<T> AddGameObject(Ts&&... params) {
 			try {
 				auto ptr = ObjectFactory::Create<T>(GetThis<Stage>(), params...);
 				m_gameObjectvec.push_back(ptr);

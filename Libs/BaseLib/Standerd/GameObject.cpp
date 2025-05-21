@@ -9,7 +9,7 @@
 
 namespace basecross {
 
-	shared_ptr<Stage> GameObject::GetStage(bool exceptionActive) const {
+	std::shared_ptr<Stage> GameObject::GetStage(bool exceptionActive) const {
 		auto shptr = m_stage.lock();
 		if (shptr) {
 			return shptr;

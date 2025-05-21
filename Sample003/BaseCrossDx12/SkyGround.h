@@ -10,6 +10,8 @@
 namespace basecross {
 
 	using namespace std;
+	using namespace basecross::bsm;
+
 
 	//--------------------------------------------------------------------------------------
 	// 土台のオブジェクト

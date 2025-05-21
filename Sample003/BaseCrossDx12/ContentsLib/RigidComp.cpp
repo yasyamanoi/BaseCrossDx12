@@ -11,7 +11,7 @@
 namespace basecross {
 
 	using namespace std;
-	using namespace bsm;
+	using namespace basecross::bsm;
 
 	//--------------------------------------------------------------------------------------
 	///	 物理演算コンポーネント
@@ -71,6 +71,7 @@ namespace basecross {
 		shape->setLocalPose(m_pxParam.localPose);
 		m_pRigidStatic->attachShape(*shape);
 		ptrGameStage->GetPxScene()->addActor(*m_pRigidStatic);
+		shape->release();
 	}
 
 	void RigidStaticComp::OnUpdate(double elapsedTime) {
@@ -122,6 +123,8 @@ namespace basecross {
 		shape->setLocalPose(m_pxParam.localPose);
 		m_pRigidDynamic->attachShape(*shape);
 		ptrGameStage->GetPxScene()->addActor(*m_pRigidDynamic);
+		shape->release();
+
 	}
 
 	void RigidDynamicComp::OnUpdate(double elapsedTime) {

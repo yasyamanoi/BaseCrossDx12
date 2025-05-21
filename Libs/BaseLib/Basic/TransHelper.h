@@ -10,8 +10,8 @@
 
 namespace basecross {
 
-	using namespace bsm;
-	using namespace std;
+	
+	
 
 	//--------------------------------------------------------------------------------------
 	///	Easing 親クラス
@@ -507,16 +507,16 @@ namespace basecross {
 			m_X(other.m_X),
 			m_Z(other.m_Z)
 		{}
-		POINT_XZ(const Vec2& other) :
+		POINT_XZ(const bsm::Vec2& other) :
 			m_X(other.x),
 			m_Z(other.y)
 		{}
-		POINT_XZ(const Vec3& other) :
+		POINT_XZ(const bsm::Vec3& other) :
 			m_X(other.x),
 			m_Z(other.z)
 		{}
-		operator Vec2() {
-			return Vec2(m_X, m_Z);
+		operator bsm::Vec2() {
+			return bsm::Vec2(m_X, m_Z);
 		}
 		POINT_XZ& operator=(const POINT_XZ& other) {
 			//自己代入の抑制
@@ -526,12 +526,12 @@ namespace basecross {
 			}
 			return *this;
 		}
-		POINT_XZ& operator=(const Vec2& other) {
+		POINT_XZ& operator=(const bsm::Vec2& other) {
 			m_X = other.x;
 			m_Z = other.y;
 			return *this;
 		}
-		POINT_XZ& operator=(const Vec3& other) {
+		POINT_XZ& operator=(const bsm::Vec3& other) {
 			m_X = other.x;
 			m_Z = other.z;
 			return *this;
@@ -622,7 +622,7 @@ namespace basecross {
 			}
 			return false;
 		}
-		bool PtInRect(const Vec2& point) const {
+		bool PtInRect(const bsm::Vec2& point) const {
 			POINT_XZ p(point);
 			return PtInRect(p);
 		}
@@ -684,8 +684,8 @@ namespace basecross {
 	///	AABBボリューム境界
 	//--------------------------------------------------------------------------------------
 	struct AABB {
-		Vec3 m_Min;     ///< 小さいほうの座標
-		Vec3 m_Max;     ///< 大きいほうの座標
+		bsm::Vec3 m_Min;     ///< 小さいほうの座標
+		bsm::Vec3 m_Max;     ///< 大きいほうの座標
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	コンストラクタ
@@ -701,7 +701,7 @@ namespace basecross {
 		@param[in]	Max	大きいほうの座標
 		*/
 		//--------------------------------------------------------------------------------------
-		AABB(const Vec3& Min, const Vec3& Max)
+		AABB(const bsm::Vec3& Min, const bsm::Vec3& Max)
 			:m_Min(Min), m_Max(Max) {}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -712,7 +712,7 @@ namespace basecross {
 		@param[in]	ZSize	Z方向サイズ
 		*/
 		//--------------------------------------------------------------------------------------
-		AABB(const Vec3& Center, float XSize, float YSize, float ZSize) {
+		AABB(const bsm::Vec3& Center, float XSize, float YSize, float ZSize) {
 			float xh = XSize / 2.0f;
 			float yh = YSize / 2.0f;
 			float zh = ZSize / 2.0f;
@@ -733,7 +733,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void GetCenter(Vec3& Pos)const {
+		void GetCenter(bsm::Vec3& Pos)const {
 			Pos.x = (m_Min.x + m_Max.x) / 2.0f;
 			Pos.y = (m_Min.y + m_Max.y) / 2.0f;
 			Pos.z = (m_Min.z + m_Max.z) / 2.0f;
@@ -744,8 +744,8 @@ namespace basecross {
 		@return	中心のベクトル
 		*/
 		//--------------------------------------------------------------------------------------
-		Vec3 GetCenter() const {
-			Vec3 ret;
+		bsm::Vec3 GetCenter() const {
+			bsm::Vec3 ret;
 			ret.x = (m_Min.x + m_Max.x) / 2.0f;
 			ret.y = (m_Min.y + m_Max.y) / 2.0f;
 			ret.z = (m_Min.z + m_Max.z) / 2.0f;
@@ -785,11 +785,11 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void Move(const Vec3& MoveVec) {
+		void Move(const bsm::Vec3& MoveVec) {
 			m_Min += MoveVec;
 			m_Max += MoveVec;
 		}
-		bool PtInAABB(const Vec3& point) {
+		bool PtInAABB(const bsm::Vec3& point) {
 			if (
 				point.x >= m_Min.x && point.x < m_Max.x
 				&&
@@ -842,7 +842,7 @@ namespace basecross {
 	///	球ボリューム境界
 	//--------------------------------------------------------------------------------------
 	struct SPHERE {
-		Vec3 m_Center;	///< 中心点の座標
+		bsm::Vec3 m_Center;	///< 中心点の座標
 		float m_Radius;			///< 半径
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -857,13 +857,13 @@ namespace basecross {
 		@param[in]	Radius	半径
 		*/
 		//--------------------------------------------------------------------------------------
-		SPHERE(const Vec3& Center, float Radius) :
+		SPHERE(const bsm::Vec3& Center, float Radius) :
 			m_Center(Center),
 			m_Radius(Radius) {}
 		AABB GetWrappedAABB() const {
 			AABB ret;
-			ret.m_Min = Vec3(m_Center.x - m_Radius, m_Center.y - m_Radius, m_Center.z - m_Radius);
-			ret.m_Max = Vec3(m_Center.x + m_Radius, m_Center.y + m_Radius, m_Center.z + m_Radius);
+			ret.m_Min = bsm::Vec3(m_Center.x - m_Radius, m_Center.y - m_Radius, m_Center.z - m_Radius);
+			ret.m_Max = bsm::Vec3(m_Center.x + m_Radius, m_Center.y + m_Radius, m_Center.z + m_Radius);
 			return ret;
 		}
 		//--------------------------------------------------------------------------------------
@@ -896,7 +896,7 @@ namespace basecross {
 		SPHERE sp;
 		auto Size = m_Max - m_Min;
 		Size *= 0.5f;
-		sp.m_Radius = bsmUtil::length(Size);
+		sp.m_Radius = bsm::bsmUtil::length(Size);
 		sp.m_Center = GetCenter();
 		return sp;
 	}
@@ -907,9 +907,9 @@ namespace basecross {
 	///	OBBボリューム境界
 	//--------------------------------------------------------------------------------------
 	struct OBB {
-		Vec3 m_Center;     ///< 中心点の座標
-		Vec3 m_Rot[3];  ///< XYZ の各座標軸の傾きを表す方向ベクトル
-		Vec3 m_Size;     ///< OBB の各座標軸に沿った長さの半分（中心点から面までの長さ）
+		bsm::Vec3 m_Center;     ///< 中心点の座標
+		bsm::Vec3 m_Rot[3];  ///< XYZ の各座標軸の傾きを表す方向ベクトル
+		bsm::Vec3 m_Size;     ///< OBB の各座標軸に沿った長さの半分（中心点から面までの長さ）
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	作成されたサイズと変換行列から、OBBを作り直す
@@ -918,23 +918,23 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void CreateOBB(const Vec3& Size, const Mat4x4& Matrix) {
+		void CreateOBB(const bsm::Vec3& Size, const bsm::Mat4x4& Matrix) {
 			m_Center.x = Matrix._41;
 			m_Center.y = Matrix._42;
 			m_Center.z = Matrix._43;
-			Vec3 VecX(Matrix._11, Matrix._12, Matrix._13);
-			Vec3 VecY(Matrix._21, Matrix._22, Matrix._23);
-			Vec3 VecZ(Matrix._31, Matrix._32, Matrix._33);
-			m_Size = Vec3(
-				Size.x * bsmUtil::length(VecX),
-				Size.y * bsmUtil::length(VecY),
-				Size.z * bsmUtil::length(VecZ)
+			bsm::Vec3 VecX(Matrix._11, Matrix._12, Matrix._13);
+			bsm::Vec3 VecY(Matrix._21, Matrix._22, Matrix._23);
+			bsm::Vec3 VecZ(Matrix._31, Matrix._32, Matrix._33);
+			m_Size = bsm::Vec3(
+				Size.x * bsm::bsmUtil::length(VecX),
+				Size.y * bsm::bsmUtil::length(VecY),
+				Size.z * bsm::bsmUtil::length(VecZ)
 			);
 			m_Size *= 0.5f;
 			//回転を得る
-			m_Rot[0] = bsmUtil::normalize(VecX);
-			m_Rot[1] = bsmUtil::normalize(VecY);
-			m_Rot[2] = bsmUtil::normalize(VecZ);
+			m_Rot[0] = bsm::bsmUtil::normalize(VecX);
+			m_Rot[1] = bsm::bsmUtil::normalize(VecY);
+			m_Rot[2] = bsm::bsmUtil::normalize(VecZ);
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -943,9 +943,9 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		OBB() {
 			//デフォルトは1辺1.0のOBB
-			Vec3 SizeVec(1.0f, 1.0f, 1.0f);
+			bsm::Vec3 SizeVec(1.0f, 1.0f, 1.0f);
 			//行列はアイデンティティ
-			Mat4x4 Matrix;
+			bsm::Mat4x4 Matrix;
 			CreateOBB(SizeVec, Matrix);
 		}
 		//--------------------------------------------------------------------------------------
@@ -956,18 +956,18 @@ namespace basecross {
 		@param[in]	Center	中心位置
 		*/
 		//--------------------------------------------------------------------------------------
-		OBB(const Vec3& Size, const Vec3& Rot, const Vec3& Center) :
+		OBB(const bsm::Vec3& Size, const bsm::Vec3& Rot, const bsm::Vec3& Center) :
 			m_Center(Center),
 			m_Size(Size)
 		{
 			m_Size *= 0.5f;
 			//回転を得る
-			Vec3 LocaRot = Rot;
+			bsm::Vec3 LocaRot = Rot;
 			LocaRot.normalize();
-			Mat4x4 mRot(XMMatrixRotationRollPitchYawFromVector(LocaRot));
-			m_Rot[0] = Vec3(mRot._11, mRot._12, mRot._13);
-			m_Rot[1] = Vec3(mRot._21, mRot._22, mRot._23);
-			m_Rot[2] = Vec3(mRot._31, mRot._32, mRot._33);
+			bsm::Mat4x4 mRot(XMMatrixRotationRollPitchYawFromVector(LocaRot));
+			m_Rot[0] = bsm::Vec3(mRot._11, mRot._12, mRot._13);
+			m_Rot[1] = bsm::Vec3(mRot._21, mRot._22, mRot._23);
+			m_Rot[2] = bsm::Vec3(mRot._31, mRot._32, mRot._33);
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -977,20 +977,20 @@ namespace basecross {
 		@param[in]	Center	中心位置
 		*/
 		//--------------------------------------------------------------------------------------
-		OBB(const Vec3& Size, const Quat& Qt, const Vec3& Center) :
+		OBB(const bsm::Vec3& Size, const bsm::Quat& Qt, const bsm::Vec3& Center) :
 			m_Center(Center),
 			m_Size(Size)
 		{
 			m_Size *= 0.5f;
 			//回転を得る
-			Quat LocalQt = Qt;
+			bsm::Quat LocalQt = Qt;
 			//クオータニオンを正規化
 			LocalQt.normalize();
 			//クオータニオンから回転行列を作成
-			Mat4x4 mRot(XMMatrixRotationQuaternion(LocalQt));
-			m_Rot[0] = Vec3(mRot._11, mRot._12, mRot._13);
-			m_Rot[1] = Vec3(mRot._21, mRot._22, mRot._23);
-			m_Rot[2] = Vec3(mRot._31, mRot._32, mRot._33);
+			bsm::Mat4x4 mRot(XMMatrixRotationQuaternion(LocalQt));
+			m_Rot[0] = bsm::Vec3(mRot._11, mRot._12, mRot._13);
+			m_Rot[1] = bsm::Vec3(mRot._21, mRot._22, mRot._23);
+			m_Rot[2] = bsm::Vec3(mRot._31, mRot._32, mRot._33);
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -999,24 +999,24 @@ namespace basecross {
 		@param[in]	Matrix	変換行列
 		*/
 		//--------------------------------------------------------------------------------------
-		OBB(const Vec3& Size, const Mat4x4& Matrix)
+		OBB(const bsm::Vec3& Size, const bsm::Mat4x4& Matrix)
 		{
 			m_Center.x = Matrix._41;
 			m_Center.y = Matrix._42;
 			m_Center.z = Matrix._43;
-			Vec3 VecX(Matrix._11, Matrix._12, Matrix._13);
-			Vec3 VecY(Matrix._21, Matrix._22, Matrix._23);
-			Vec3 VecZ(Matrix._31, Matrix._32, Matrix._33);
-			m_Size = Vec3(
-				Size.x * bsmUtil::length(VecX),
-				Size.y * bsmUtil::length(VecY),
-				Size.z * bsmUtil::length(VecZ)
+			bsm::Vec3 VecX(Matrix._11, Matrix._12, Matrix._13);
+			bsm::Vec3 VecY(Matrix._21, Matrix._22, Matrix._23);
+			bsm::Vec3 VecZ(Matrix._31, Matrix._32, Matrix._33);
+			m_Size = bsm::Vec3(
+				Size.x * bsm::bsmUtil::length(VecX),
+				Size.y * bsm::bsmUtil::length(VecY),
+				Size.z * bsm::bsmUtil::length(VecZ)
 			);
 			m_Size *= 0.5f;
 			//回転を得る
-			m_Rot[0] = bsmUtil::normalize(VecX);
-			m_Rot[1] = bsmUtil::normalize(VecY);
-			m_Rot[2] = bsmUtil::normalize(VecZ);
+			m_Rot[0] = bsm::bsmUtil::normalize(VecX);
+			m_Rot[1] = bsm::bsmUtil::normalize(VecY);
+			m_Rot[2] = bsm::bsmUtil::normalize(VecZ);
 
 		}
 		//--------------------------------------------------------------------------------------
@@ -1025,8 +1025,8 @@ namespace basecross {
 		@return	回転行列
 		*/
 		//--------------------------------------------------------------------------------------
-		Mat4x4 GetRotMatrix()const {
-			Mat4x4 ret;
+		bsm::Mat4x4 GetRotMatrix()const {
+			bsm::Mat4x4 ret;
 			ret._11 = m_Rot[0].x;
 			ret._12 = m_Rot[0].y;
 			ret._13 = m_Rot[0].z;
@@ -1044,8 +1044,8 @@ namespace basecross {
 		@return	ワールド行列
 		*/
 		//--------------------------------------------------------------------------------------
-		Mat4x4 GetWorldMatrix()const {
-			Mat4x4 ret, Pos;
+		bsm::Mat4x4 GetWorldMatrix()const {
+			bsm::Mat4x4 ret, Pos;
 			ret = XMMatrixScaling(m_Size.x * 2.0f, m_Size.y * 2.0f, m_Size.z * 2.0f);
 			ret = XMMatrixMultiply(ret, GetRotMatrix());
 			Pos = XMMatrixTranslation(m_Center.x, m_Center.y, m_Center.z);
@@ -1114,9 +1114,9 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void GetNearNormalRot(const Vec3& Check, float Epsilon, Vec3& Ret) {
+		void GetNearNormalRot(const bsm::Vec3& Check, float Epsilon, bsm::Vec3& Ret) {
 			for (int i = 0; i < 3; i++) {
-				Vec4 VecEp(Epsilon);
+				bsm::Vec4 VecEp(Epsilon);
 				if (XMVector3NearEqual(Check, m_Rot[i], VecEp)) {
 					Ret = m_Rot[i];
 					return;
@@ -1134,9 +1134,9 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		bool IsRotIdentity() const {
-			if (m_Rot[0] == Vec3(1.0f, 0.0f, 0.0f)
-				&& m_Rot[1] == Vec3(0.0f, 1.0f, 0.0f)
-				&& m_Rot[2] == Vec3(0.0f, 0.0f, 1.0f)) {
+			if (m_Rot[0] == bsm::Vec3(1.0f, 0.0f, 0.0f)
+				&& m_Rot[1] == bsm::Vec3(0.0f, 1.0f, 0.0f)
+				&& m_Rot[2] == bsm::Vec3(0.0f, 0.0f, 1.0f)) {
 				return true;
 			}
 			return false;
@@ -1150,7 +1150,7 @@ namespace basecross {
 		RECT_XZ GetWrappedRECT_XZ() const {
 			RECT_XZ ret;
 			SPHERE sp;
-			sp.m_Radius = bsmUtil::length(m_Size);
+			sp.m_Radius = bsm::bsmUtil::length(m_Size);
 			sp.m_Center = m_Center;
 			return sp.GetWrappedRECT_XZ();
 		}
@@ -1162,7 +1162,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		SPHERE GetWrappedSPHERE() const {
 			SPHERE sp;
-			sp.m_Radius = bsmUtil::length(m_Size);
+			sp.m_Radius = bsm::bsmUtil::length(m_Size);
 			sp.m_Center = m_Center;
 			return sp;
 		}
@@ -1176,22 +1176,22 @@ namespace basecross {
 		AABB GetWrappedAABB() const {
 			AABB ret;
 			if (IsRotIdentity()) {
-				ret.m_Min = Vec3(-m_Size.x, -m_Size.y, -m_Size.z);
-				ret.m_Max = Vec3(m_Size.x, m_Size.y, m_Size.z);
+				ret.m_Min = bsm::Vec3(-m_Size.x, -m_Size.y, -m_Size.z);
+				ret.m_Max = bsm::Vec3(m_Size.x, m_Size.y, m_Size.z);
 				ret.Move(m_Center);
 				return ret;
 			}
 			float Half = 0.5f;
-			Vec3 Vec[] = {
-				Vec3(-Half,-Half,-Half),
-				Vec3(Half,-Half,-Half),
-				Vec3(Half,-Half,Half),
-				Vec3(-Half,-Half,Half),
+			bsm::Vec3 Vec[] = {
+				bsm::Vec3(-Half,-Half,-Half),
+				bsm::Vec3(Half,-Half,-Half),
+				bsm::Vec3(Half,-Half,Half),
+				bsm::Vec3(-Half,-Half,Half),
 
-				Vec3(-Half,Half,-Half),
-				Vec3(Half,Half,-Half),
-				Vec3(Half,Half,Half),
-				Vec3(-Half,Half,Half),
+				bsm::Vec3(-Half,Half,-Half),
+				bsm::Vec3(Half,Half,-Half),
+				bsm::Vec3(Half,Half,Half),
+				bsm::Vec3(-Half,Half,Half),
 			};
 			bool First = true;
 			auto m = GetWorldMatrix();
@@ -1236,14 +1236,14 @@ namespace basecross {
 	///	球配列データ
 	//--------------------------------------------------------------------------------------
 	struct SPHERE_ARR {
-		vector<SPHERE> m_SphereArr;
+		std::vector<SPHERE> m_SphereArr;
 	};
 
 	//--------------------------------------------------------------------------------------
 	///	平面
 	//--------------------------------------------------------------------------------------
 	struct PLANE {
-		Vec3 m_Normal;	///< 法線
+		bsm::Vec3 m_Normal;	///< 法線
 		float m_DotValue;	///< 内積値
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1254,9 +1254,9 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void Set(const Vec3& PointA, const Vec3& PointB, const Vec3& PointC) {
-			m_Normal = bsmUtil::normalize(bsmUtil::cross(PointB - PointA, PointC - PointA));
-			m_DotValue = bsmUtil::dot(m_Normal, PointA);
+		void Set(const bsm::Vec3& PointA, const bsm::Vec3& PointB, const bsm::Vec3& PointC) {
+			m_Normal = bsm::bsmUtil::normalize(bsm::bsmUtil::cross(PointB - PointA, PointC - PointA));
+			m_DotValue = bsm::bsmUtil::dot(m_Normal, PointA);
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1272,7 +1272,7 @@ namespace basecross {
 		@param[in]	PointC	点C
 		*/
 		//--------------------------------------------------------------------------------------
-		PLANE(const Vec3& PointA, const Vec3& PointB, const Vec3& PointC) {
+		PLANE(const bsm::Vec3& PointA, const bsm::Vec3& PointB, const bsm::Vec3& PointC) {
 			Set(PointA, PointB, PointC);
 		}
 		//--------------------------------------------------------------------------------------
@@ -1281,7 +1281,7 @@ namespace basecross {
 		@param[in]	plane	Plane4型の値
 		*/
 		//--------------------------------------------------------------------------------------
-		PLANE(const Plane4& plane) {
+		PLANE(const bsm::Plane4& plane) {
 			m_Normal.x = plane.x;
 			m_Normal.y = plane.x;
 			m_Normal.z = plane.z;
@@ -1295,8 +1295,8 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	struct CYLINDER {
 		float m_Radius;			///< 半径
-		Vec3 m_PointBottom;		///< 中間部線分の開始点
-		Vec3 m_PointTop;		///< 中間部線分の終了点
+		bsm::Vec3 m_PointBottom;		///< 中間部線分の開始点
+		bsm::Vec3 m_PointTop;		///< 中間部線分の終了点
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	コンストラクタ
@@ -1316,7 +1316,7 @@ namespace basecross {
 		@param[in]	PointTop	中間部線分の終了点
 		*/
 		//--------------------------------------------------------------------------------------
-		CYLINDER(float Radius, const Vec3& PointBottom, const Vec3& PointTop) :
+		CYLINDER(float Radius, const bsm::Vec3& PointBottom, const bsm::Vec3& PointTop) :
 			m_Radius(Radius),
 			m_PointBottom(PointBottom),
 			m_PointTop(PointTop)
@@ -1327,7 +1327,7 @@ namespace basecross {
 		@return	中心点
 		*/
 		//--------------------------------------------------------------------------------------
-		Vec3 GetCenter() const {
+		bsm::Vec3 GetCenter() const {
 			return m_PointBottom + ((m_PointTop - m_PointBottom) * 0.5f);
 		}
 		//--------------------------------------------------------------------------------------
@@ -1337,7 +1337,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		float GetHeight() const {
-			return bsmUtil::length(m_PointTop - m_PointBottom);
+			return bsm::bsmUtil::length(m_PointTop - m_PointBottom);
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1345,15 +1345,15 @@ namespace basecross {
 		@return	ワールド行列
 		*/
 		//--------------------------------------------------------------------------------------
-		Mat4x4 GetMatrix() const {
-			Mat4x4 mat;
-			Vec3 Pos = GetCenter();
-			Vec3 Rot = m_PointTop - m_PointBottom;
+		bsm::Mat4x4 GetMatrix() const {
+			bsm::Mat4x4 mat;
+			bsm::Vec3 Pos = GetCenter();
+			bsm::Vec3 Rot = m_PointTop - m_PointBottom;
 			Rot.normalize();
-			Quat Qt(Rot, 0.0f);
-			float Height = bsmUtil::length(m_PointTop - m_PointBottom);
-			Vec3 Scale(m_Radius, Height, m_Radius);
-			mat.affineTransformation(Scale, Vec3(0, 0, 0), Qt, Pos);
+			bsm::Quat Qt(Rot, 0.0f);
+			float Height = bsm::bsmUtil::length(m_PointTop - m_PointBottom);
+			bsm::Vec3 Scale(m_Radius, Height, m_Radius);
+			mat.affineTransformation(Scale, bsm::Vec3(0, 0, 0), Qt, Pos);
 			return mat;
 		}
 	};
@@ -1364,8 +1364,8 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	struct CAPSULE {
 		float m_Radius;			///< 半径
-		Vec3 m_PointBottom;		///< 中間部線分の開始点
-		Vec3 m_PointTop;		///< 中間部線分の終了点
+		bsm::Vec3 m_PointBottom;		///< 中間部線分の開始点
+		bsm::Vec3 m_PointTop;		///< 中間部線分の終了点
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	コンストラクタ
@@ -1385,7 +1385,7 @@ namespace basecross {
 		@param[in]	PointTop	中間部線分の終了点
 		*/
 		//--------------------------------------------------------------------------------------
-		CAPSULE(float Radius, const Vec3& PointBottom, const Vec3& PointTop) :
+		CAPSULE(float Radius, const bsm::Vec3& PointBottom, const bsm::Vec3& PointTop) :
 			m_Radius(Radius),
 			m_PointBottom(PointBottom),
 			m_PointTop(PointTop)
@@ -1399,8 +1399,8 @@ namespace basecross {
 		@param[in]	Matrix	変換行列
 		*/
 		//--------------------------------------------------------------------------------------
-		CAPSULE(float MakedRadius, const Vec3& MakedPointBottom, const Vec3& MakedPointTop,
-			const Mat4x4& Matrix) :
+		CAPSULE(float MakedRadius, const bsm::Vec3& MakedPointBottom, const bsm::Vec3& MakedPointTop,
+			const bsm::Mat4x4& Matrix) :
 			m_Radius(MakedRadius),
 			m_PointBottom(MakedPointBottom),
 			m_PointTop(MakedPointTop)
@@ -1408,7 +1408,7 @@ namespace basecross {
 			m_PointBottom *= Matrix;
 			m_PointTop *= Matrix;
 			//スケーリングのみ1方向で計算
-			Vec3 Scale = Matrix.scaleInMatrix();
+			bsm::Vec3 Scale = Matrix.scaleInMatrix();
 			m_Radius *= Scale.x;
 		}
 		//--------------------------------------------------------------------------------------
@@ -1417,7 +1417,7 @@ namespace basecross {
 		@return	中心点
 		*/
 		//--------------------------------------------------------------------------------------
-		Vec3 GetCenter() const {
+		bsm::Vec3 GetCenter() const {
 			return m_PointBottom + ((m_PointTop - m_PointBottom) * 0.5f);
 		}
 		//--------------------------------------------------------------------------------------
@@ -1427,9 +1427,9 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SetCenter(const Vec3& Center) {
-			Vec3 CenterToPointA = ((m_PointBottom - m_PointTop) * 0.5f);
-			Vec3 CenterToPointB = ((m_PointTop - m_PointBottom) * 0.5f);
+		void SetCenter(const bsm::Vec3& Center) {
+			bsm::Vec3 CenterToPointA = ((m_PointBottom - m_PointTop) * 0.5f);
+			bsm::Vec3 CenterToPointB = ((m_PointTop - m_PointBottom) * 0.5f);
 			m_PointBottom = Center + CenterToPointA;
 			m_PointTop = Center + CenterToPointB;
 		}
@@ -1440,7 +1440,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		float GetHeightRadius()const {
-			float PointLen = bsmUtil::length(m_PointTop - m_PointBottom) * 0.5f;
+			float PointLen = bsm::bsmUtil::length(m_PointTop - m_PointBottom) * 0.5f;
 			PointLen += m_Radius;
 			return PointLen;
 		}
@@ -1454,7 +1454,7 @@ namespace basecross {
 			RECT_XZ ret;
 			POINT_XZ P1(m_PointBottom);
 			POINT_XZ P2(m_PointTop);
-			if (bsmUtil::length(Vec2(P1)) <= bsmUtil::length(Vec2(P2))) {
+			if (bsm::bsmUtil::length(bsm::Vec2(P1)) <= bsm::bsmUtil::length(bsm::Vec2(P2))) {
 				ret.m_Left = P1.m_X - m_Radius;
 				ret.m_Right = P2.m_X + m_Radius;
 				ret.m_Near = P1.m_Z - m_Radius;
@@ -1476,7 +1476,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		SPHERE GetWrappedSPHERE() const {
 			SPHERE sp;
-			auto Size = bsmUtil::length(m_PointTop - m_PointBottom);
+			auto Size = bsm::bsmUtil::length(m_PointTop - m_PointBottom);
 			Size *= 0.5f;
 			Size += m_Radius;
 			sp.m_Radius = Size;
@@ -1496,18 +1496,18 @@ namespace basecross {
 	///	衝突判定に使用する三角形（時計回り）
 	//--------------------------------------------------------------------------------------
 	struct TRIANGLE {
-		Vec3 m_A;
-		Vec3 m_B;
-		Vec3 m_C;
-		void Set(const Vec3& baseA, const Vec3& baseB, const Vec3& baseC,
-			const Mat4x4& m) {
+		bsm::Vec3 m_A;
+		bsm::Vec3 m_B;
+		bsm::Vec3 m_C;
+		void Set(const bsm::Vec3& baseA, const bsm::Vec3& baseB, const bsm::Vec3& baseC,
+			const bsm::Mat4x4& m) {
 			m_A = m * baseA;
 			m_B = m * baseB;
 			m_C = m * baseC;
 		}
 		TRIANGLE() {}
-		TRIANGLE(const Vec3& baseA, const Vec3& baseB, const Vec3& baseC,
-			const Mat4x4& m) {
+		TRIANGLE(const bsm::Vec3& baseA, const bsm::Vec3& baseB, const bsm::Vec3& baseC,
+			const bsm::Mat4x4& m) {
 			Set(baseA, baseB, baseC, m);
 		}
 		bool IsValid() {
@@ -1522,9 +1522,9 @@ namespace basecross {
 			}
 			return true;
 		}
-		Vec3 GetNormal()const {
-			Vec3 Ret =
-				bsmUtil::cross(
+		bsm::Vec3 GetNormal()const {
+			bsm::Vec3 Ret =
+				bsm::bsmUtil::cross(
 					m_B - m_A,
 					m_C - m_A
 				);
@@ -1618,13 +1618,13 @@ namespace basecross {
 	///	衝突判定に使用するRECT
 	//--------------------------------------------------------------------------------------
 	struct COLRECT {
-		Vec3 m_Center;     //中心点の座標
-		Vec3 m_Rot[2];  //XY の各座標軸の傾きを表す方向ベクトル
+		bsm::Vec3 m_Center;     //中心点の座標
+		bsm::Vec3 m_Rot[2];  //XY の各座標軸の傾きを表す方向ベクトル
 		float m_UVec[2];     //XY座標軸に沿った長さの半分（中心点から面までの長さ）
 		float m_BaseXSize;	//制作時のサイズX（各種計算に使う）
 		float m_BaseYSize;	//制作時のサイズY（各種計算に使う）
-		Mat4x4 m_Matrix;	//行列（各種計算に使う）
-		Vec3 m_Vertex[4];	//行列によって変換された頂点(各種計算に使う)
+		bsm::Mat4x4 m_Matrix;	//行列（各種計算に使う）
+		bsm::Vec3 m_Vertex[4];	//行列によって変換された頂点(各種計算に使う)
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	コンストラクタ<br />
@@ -1635,7 +1635,7 @@ namespace basecross {
 		@param[in]	Matrix	変換行列
 		*/
 		//--------------------------------------------------------------------------------------
-		COLRECT(float BaseXSize, float BaseYSize, const Mat4x4& Matrix) :
+		COLRECT(float BaseXSize, float BaseYSize, const bsm::Mat4x4& Matrix) :
 			m_BaseXSize(BaseXSize),
 			m_BaseYSize(BaseYSize),
 			m_Matrix(Matrix)
@@ -1643,21 +1643,21 @@ namespace basecross {
 			m_Center.x = Matrix._41;
 			m_Center.y = Matrix._42;
 			m_Center.z = Matrix._43;
-			Vec3 VecX(Matrix._11, Matrix._12, Matrix._13);
-			Vec3 VecY(Matrix._21, Matrix._22, Matrix._23);
-			m_UVec[0] = BaseXSize * bsmUtil::length(VecX) * 0.5f;
-			m_UVec[1] = BaseYSize * bsmUtil::length(VecY) * 0.5f;
+			bsm::Vec3 VecX(Matrix._11, Matrix._12, Matrix._13);
+			bsm::Vec3 VecY(Matrix._21, Matrix._22, Matrix._23);
+			m_UVec[0] = BaseXSize * bsm::bsmUtil::length(VecX) * 0.5f;
+			m_UVec[1] = BaseYSize * bsm::bsmUtil::length(VecY) * 0.5f;
 			//回転を得る
-			m_Rot[0] = bsmUtil::normalize(VecX);
-			m_Rot[1] = bsmUtil::normalize(VecY);
+			m_Rot[0] = bsm::bsmUtil::normalize(VecX);
+			m_Rot[1] = bsm::bsmUtil::normalize(VecY);
 
 			//頂点の設定
 			float HalfX = m_BaseXSize * 0.5f;
 			float HalfY = m_BaseYSize * 0.5f;
-			m_Vertex[0] = Vec3(-HalfX, HalfY, 0);
-			m_Vertex[1] = Vec3(HalfX, HalfY, 0);
-			m_Vertex[2] = Vec3(-HalfX, -HalfY, 0);
-			m_Vertex[3] = Vec3(HalfX, -HalfY, 0);
+			m_Vertex[0] = bsm::Vec3(-HalfX, HalfY, 0);
+			m_Vertex[1] = bsm::Vec3(HalfX, HalfY, 0);
+			m_Vertex[2] = bsm::Vec3(-HalfX, -HalfY, 0);
+			m_Vertex[3] = bsm::Vec3(HalfX, -HalfY, 0);
 			for (auto& v : m_Vertex) {
 				v *= m_Matrix;
 			}
@@ -1665,14 +1665,14 @@ namespace basecross {
 		PLANE GetPLANE() const {
 			//表面上に3つの点を使ってPLANEを作成
 			//1つ目の点は中心
-			Vec3 Point0 = m_Center;
+			bsm::Vec3 Point0 = m_Center;
 			float MakedHalfX = m_BaseXSize * 0.5f;
 			float MakedHalfY = m_BaseYSize * 0.5f;
 			//2つ目は-0.5,-0.5,0の点をワールド変換したもの
-			Vec3 Point1(-MakedHalfX, -MakedHalfY, 0);
+			bsm::Vec3 Point1(-MakedHalfX, -MakedHalfY, 0);
 			Point1 = m_Matrix * Point1;
 			//3つ目は-0.5,0.5,0の点をワールド変換したもの
-			Vec3 Point2(MakedHalfX, -MakedHalfY, 0);
+			bsm::Vec3 Point2(MakedHalfX, -MakedHalfY, 0);
 			Point2 = m_Matrix * Point2;
 			//3点を使って面を作成
 			PLANE ret(Point0, Point1, Point2);
@@ -1748,7 +1748,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		SPHERE GetWrappedSPHERE() const {
 			SPHERE sp;
-			auto Size = bsmUtil::length(m_Vertex[1] - m_Vertex[2]);
+			auto Size = bsm::bsmUtil::length(m_Vertex[1] - m_Vertex[2]);
 			Size *= 0.5f;
 			sp.m_Radius = Size;
 			sp.m_Center = m_Center;
@@ -1823,7 +1823,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void ChkSetMinMax(const Vec3& chk, Vec3& min_v, Vec3& max_v) {
+		static void ChkSetMinMax(const bsm::Vec3& chk, bsm::Vec3& min_v, bsm::Vec3& max_v) {
 			if (min_v.x > chk.x) {
 				min_v.x = chk.x;
 			}
@@ -1852,8 +1852,8 @@ namespace basecross {
 		@return	裏側ならtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool InsidePtPlane(const Vec3& p, const PLANE& pl) {
-			float dist = bsmUtil::dot(p, pl.m_Normal) - pl.m_DotValue;
+		static bool InsidePtPlane(const bsm::Vec3& p, const PLANE& pl) {
+			float dist = bsm::bsmUtil::dot(p, pl.m_Normal) - pl.m_DotValue;
 			return dist < 0.0f;
 		}
 		//--------------------------------------------------------------------------------------
@@ -1871,21 +1871,21 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static float ClosestPtSegmentSegment(
-			const Vec3& p1, const Vec3& q1, const Vec3& p2, const Vec3& q2,
-			float& s, float& t, Vec3& c1, Vec3& c2) {
+			const bsm::Vec3& p1, const bsm::Vec3& q1, const bsm::Vec3& p2, const bsm::Vec3& q2,
+			float& s, float& t, bsm::Vec3& c1, bsm::Vec3& c2) {
 			const float EPSILON = 1.175494e-37f;
-			Vec3 d1 = q1 - p1;
-			Vec3 d2 = q2 - p2;
-			Vec3 r = p1 - p2;
-			float a = bsmUtil::dot(d1, d1);
-			float e = bsmUtil::dot(d2, d2);
-			float f = bsmUtil::dot(d2, r);
+			bsm::Vec3 d1 = q1 - p1;
+			bsm::Vec3 d2 = q2 - p2;
+			bsm::Vec3 r = p1 - p2;
+			float a = bsm::bsmUtil::dot(d1, d1);
+			float e = bsm::bsmUtil::dot(d2, d2);
+			float f = bsm::bsmUtil::dot(d2, r);
 
 			if (f <= EPSILON && e <= EPSILON) {
 				s = t = 0.0f;
 				c1 = p1;
 				c2 = p2;
-				return bsmUtil::dot(c1 - c2, c1 - c2);
+				return bsm::bsmUtil::dot(c1 - c2, c1 - c2);
 			}
 			if (a <= EPSILON) {
 				s = 0.0f;
@@ -1893,13 +1893,13 @@ namespace basecross {
 				t = floatClamp(t, 0.0f, 1.0f);
 			}
 			else {
-				float c = bsmUtil::dot(d1, r);
+				float c = bsm::bsmUtil::dot(d1, r);
 				if (e <= EPSILON) {
 					t = 0.0f;
 					s = floatClamp(-c / a, 0.0f, 1.0f);
 				}
 				else {
-					float b = bsmUtil::dot(d1, d2);
+					float b = bsm::bsmUtil::dot(d1, d2);
 					float denom = a * e - b * b;
 					if (denom != 0.0f) {
 						s = floatClamp((b * f - c * e) / denom, 0.0f, 1.0f);
@@ -1920,7 +1920,7 @@ namespace basecross {
 			}
 			c1 = p1 + d1 * s;
 			c2 = p2 + d2 * t;
-			return bsmUtil::dot(c1 - c2, c1 - c2);
+			return bsm::bsmUtil::dot(c1 - c2, c1 - c2);
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1931,19 +1931,19 @@ namespace basecross {
 		@return	点cと線分abの距離の平方
 		*/
 		//--------------------------------------------------------------------------------------
-		static float SqDistPointSegment(const Vec3& a, const Vec3& b, const Vec3& c) {
-			Vec3 ab = b - a;
-			Vec3 ac = c - a;
-			Vec3 bc = c - b;
-			float e = bsmUtil::dot(ac, ab);
+		static float SqDistPointSegment(const bsm::Vec3& a, const bsm::Vec3& b, const bsm::Vec3& c) {
+			bsm::Vec3 ab = b - a;
+			bsm::Vec3 ac = c - a;
+			bsm::Vec3 bc = c - b;
+			float e = bsm::bsmUtil::dot(ac, ab);
 			if (e <= 0.0f) {
-				return bsmUtil::dot(ac, ac);
+				return bsm::bsmUtil::dot(ac, ac);
 			}
-			float f = bsmUtil::dot(ab, ab);
+			float f = bsm::bsmUtil::dot(ab, ab);
 			if (e >= f) {
-				return bsmUtil::dot(bc, bc);
+				return bsm::bsmUtil::dot(bc, bc);
 			}
-			return bsmUtil::dot(ac, ac) - e * e / f;
+			return bsm::bsmUtil::dot(ac, ac) - e * e / f;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -1956,11 +1956,11 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void ClosetPtPointSegment(const Vec3& c,
-			const Vec3& a, const Vec3& b,
-			float& t, Vec3& d) {
-			Vec3 ab = b - a;
-			t = bsmUtil::dot(c - a, ab) / bsmUtil::dot(ab, ab);
+		static void ClosetPtPointSegment(const bsm::Vec3& c,
+			const bsm::Vec3& a, const bsm::Vec3& b,
+			float& t, bsm::Vec3& d) {
+			bsm::Vec3 ab = b - a;
+			t = bsm::bsmUtil::dot(c - a, ab) / bsm::bsmUtil::dot(ab, ab);
 			if (t < 0.0f) {
 				t = 0.0f;
 			}
@@ -1978,20 +1978,20 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void ClosetPtPointPlane(const Vec3& c,
-			const PLANE& pl, Vec3& d) {
-			float t = (bsmUtil::dot(pl.m_Normal, c) - pl.m_DotValue) / bsmUtil::dot(pl.m_Normal, pl.m_Normal);
+		static void ClosetPtPointPlane(const bsm::Vec3& c,
+			const PLANE& pl, bsm::Vec3& d) {
+			float t = (bsm::bsmUtil::dot(pl.m_Normal, c) - pl.m_DotValue) / bsm::bsmUtil::dot(pl.m_Normal, pl.m_Normal);
 			d = c - pl.m_Normal * t;
 		}
 
 		static SPHERE SphereEnclosingSphere(const SPHERE& s0, const SPHERE& s1) {
 			const float EPSILON = 1.175494e-37f;
 			SPHERE s;
-			Vec3 d = s1.m_Center - s0.m_Center;
-			float dist2 = bsmUtil::dot(d, d);
+			bsm::Vec3 d = s1.m_Center - s0.m_Center;
+			float dist2 = bsm::bsmUtil::dot(d, d);
 			float f = s1.m_Radius - s0.m_Radius;
-			Vec4 vec0(f);
-			vec0 = XMVectorPow(vec0, Vec4(2.0f));
+			bsm::Vec4 vec0(f);
+			vec0 = XMVectorPow(vec0, bsm::Vec4(2.0f));
 			if (vec0.x >= dist2) {
 				if (s1.m_Radius >= s0.m_Radius) {
 					s = s1;
@@ -2001,7 +2001,7 @@ namespace basecross {
 				}
 			}
 			else {
-				Vec4 vec(dist2);
+				bsm::Vec4 vec(dist2);
 				vec = XMVectorSqrt(vec);
 				float dist = vec.x;
 				s.m_Radius = (dist + s0.m_Radius + s1.m_Radius) * 0.5f;
@@ -2022,19 +2022,19 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void ClosestPtPointTriangle(const Vec3& point, const TRIANGLE& t, Vec3& retvec) {
-			Vec3 ab = t.m_B - t.m_A;
-			Vec3 ac = t.m_C - t.m_A;
-			Vec3 ap = point - t.m_A;
-			float d1 = bsmUtil::dot(ab, ap);
-			float d2 = bsmUtil::dot(ac, ap);
+		static void ClosestPtPointTriangle(const bsm::Vec3& point, const TRIANGLE& t, bsm::Vec3& retvec) {
+			bsm::Vec3 ab = t.m_B - t.m_A;
+			bsm::Vec3 ac = t.m_C - t.m_A;
+			bsm::Vec3 ap = point - t.m_A;
+			float d1 = bsm::bsmUtil::dot(ab, ap);
+			float d2 = bsm::bsmUtil::dot(ac, ap);
 			if (d1 <= 0.0f && d2 <= 0.0f) {
 				retvec = t.m_A;
 				return;
 			}
-			Vec3 bp = point - t.m_B;
-			float d3 = bsmUtil::dot(ab, bp);
-			float d4 = bsmUtil::dot(ac, bp);
+			bsm::Vec3 bp = point - t.m_B;
+			float d3 = bsm::bsmUtil::dot(ab, bp);
+			float d4 = bsm::bsmUtil::dot(ac, bp);
 			if (d3 >= 0.0f && d4 <= d3) {
 				retvec = t.m_B;
 				return;
@@ -2046,9 +2046,9 @@ namespace basecross {
 				return;
 			}
 
-			Vec3 cp = point - t.m_C;
-			float d5 = bsmUtil::dot(ab, cp);
-			float d6 = bsmUtil::dot(ac, cp);
+			bsm::Vec3 cp = point - t.m_C;
+			float d5 = bsm::bsmUtil::dot(ab, cp);
+			float d6 = bsm::bsmUtil::dot(ac, cp);
 			if (d6 >= 0.0f && d5 <= d6) {
 				retvec = t.m_C;
 				return;
@@ -2081,13 +2081,13 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void ClosestPtPointOBB(const Vec3& point, const OBB& obb, Vec3& retvec) {
-			Vec3 d = point - obb.m_Center;
+		static void ClosestPtPointOBB(const bsm::Vec3& point, const OBB& obb, bsm::Vec3& retvec) {
+			bsm::Vec3 d = point - obb.m_Center;
 			retvec = obb.m_Center;
 			float dist;
 			for (int i = 0; i < 3; i++)
 			{
-				dist = bsmUtil::dot(d, obb.m_Rot[i]);
+				dist = bsm::bsmUtil::dot(d, obb.m_Rot[i]);
 				if (dist > obb.m_Size[i])
 				{
 					dist = obb.m_Size[i];
@@ -2108,8 +2108,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void ClosestPtPointAABB(const Vec3& p, const AABB& b,
-			Vec3& retvec) {
+		static void ClosestPtPointAABB(const bsm::Vec3& p, const AABB& b,
+			bsm::Vec3& retvec) {
 			for (int i = 0; i < 3; i++) {
 				float v = p[i];
 				if (v < b.m_Min[i]) {
@@ -2129,7 +2129,7 @@ namespace basecross {
 		@return	点とAABBとの距離の平方
 		*/
 		//--------------------------------------------------------------------------------------
-		static float SqDistPointAABB(const Vec3& p, const AABB& b) {
+		static float SqDistPointAABB(const bsm::Vec3& p, const AABB& b) {
 			float sqDist = 0.0f;
 			for (int i = 0; i < 3; i++) {
 				float v = p[i];
@@ -2151,12 +2151,12 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		static void ClosestPtPointCOLRECT(const Vec3& point, const COLRECT& rect,
-			Vec3& retvec) {
-			Vec3 d = point - rect.m_Center;
+		static void ClosestPtPointCOLRECT(const bsm::Vec3& point, const COLRECT& rect,
+			bsm::Vec3& retvec) {
+			bsm::Vec3 d = point - rect.m_Center;
 			retvec = rect.m_Center;
 			for (int i = 0; i < 2; i++) {
-				float dist = bsmUtil::dot(d, rect.m_Rot[i]);
+				float dist = bsm::bsmUtil::dot(d, rect.m_Rot[i]);
 				if (dist > rect.m_UVec[i]) {
 					dist = rect.m_UVec[i];
 				}
@@ -2175,13 +2175,13 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool SPHERE_CAPSULE(const SPHERE& sp, const CAPSULE& cap, Vec3& d) {
+		static bool SPHERE_CAPSULE(const SPHERE& sp, const CAPSULE& cap, bsm::Vec3& d) {
 			//まず最近接点を設定
 			float t;
-			Vec3 ClosetPoint;
+			bsm::Vec3 ClosetPoint;
 			ClosetPtPointSegment(sp.m_Center, cap.m_PointBottom, cap.m_PointTop, t, ClosetPoint);
 			//ClosetPointは、カプセル線分上の点である
-			Vec3 Normal = sp.m_Center - ClosetPoint;
+			bsm::Vec3 Normal = sp.m_Center - ClosetPoint;
 			Normal.normalize();
 			Normal *= cap.m_Radius;
 			//最近接点を設定
@@ -2200,7 +2200,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static bool SPHERE_PLANE(const SPHERE& sp, const PLANE& pl) {
-			float dist = bsmUtil::dot(sp.m_Center, pl.m_Normal) - pl.m_DotValue;
+			float dist = bsm::bsmUtil::dot(sp.m_Center, pl.m_Normal) - pl.m_DotValue;
 			return dist <= sp.m_Radius;
 		}
 		//--------------------------------------------------------------------------------------
@@ -2212,7 +2212,7 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool SPHERE_CYLINDER(const SPHERE& sp, const CYLINDER& cy, Vec3& d) {
+		static bool SPHERE_CYLINDER(const SPHERE& sp, const CYLINDER& cy, bsm::Vec3& d) {
 			CAPSULE cap;
 			cap.m_PointBottom = cy.m_PointBottom;
 			cap.m_PointTop = cy.m_PointTop;
@@ -2221,23 +2221,23 @@ namespace basecross {
 			if (!SPHERE_CAPSULE(sp, cap, d)) {
 				return false;
 			}
-			Vec3 CenterPole = cap.m_PointTop - cap.m_PointBottom;
+			bsm::Vec3 CenterPole = cap.m_PointTop - cap.m_PointBottom;
 			float CenterPoleLen = CenterPole.length();
 			CenterPole.normalize();
-			float f = bsmUtil::dot(CenterPole, d - cap.m_PointBottom);
+			float f = bsm::bsmUtil::dot(CenterPole, d - cap.m_PointBottom);
 			if (f >= 0 && f <= CenterPoleLen) {
 				return true;
 			}
 
-			Vec3 t0(0, 0.5f, 0);
-			Vec3 t1(0.0f, 0.5f, 1.0);
-			Vec3 t2(1.0, 0.5f, 0.0f);
+			bsm::Vec3 t0(0, 0.5f, 0);
+			bsm::Vec3 t1(0.0f, 0.5f, 1.0);
+			bsm::Vec3 t2(1.0, 0.5f, 0.0f);
 
-			Vec3 b0(0, -0.5f, 0);
-			Vec3 b1(1.0f, -0.5f, 0.0);
-			Vec3 b2(0.0, -0.5f, 1.0f);
+			bsm::Vec3 b0(0, -0.5f, 0);
+			bsm::Vec3 b1(1.0f, -0.5f, 0.0);
+			bsm::Vec3 b2(0.0, -0.5f, 1.0f);
 
-			Mat4x4 cyWorld = cy.GetMatrix();
+			bsm::Mat4x4 cyWorld = cy.GetMatrix();
 			t0 *= cyWorld;
 			t1 *= cyWorld;
 			t2 *= cyWorld;
@@ -2252,10 +2252,10 @@ namespace basecross {
 			bool tb = SPHERE_PLANE(sp, topPlane);
 			bool bb = SPHERE_PLANE(sp, bottomPlane);
 			if (tb && bb) {
-				Vec3 topV, bottomV;
+				bsm::Vec3 topV, bottomV;
 				ClosetPtPointPlane(sp.m_Center, topPlane, topV);
 				ClosetPtPointPlane(sp.m_Center, bottomPlane, bottomV);
-				if (bsmUtil::lengthSqr(sp.m_Center - topV) <= bsmUtil::lengthSqr(sp.m_Center - bottomV)) {
+				if (bsm::bsmUtil::lengthSqr(sp.m_Center - topV) <= bsm::bsmUtil::lengthSqr(sp.m_Center - bottomV)) {
 					d = topV;
 				}
 				else {
@@ -2278,8 +2278,8 @@ namespace basecross {
 		static bool CAPSULE_CAPSULE(
 			const CAPSULE& cap1,
 			const CAPSULE& cap2,
-			Vec3& retvec1,
-			Vec3& retvec2) {
+			bsm::Vec3& retvec1,
+			bsm::Vec3& retvec2) {
 			float s, t;
 			float dist2 = ClosestPtSegmentSegment(cap1.m_PointBottom, cap1.m_PointTop, cap2.m_PointBottom, cap2.m_PointTop,
 				s, t, retvec1, retvec2);
@@ -2295,8 +2295,8 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static bool SPHERE_SPHERE(const SPHERE& sp1, const SPHERE& sp2) {
-			Vec3 d = sp1.m_Center - sp2.m_Center;
-			float dist2 = bsmUtil::dot(d, d);
+			bsm::Vec3 d = sp1.m_Center - sp2.m_Center;
+			float dist2 = bsm::bsmUtil::dot(d, d);
 			float radiussum = sp1.m_Radius + sp2.m_Radius;
 			return dist2 <= radiussum * radiussum;
 		}
@@ -2354,7 +2354,7 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static bool SPHERE_AABB(const SPHERE& sp, const AABB& b,
-			Vec3& retvec) {
+			bsm::Vec3& retvec) {
 			//最近接点を得る
 			ClosestPtPointAABB(sp.m_Center, b, retvec);
 			//距離の平方が球の半径の平方内ならtrue
@@ -2445,10 +2445,10 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool SPHERE_OBB(const SPHERE& sp, const OBB& obb, Vec3& retvec) {
+		static bool SPHERE_OBB(const SPHERE& sp, const OBB& obb, bsm::Vec3& retvec) {
 			ClosestPtPointOBB(sp.m_Center, obb, retvec);
-			Vec3 v = retvec - sp.m_Center;
-			return bsmUtil::dot(v, v) <= sp.m_Radius * sp.m_Radius;
+			bsm::Vec3 v = retvec - sp.m_Center;
+			return bsm::bsmUtil::dot(v, v) <= sp.m_Radius * sp.m_Radius;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -2463,14 +2463,14 @@ namespace basecross {
 			float R[3][3], AbsR[3][3];
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
-					R[i][j] = bsmUtil::dot(obb1.m_Rot[i], obb2.m_Rot[j]);
+					R[i][j] = bsm::bsmUtil::dot(obb1.m_Rot[i], obb2.m_Rot[j]);
 					AbsR[i][j] = fabsf(R[i][j]) + EPSILON;
 				}
 			}
-			Vec3 t = obb2.m_Center - obb1.m_Center;
-			t = Vec3(bsmUtil::dot(t, obb1.m_Rot[0]),
-				bsmUtil::dot(t, obb1.m_Rot[1]),
-				bsmUtil::dot(t, obb1.m_Rot[2]));
+			bsm::Vec3 t = obb2.m_Center - obb1.m_Center;
+			t = bsm::Vec3(bsm::bsmUtil::dot(t, obb1.m_Rot[0]),
+				bsm::bsmUtil::dot(t, obb1.m_Rot[1]),
+				bsm::bsmUtil::dot(t, obb1.m_Rot[2]));
 			//軸L=A0, L=A1, L=A2判定
 			float ra, rb;
 			for (int i = 0; i < 3; i++) {
@@ -2555,10 +2555,10 @@ namespace basecross {
 		@return	交差していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool SEGMENT_PLANE(const Vec3& a, const Vec3& b,
-			const PLANE& p, float& t, Vec3& q) {
-			Vec3 ab = b - a;
-			t = (p.m_DotValue - bsmUtil::dot(p.m_Normal, a)) / bsmUtil::dot(p.m_Normal, ab);
+		static bool SEGMENT_PLANE(const bsm::Vec3& a, const bsm::Vec3& b,
+			const PLANE& p, float& t, bsm::Vec3& q) {
+			bsm::Vec3 ab = b - a;
+			t = (p.m_DotValue - bsm::bsmUtil::dot(p.m_Normal, a)) / bsm::bsmUtil::dot(p.m_Normal, ab);
 			if (t >= 0.0f && t <= 1.0f) {
 				q = a + (ab * t);
 				return true;
@@ -2574,12 +2574,12 @@ namespace basecross {
 		@return	交差していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool SEGMENT_AABB(const Vec3& p0, const Vec3& p1, const AABB& b) {
+		static bool SEGMENT_AABB(const bsm::Vec3& p0, const bsm::Vec3& p1, const AABB& b) {
 			const float EPSILON = 1.175494e-37f;
-			Vec3 c = (b.m_Min + b.m_Max) * 0.5f;
-			Vec3 e = b.m_Max - c;
-			Vec3 m = (p0 + p1) * 0.5f;
-			Vec3 d = p1 - m;
+			bsm::Vec3 c = (b.m_Min + b.m_Max) * 0.5f;
+			bsm::Vec3 e = b.m_Max - c;
+			bsm::Vec3 m = (p0 + p1) * 0.5f;
+			bsm::Vec3 d = p1 - m;
 			m = m - c;
 			float adx = fabsf(d.x);
 			if (fabsf(m.x) > e.x + adx) {
@@ -2616,14 +2616,14 @@ namespace basecross {
 		@return	交差していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool SEGMENT_OBB(const Vec3& p0, const Vec3& p1, const OBB& obb) {
+		static bool SEGMENT_OBB(const bsm::Vec3& p0, const bsm::Vec3& p1, const OBB& obb) {
 			const float EPSILON = 1.175494e-37f;
 
-			Vec3 m = (p0 + p1) * 0.5f;
-			Vec3 d = p1 - m;
+			bsm::Vec3 m = (p0 + p1) * 0.5f;
+			bsm::Vec3 d = p1 - m;
 			m = m - obb.m_Center;
-			m = Vec3(bsmUtil::dot(obb.m_Rot[0], m), bsmUtil::dot(obb.m_Rot[1], m), bsmUtil::dot(obb.m_Rot[2], m));
-			d = Vec3(bsmUtil::dot(obb.m_Rot[0], d), bsmUtil::dot(obb.m_Rot[1], d), bsmUtil::dot(obb.m_Rot[2], d));
+			m = bsm::Vec3(bsm::bsmUtil::dot(obb.m_Rot[0], m), bsm::bsmUtil::dot(obb.m_Rot[1], m), bsm::bsmUtil::dot(obb.m_Rot[2], m));
+			d = bsm::Vec3(bsm::bsmUtil::dot(obb.m_Rot[0], d), bsm::bsmUtil::dot(obb.m_Rot[1], d), bsm::bsmUtil::dot(obb.m_Rot[2], d));
 
 			float adx = fabsf(d.x);
 			if (fabsf(m.x) > obb.m_Size.x + adx) return false;
@@ -2652,11 +2652,11 @@ namespace basecross {
 		@return	交差していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool RAY_SPHERE(const Vec3& p, const Vec3& d, const SPHERE& s,
-			float& t, Vec3& q) {
-			Vec3 m = p - s.m_Center;
-			float b = bsmUtil::dot(m, d);
-			float c = bsmUtil::dot(m, m) - s.m_Radius * s.m_Radius;
+		static bool RAY_SPHERE(const bsm::Vec3& p, const bsm::Vec3& d, const SPHERE& s,
+			float& t, bsm::Vec3& q) {
+			bsm::Vec3 m = p - s.m_Center;
+			float b = bsm::bsmUtil::dot(m, d);
+			float c = bsm::bsmUtil::dot(m, m) - s.m_Radius * s.m_Radius;
 			if (c > 0.0f && b > 0.0f) {
 				return false;
 			}
@@ -2664,7 +2664,7 @@ namespace basecross {
 			if (discr < 0.0f) {
 				return false;
 			}
-			Vec3 VecDiscr(discr);
+			bsm::Vec3 VecDiscr(discr);
 			VecDiscr = XMVectorSqrt(VecDiscr);
 			t = -b - VecDiscr.x;
 			if (t < 0.0f) {
@@ -2682,13 +2682,13 @@ namespace basecross {
 		@return	交差していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool SEGMENT_SPHERE(const Vec3& p0, const Vec3& p1, const SPHERE& s) {
-			Vec3 norm = p1 - p0;
+		static bool SEGMENT_SPHERE(const bsm::Vec3& p0, const bsm::Vec3& p1, const SPHERE& s) {
+			bsm::Vec3 norm = p1 - p0;
 			norm.normalize();
 			float t;
-			Vec3 q;
+			bsm::Vec3 q;
 			if (RAY_SPHERE(p0, norm, s, t, q)) {
-				if (t <= bsmUtil::length(p1 - p0)) {
+				if (t <= bsm::bsmUtil::length(p1 - p0)) {
 					return true;
 				}
 			}
@@ -2704,28 +2704,28 @@ namespace basecross {
 		@return	交差していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool SEGMENT_CYLINDER(const Vec3& sa, const Vec3& sb, const CYLINDER& cy,
+		static bool SEGMENT_CYLINDER(const bsm::Vec3& sa, const bsm::Vec3& sb, const CYLINDER& cy,
 			float& t) {
 			const float EPSILON = 1.175494e-37f;
-			Vec3 p = cy.m_PointBottom;
-			Vec3 q = cy.m_PointTop;
+			bsm::Vec3 p = cy.m_PointBottom;
+			bsm::Vec3 q = cy.m_PointTop;
 			float r = cy.m_Radius;
-			Vec3 d = q - p;
-			Vec3 m = sa - p;
-			Vec3 n = sb - sa;
-			float md = bsmUtil::dot(m, d);
-			float nd = bsmUtil::dot(n, d);
-			float dd = bsmUtil::dot(d, d);
+			bsm::Vec3 d = q - p;
+			bsm::Vec3 m = sa - p;
+			bsm::Vec3 n = sb - sa;
+			float md = bsm::bsmUtil::dot(m, d);
+			float nd = bsm::bsmUtil::dot(n, d);
+			float dd = bsm::bsmUtil::dot(d, d);
 			if (md < 0.0f && md + nd < 0.0f) {
 				return false;
 			}
 			if (md > dd && md + nd > dd) {
 				return false;
 			}
-			float nn = bsmUtil::dot(n, n);
-			float mn = bsmUtil::dot(m, n);
+			float nn = bsm::bsmUtil::dot(n, n);
+			float mn = bsm::bsmUtil::dot(m, n);
 			float a = dd * nn - nd * nd;
-			float k = bsmUtil::dot(m, m) - r * r;
+			float k = bsm::bsmUtil::dot(m, m) - r * r;
 			float c = dd * k - md * md;
 			if (abs(a) < EPSILON) {
 				if (c > 0.0f) {
@@ -2747,7 +2747,7 @@ namespace basecross {
 			if (discr < 0.0f) {
 				return false;
 			}
-			Vec3 VecDiscr(discr);
+			bsm::Vec3 VecDiscr(discr);
 			VecDiscr = XMVectorSqrt(VecDiscr);
 			t = (-b - VecDiscr.x) / a;
 			if (t < 0.0f || t > 1.0f) {
@@ -2779,8 +2779,8 @@ namespace basecross {
 		@return	交差していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool SEGMENT_CAPSULE(const Vec3& p0, const Vec3& p1, const CAPSULE& cap) {
-			Vec3 normR = cap.m_PointTop - cap.m_PointBottom;
+		static bool SEGMENT_CAPSULE(const bsm::Vec3& p0, const bsm::Vec3& p1, const CAPSULE& cap) {
+			bsm::Vec3 normR = cap.m_PointTop - cap.m_PointBottom;
 			normR.normalize();
 			normR *= cap.m_Radius;
 			//カプセルの半球部分を増やしたシリンダーを作成
@@ -2808,11 +2808,11 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool SPHERE_COLRECT(const SPHERE& sp, const COLRECT& rect, Vec3& retvec) {
+		static bool SPHERE_COLRECT(const SPHERE& sp, const COLRECT& rect, bsm::Vec3& retvec) {
 			//四角形との最近接点を得る
 			ClosestPtPointCOLRECT(sp.m_Center, rect, retvec);
 			//最近接点が半径以下なら衝突している
-			if (bsmUtil::length(sp.m_Center - retvec) <= sp.m_Radius) {
+			if (bsm::bsmUtil::length(sp.m_Center - retvec) <= sp.m_Radius) {
 				return true;
 			}
 			return false;
@@ -2830,34 +2830,34 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static bool SEGMENT_TRIANGLE(
-			const Vec3& p,
-			const Vec3& q,
+			const bsm::Vec3& p,
+			const bsm::Vec3& q,
 			const TRIANGLE& tri,
-			Vec3& uvw,
+			bsm::Vec3& uvw,
 			float& t
 		) {
-			Vec3 ab = tri.m_B - tri.m_A;
-			Vec3 ac = tri.m_C - tri.m_A;
-			Vec3 qp = p - q;
-			Vec3 n = bsmUtil::cross(ab, ac);
-			float d = bsmUtil::dot(qp, n);
+			bsm::Vec3 ab = tri.m_B - tri.m_A;
+			bsm::Vec3 ac = tri.m_C - tri.m_A;
+			bsm::Vec3 qp = p - q;
+			bsm::Vec3 n = bsm::bsmUtil::cross(ab, ac);
+			float d = bsm::bsmUtil::dot(qp, n);
 			if (d <= 0.0f) {
 				return false;
 			}
-			Vec3 ap = p - tri.m_A;
-			t = bsmUtil::dot(ap, n);
+			bsm::Vec3 ap = p - tri.m_A;
+			t = bsm::bsmUtil::dot(ap, n);
 			if (t < 0.0f) {
 				return false;
 			}
 			if (t > d) {
 				return false;
 			}
-			Vec3 e = bsmUtil::cross(qp, ap);
-			uvw.y = bsmUtil::dot(ac, e);
+			bsm::Vec3 e = bsm::bsmUtil::cross(qp, ap);
+			uvw.y = bsm::bsmUtil::dot(ac, e);
 			if (uvw.y < 0.0f || uvw.y > d) {
 				return false;
 			}
-			uvw.z = -bsmUtil::dot(ab, e);
+			uvw.z = -bsm::bsmUtil::dot(ab, e);
 			if (uvw.z < 0.0f || uvw.y + uvw.z > d) {
 				return false;
 			}
@@ -2877,10 +2877,10 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		static bool OBB_PLANE(const OBB& obb, const PLANE& plane) {
-			float r = obb.m_Size.x * abs(bsmUtil::dot(plane.m_Normal, obb.m_Rot[0]))
-				+ obb.m_Size.y * abs(bsmUtil::dot(plane.m_Normal, obb.m_Rot[1]))
-				+ obb.m_Size.z * abs(bsmUtil::dot(plane.m_Normal, obb.m_Rot[2]));
-			float s = bsmUtil::dot(plane.m_Normal, obb.m_Center) - plane.m_DotValue;
+			float r = obb.m_Size.x * abs(bsm::bsmUtil::dot(plane.m_Normal, obb.m_Rot[0]))
+				+ obb.m_Size.y * abs(bsm::bsmUtil::dot(plane.m_Normal, obb.m_Rot[1]))
+				+ obb.m_Size.z * abs(bsm::bsmUtil::dot(plane.m_Normal, obb.m_Rot[2]));
+			float s = bsm::bsmUtil::dot(plane.m_Normal, obb.m_Center) - plane.m_DotValue;
 			return abs(s) <= r;
 		}
 		//--------------------------------------------------------------------------------------
@@ -2894,7 +2894,7 @@ namespace basecross {
 		static bool OBB_COLRECT(const OBB& obb, const COLRECT& rect) {
 			if (OBB_PLANE(obb, rect.GetPLANE())) {
 				//平面と交差していた時のみOBBと調査
-				OBB obb2(Vec3(rect.m_BaseXSize, rect.m_BaseYSize, 1.0f), rect.m_Matrix);
+				OBB obb2(bsm::Vec3(rect.m_BaseXSize, rect.m_BaseYSize, 1.0f), rect.m_Matrix);
 				return OBB_OBB(obb, obb2);
 			}
 			return false;
@@ -2908,10 +2908,10 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool SPHERE_TRIANGLE(const SPHERE& sp, const TRIANGLE& tri, Vec3& retvec) {
+		static bool SPHERE_TRIANGLE(const SPHERE& sp, const TRIANGLE& tri, bsm::Vec3& retvec) {
 			ClosestPtPointTriangle(sp.m_Center, tri, retvec);
-			Vec3 v = retvec - sp.m_Center;
-			return bsmUtil::dot(v, v) <= sp.m_Radius * sp.m_Radius;
+			bsm::Vec3 v = retvec - sp.m_Center;
+			return bsm::bsmUtil::dot(v, v) <= sp.m_Radius * sp.m_Radius;
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -2922,25 +2922,25 @@ namespace basecross {
 		@return	最近接点
 		*/
 		//--------------------------------------------------------------------------------------
-		static Vec3 ClosestPtCapsuleOBB(const CAPSULE& cp, const OBB& obb, int& flg) {
+		static bsm::Vec3 ClosestPtCapsuleOBB(const CAPSULE& cp, const OBB& obb, int& flg) {
 			SPHERE Sp;
 			Sp.m_Center = cp.m_PointBottom;
 			Sp.m_Radius = cp.m_Radius;
-			Vec3 retvec;
+			bsm::Vec3 retvec;
 			//スタート位置で最近接点を得る
 			HitTest::SPHERE_OBB(Sp, obb, retvec);
 			//内積を図る
-			Vec3 Base = cp.m_PointTop - cp.m_PointBottom;
+			bsm::Vec3 Base = cp.m_PointTop - cp.m_PointBottom;
 			Base.normalize();
-			Vec3 Dest = retvec - cp.m_PointBottom;
-			float dot = bsmUtil::dot(Base, Dest);
+			bsm::Vec3 Dest = retvec - cp.m_PointBottom;
+			float dot = bsm::bsmUtil::dot(Base, Dest);
 			if (dot < 0) {
 				//スタート位置の球体の外側
 				//retvecは有効
 				flg = -1;
 				return retvec;
 			}
-			float  size = bsmUtil::length(cp.m_PointTop - cp.m_PointBottom);
+			float  size = bsm::bsmUtil::length(cp.m_PointTop - cp.m_PointBottom);
 			if (dot > size) {
 				//終点より先にある
 				Sp.m_Center = cp.m_PointTop;
@@ -2952,9 +2952,9 @@ namespace basecross {
 			//中心とobbの最近接点を得る
 			HitTest::ClosestPtPointOBB(cp.GetCenter(), obb, retvec);
 			float t;
-			Vec3 SegPoint;
+			bsm::Vec3 SegPoint;
 			HitTest::ClosetPtPointSegment(retvec, cp.m_PointBottom, cp.m_PointTop, t, SegPoint);
-			Vec3 Span = retvec - SegPoint;
+			bsm::Vec3 Span = retvec - SegPoint;
 			Span.normalize();
 			Span *= cp.m_Radius;
 			SegPoint += Span;
@@ -2971,25 +2971,25 @@ namespace basecross {
 		@return	最近接点
 		*/
 		//--------------------------------------------------------------------------------------
-		static Vec3 ClosestPtCapsuleAABB(const CAPSULE& cp, const AABB& aabb, int& flg) {
+		static bsm::Vec3 ClosestPtCapsuleAABB(const CAPSULE& cp, const AABB& aabb, int& flg) {
 			SPHERE Sp;
 			Sp.m_Center = cp.m_PointBottom;
 			Sp.m_Radius = cp.m_Radius;
-			Vec3 retvec;
+			bsm::Vec3 retvec;
 			//スタート位置で最近接点を得る
 			HitTest::SPHERE_AABB(Sp, aabb, retvec);
 			//内積を図る
-			Vec3 Base = cp.m_PointTop - cp.m_PointBottom;
+			bsm::Vec3 Base = cp.m_PointTop - cp.m_PointBottom;
 			Base.normalize();
-			Vec3 Dest = retvec - cp.m_PointBottom;
-			float dot = bsmUtil::dot(Base, Dest);
+			bsm::Vec3 Dest = retvec - cp.m_PointBottom;
+			float dot = bsm::bsmUtil::dot(Base, Dest);
 			if (dot < 0) {
 				//スタート位置の球体の外側
 				//retvecは有効
 				flg = -1;
 				return retvec;
 			}
-			float  size = bsmUtil::length(cp.m_PointTop - cp.m_PointBottom);
+			float  size = bsm::bsmUtil::length(cp.m_PointTop - cp.m_PointBottom);
 			if (dot > size) {
 				//終点より先にある
 				Sp.m_Center = cp.m_PointTop;
@@ -3001,9 +3001,9 @@ namespace basecross {
 			//中心とaabbの最近接点を得る
 			HitTest::ClosestPtPointAABB(cp.GetCenter(), aabb, retvec);
 			float t;
-			Vec3 SegPoint;
+			bsm::Vec3 SegPoint;
 			HitTest::ClosetPtPointSegment(retvec, cp.m_PointBottom, cp.m_PointTop, t, SegPoint);
-			Vec3 Span = retvec - SegPoint;
+			bsm::Vec3 Span = retvec - SegPoint;
 			Span.normalize();
 			Span *= cp.m_Radius;
 			SegPoint += Span;
@@ -3020,7 +3020,7 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CAPSULE_AABB(const CAPSULE& cp, const AABB& aabb, Vec3& retvec) {
+		static bool CAPSULE_AABB(const CAPSULE& cp, const AABB& aabb, bsm::Vec3& retvec) {
 			//スィープさせる球
 			SPHERE StartSp, EndSp;
 			StartSp.m_Center = cp.m_PointBottom;
@@ -3032,7 +3032,7 @@ namespace basecross {
 			int flg;
 			retvec = ClosestPtCapsuleAABB(cp, aabb, flg);
 			float HitTime;
-			Vec3 Velocity = EndSp.m_Center - StartSp.m_Center;
+			bsm::Vec3 Velocity = EndSp.m_Center - StartSp.m_Center;
 			if (CollisionTestSphereAabb(StartSp, Velocity, aabb, 0, 1.0f, HitTime)) {
 				return true;
 			}
@@ -3047,7 +3047,7 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CAPSULE_OBB(const CAPSULE& cp, const OBB& obb, Vec3& retvec) {
+		static bool CAPSULE_OBB(const CAPSULE& cp, const OBB& obb, bsm::Vec3& retvec) {
 			//スィープさせる球
 			SPHERE StartSp, EndSp;
 			StartSp.m_Center = cp.m_PointBottom;
@@ -3059,10 +3059,10 @@ namespace basecross {
 			int flg;
 			retvec = ClosestPtCapsuleOBB(cp, obb, flg);
 			float HitTime;
-			Vec3 Velocity = EndSp.m_Center - StartSp.m_Center;
+			bsm::Vec3 Velocity = EndSp.m_Center - StartSp.m_Center;
 			if (CollisionTestSphereObb(StartSp, Velocity, obb, 0, 1.0f, HitTime)) {
 				SPHERE HitSp = StartSp;
-				Vec3 TempRet;
+				bsm::Vec3 TempRet;
 				if (SPHERE_OBB(StartSp, obb, TempRet) && SPHERE_OBB(EndSp, obb, TempRet)) {
 					//スタート位置とエンド位置で両方ヒットしてたら、面で衝突している
 					HitSp.m_Center = cp.GetCenter();
@@ -3084,7 +3084,7 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CAPSULE_TRIANGLE(const CAPSULE& cp, const TRIANGLE& tri, Vec3& retvec) {
+		static bool CAPSULE_TRIANGLE(const CAPSULE& cp, const TRIANGLE& tri, bsm::Vec3& retvec) {
 			//スィープさせる球
 			SPHERE StartSp, EndSp;
 			//下から上
@@ -3095,10 +3095,10 @@ namespace basecross {
 
 			PLANE p = tri.GetPLANE();
 			float t;
-			Vec3 q;
+			bsm::Vec3 q;
 			SEGMENT_PLANE(StartSp.m_Center, EndSp.m_Center, p, t, q);
 			//仮に下の点で初期化
-			Vec3 Centor = StartSp.m_Center;
+			bsm::Vec3 Centor = StartSp.m_Center;
 			if (t <= 0) {
 				Centor = StartSp.m_Center;
 			}
@@ -3112,7 +3112,7 @@ namespace basecross {
 			//点とTRIANGLEの最近接点を得る（衝突してるかどうかは関係ない）
 			ClosestPtPointTriangle(Centor, tri, retvec);
 			float HitTime;
-			Vec3 Velocity = EndSp.m_Center - StartSp.m_Center;
+			bsm::Vec3 Velocity = EndSp.m_Center - StartSp.m_Center;
 			if (CollisionTestSphereTriangle(StartSp, Velocity, tri, 0, 1.0f, HitTime)) {
 				return true;
 			}
@@ -3127,7 +3127,7 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CAPSULE_COLRECT(const CAPSULE& cp, const COLRECT& rect, Vec3& retvec) {
+		static bool CAPSULE_COLRECT(const CAPSULE& cp, const COLRECT& rect, bsm::Vec3& retvec) {
 			//スィープさせる球
 			SPHERE StartSp, EndSp;
 			//下から上
@@ -3138,10 +3138,10 @@ namespace basecross {
 
 			PLANE p = rect.GetPLANE();
 			float t;
-			Vec3 q;
+			bsm::Vec3 q;
 			SEGMENT_PLANE(StartSp.m_Center, EndSp.m_Center, p, t, q);
 			//仮に下の点で初期化
-			Vec3 Centor = StartSp.m_Center;
+			bsm::Vec3 Centor = StartSp.m_Center;
 			if (t <= 0) {
 				Centor = StartSp.m_Center;
 			}
@@ -3155,7 +3155,7 @@ namespace basecross {
 			//球ととCOLRECTの最近接点を得る（衝突してるかどうかは関係ない）
 			ClosestPtPointCOLRECT(Centor, rect, retvec);
 			float HitTime;
-			Vec3 Velocity = EndSp.m_Center - StartSp.m_Center;
+			bsm::Vec3 Velocity = EndSp.m_Center - StartSp.m_Center;
 			if (CollisionTestSphereRect(StartSp, Velocity, rect, 0, 1.0f, HitTime)) {
 				return true;
 			}
@@ -3258,13 +3258,13 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestSphereRect(const SPHERE& SrcSp, const Vec3& SrcVelocity,
+		static bool CollisionTestSphereRect(const SPHERE& SrcSp, const bsm::Vec3& SrcVelocity,
 			const COLRECT& DestRect, float StartTime, float EndTime, float& HitTime) {
 			SPHERE SrcSp2;
 			float mid = (StartTime + EndTime) * 0.5f;
 			SrcSp2.m_Center = SrcSp.m_Center + SrcVelocity * mid;
-			SrcSp2.m_Radius = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
-			Vec3 RetVec;
+			SrcSp2.m_Radius = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
+			bsm::Vec3 RetVec;
 			if (!HitTest::SPHERE_COLRECT(SrcSp2, DestRect, RetVec)) {
 				return false;
 			}
@@ -3289,13 +3289,13 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestSphereTriangle(const SPHERE& SrcSp, const Vec3& SrcVelocity,
+		static bool CollisionTestSphereTriangle(const SPHERE& SrcSp, const bsm::Vec3& SrcVelocity,
 			const TRIANGLE& DestTri, float StartTime, float EndTime, float& HitTime) {
 			SPHERE SrcSp2;
 			float mid = (StartTime + EndTime) * 0.5f;
 			SrcSp2.m_Center = SrcSp.m_Center + SrcVelocity * mid;
-			SrcSp2.m_Radius = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
-			Vec3 RetVec;
+			SrcSp2.m_Radius = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
+			bsm::Vec3 RetVec;
 			if (!HitTest::SPHERE_TRIANGLE(SrcSp2, DestTri, RetVec)) {
 				return false;
 			}
@@ -3320,15 +3320,15 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestObbRect(const OBB& SrcObb, const Vec3& SrcVelocity,
+		static bool CollisionTestObbRect(const OBB& SrcObb, const bsm::Vec3& SrcVelocity,
 			const COLRECT& DestRect, float StartTime, float EndTime, float& HitTime) {
 			OBB SrcObb2;
 			float mid = (StartTime + EndTime) * 0.5f;
 			SrcObb2.m_Center = SrcObb.m_Center + SrcVelocity * mid;
 			//OBBの各辺の長さを拡大
-			SrcObb2.m_Size.x = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcObb.m_Size.x;
-			SrcObb2.m_Size.y = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcObb.m_Size.y;
-			SrcObb2.m_Size.z = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcObb.m_Size.z;
+			SrcObb2.m_Size.x = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcObb.m_Size.x;
+			SrcObb2.m_Size.y = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcObb.m_Size.y;
+			SrcObb2.m_Size.z = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcObb.m_Size.z;
 			if (!HitTest::OBB_COLRECT(SrcObb2, DestRect)) {
 				return false;
 			}
@@ -3354,12 +3354,12 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestSphereSphere(const SPHERE& SrcSp, const Vec3& SrcVelocity,
+		static bool CollisionTestSphereSphere(const SPHERE& SrcSp, const bsm::Vec3& SrcVelocity,
 			const SPHERE& DestSp, float StartTime, float EndTime, float& HitTime) {
 			SPHERE SrcSp2;
 			float mid = (StartTime + EndTime) * 0.5f;
 			SrcSp2.m_Center = SrcSp.m_Center + SrcVelocity * mid;
-			SrcSp2.m_Radius = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
+			SrcSp2.m_Radius = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
 			if (!HitTest::SPHERE_SPHERE(SrcSp2, DestSp)) {
 				return false;
 			}
@@ -3384,14 +3384,14 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestSphereCylinder(const SPHERE& SrcSp, const Vec3& SrcVelocity,
+		static bool CollisionTestSphereCylinder(const SPHERE& SrcSp, const bsm::Vec3& SrcVelocity,
 			const CYLINDER& DestCy,
 			float StartTime, float EndTime, float& HitTime) {
 			SPHERE SrcSp2;
 			float mid = (StartTime + EndTime) * 0.5f;
 			SrcSp2.m_Center = SrcSp.m_Center + SrcVelocity * mid;
-			SrcSp2.m_Radius = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
-			Vec3 RetVec;
+			SrcSp2.m_Radius = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
+			bsm::Vec3 RetVec;
 			if (!HitTest::SPHERE_CYLINDER(SrcSp2, DestCy, RetVec)) {
 				return false;
 			}
@@ -3417,14 +3417,14 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestSphereCapsule(const SPHERE& SrcSp, const Vec3& SrcVelocity,
+		static bool CollisionTestSphereCapsule(const SPHERE& SrcSp, const bsm::Vec3& SrcVelocity,
 			const CAPSULE& DestCap,
 			float StartTime, float EndTime, float& HitTime) {
 			SPHERE SrcSp2;
 			float mid = (StartTime + EndTime) * 0.5f;
 			SrcSp2.m_Center = SrcSp.m_Center + SrcVelocity * mid;
-			SrcSp2.m_Radius = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
-			Vec3 RetVec;
+			SrcSp2.m_Radius = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
+			bsm::Vec3 RetVec;
 			if (!HitTest::SPHERE_CAPSULE(SrcSp2, DestCap, RetVec)) {
 				return false;
 			}
@@ -3449,28 +3449,28 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestCapsuleCapsule(const CAPSULE& SrcCapsule, const Vec3& SrcVelocity,
+		static bool CollisionTestCapsuleCapsule(const CAPSULE& SrcCapsule, const bsm::Vec3& SrcVelocity,
 			const CAPSULE& DestCap,
 			float StartTime, float EndTime, float& HitTime) {
 			CAPSULE SrcCapsule2 = SrcCapsule;
 			float mid = (StartTime + EndTime) * 0.5f;
-			SrcCapsule2.m_Radius = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcCapsule.m_Radius;
+			SrcCapsule2.m_Radius = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcCapsule.m_Radius;
 			float Scale = SrcCapsule2.m_Radius / SrcCapsule.m_Radius;
 
 			//中心が原点の元のカプセルを作成
 			CAPSULE SrcBaseCapsule = SrcCapsule;
-			SrcBaseCapsule.SetCenter(Vec3(0, 0, 0));
+			SrcBaseCapsule.SetCenter(bsm::Vec3(0, 0, 0));
 			//原点カプセルでスケーリング
 			//スケーリング行列の作成
-			Mat4x4 ScalMat;
-			ScalMat.scale(Vec3(Scale));
+			bsm::Mat4x4 ScalMat;
+			ScalMat.scale(bsm::Vec3(Scale));
 			//各頂点をスケーリング
 			SrcCapsule2.m_PointBottom = SrcBaseCapsule.m_PointBottom * ScalMat;
 			SrcCapsule2.m_PointTop = SrcBaseCapsule.m_PointTop * ScalMat;
 			//中心を移動
 			SrcCapsule2.SetCenter(SrcCapsule.GetCenter() + SrcVelocity * mid);
 
-			Vec3 RetVec1, RetVec2;
+			bsm::Vec3 RetVec1, RetVec2;
 			if (!HitTest::CAPSULE_CAPSULE(SrcCapsule2, DestCap, RetVec1, RetVec2)) {
 				return false;
 			}
@@ -3495,14 +3495,14 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestSphereAabb(const SPHERE& SrcSp, const Vec3& SrcVelocity,
+		static bool CollisionTestSphereAabb(const SPHERE& SrcSp, const bsm::Vec3& SrcVelocity,
 			const AABB& DestAabb,
 			float StartTime, float EndTime, float& HitTime) {
 			SPHERE SrcSp2;
 			float mid = (StartTime + EndTime) * 0.5f;
 			SrcSp2.m_Center = SrcSp.m_Center + SrcVelocity * mid;
-			SrcSp2.m_Radius = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
-			Vec3 RetVec;
+			SrcSp2.m_Radius = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
+			bsm::Vec3 RetVec;
 			if (!HitTest::SPHERE_AABB(SrcSp2, DestAabb, RetVec)) {
 				return false;
 			}
@@ -3527,14 +3527,14 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestSphereObb(const SPHERE& SrcSp, const Vec3& SrcVelocity,
+		static bool CollisionTestSphereObb(const SPHERE& SrcSp, const bsm::Vec3& SrcVelocity,
 			const OBB& DestObb,
 			float StartTime, float EndTime, float& HitTime) {
 			SPHERE SrcSp2;
 			float mid = (StartTime + EndTime) * 0.5f;
 			SrcSp2.m_Center = SrcSp.m_Center + SrcVelocity * mid;
-			SrcSp2.m_Radius = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
-			Vec3 RetVec;
+			SrcSp2.m_Radius = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcSp.m_Radius;
+			bsm::Vec3 RetVec;
 			if (!HitTest::SPHERE_OBB(SrcSp2, DestObb, RetVec)) {
 				return false;
 			}
@@ -3559,25 +3559,25 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestCapsuleAabb(const CAPSULE& SrcCapsule, const Vec3& SrcVelocity,
+		static bool CollisionTestCapsuleAabb(const CAPSULE& SrcCapsule, const bsm::Vec3& SrcVelocity,
 			const AABB& DestAabb, float StartTime, float EndTime, float& HitTime) {
 			CAPSULE SrcCapsule2 = SrcCapsule;
 			float mid = (StartTime + EndTime) * 0.5f;
-			SrcCapsule2.m_Radius = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcCapsule.m_Radius;
+			SrcCapsule2.m_Radius = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcCapsule.m_Radius;
 			float Scale = SrcCapsule2.m_Radius / SrcCapsule.m_Radius;
 			//中心が原点の元のカプセルを作成
 			CAPSULE SrcBaseCapsule = SrcCapsule;
-			SrcBaseCapsule.SetCenter(Vec3(0, 0, 0));
+			SrcBaseCapsule.SetCenter(bsm::Vec3(0, 0, 0));
 			//原点カプセルでスケーリング
 			//スケーリング行列の作成
-			Mat4x4 ScalMat;
-			ScalMat.scale(Vec3(Scale));
+			bsm::Mat4x4 ScalMat;
+			ScalMat.scale(bsm::Vec3(Scale));
 			//各頂点をスケーリング
 			SrcCapsule2.m_PointBottom = SrcBaseCapsule.m_PointBottom * ScalMat;
 			SrcCapsule2.m_PointTop = SrcBaseCapsule.m_PointTop * ScalMat;
 			//中心を移動
 			SrcCapsule2.SetCenter(SrcCapsule.GetCenter() + SrcVelocity * mid);
-			Vec3 RetVec;
+			bsm::Vec3 RetVec;
 			if (!HitTest::CAPSULE_AABB(SrcCapsule2, DestAabb, RetVec)) {
 				return false;
 			}
@@ -3603,25 +3603,25 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestCapsuleObb(const CAPSULE& SrcCapsule, const Vec3& SrcVelocity,
+		static bool CollisionTestCapsuleObb(const CAPSULE& SrcCapsule, const bsm::Vec3& SrcVelocity,
 			const OBB& DestObb, float StartTime, float EndTime, float& HitTime) {
 			CAPSULE SrcCapsule2 = SrcCapsule;
 			float mid = (StartTime + EndTime) * 0.5f;
-			SrcCapsule2.m_Radius = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcCapsule.m_Radius;
+			SrcCapsule2.m_Radius = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcCapsule.m_Radius;
 			float Scale = SrcCapsule2.m_Radius / SrcCapsule.m_Radius;
 			//中心が原点の元のカプセルを作成
 			CAPSULE SrcBaseCapsule = SrcCapsule;
-			SrcBaseCapsule.SetCenter(Vec3(0, 0, 0));
+			SrcBaseCapsule.SetCenter(bsm::Vec3(0, 0, 0));
 			//原点カプセルでスケーリング
 			//スケーリング行列の作成
-			Mat4x4 ScalMat;
-			ScalMat.scale(Vec3(Scale));
+			bsm::Mat4x4 ScalMat;
+			ScalMat.scale(bsm::Vec3(Scale));
 			//各頂点をスケーリング
 			SrcCapsule2.m_PointBottom = SrcBaseCapsule.m_PointBottom * ScalMat;
 			SrcCapsule2.m_PointTop = SrcBaseCapsule.m_PointTop * ScalMat;
 			//中心を移動
 			SrcCapsule2.SetCenter(SrcCapsule.GetCenter() + SrcVelocity * mid);
-			Vec3 RetVec;
+			bsm::Vec3 RetVec;
 			if (!HitTest::CAPSULE_OBB(SrcCapsule2, DestObb, RetVec)) {
 				return false;
 			}
@@ -3646,25 +3646,25 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestCapsuleTriangle(const CAPSULE& SrcCapsule, const Vec3& SrcVelocity,
+		static bool CollisionTestCapsuleTriangle(const CAPSULE& SrcCapsule, const bsm::Vec3& SrcVelocity,
 			const TRIANGLE& DestTri, float StartTime, float EndTime, float& HitTime) {
 			CAPSULE SrcCapsule2 = SrcCapsule;
 			float mid = (StartTime + EndTime) * 0.5f;
-			SrcCapsule2.m_Radius = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcCapsule.m_Radius;
+			SrcCapsule2.m_Radius = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcCapsule.m_Radius;
 			float Scale = SrcCapsule2.m_Radius / SrcCapsule.m_Radius;
 			//中心が原点の元のカプセルを作成
 			CAPSULE SrcBaseCapsule = SrcCapsule;
-			SrcBaseCapsule.SetCenter(Vec3(0, 0, 0));
+			SrcBaseCapsule.SetCenter(bsm::Vec3(0, 0, 0));
 			//原点カプセルでスケーリング
 			//スケーリング行列の作成
-			Mat4x4 ScalMat;
-			ScalMat.scale(Vec3(Scale));
+			bsm::Mat4x4 ScalMat;
+			ScalMat.scale(bsm::Vec3(Scale));
 			//各頂点をスケーリング
 			SrcCapsule2.m_PointBottom = SrcBaseCapsule.m_PointBottom * ScalMat;
 			SrcCapsule2.m_PointTop = SrcBaseCapsule.m_PointTop * ScalMat;
 			//中心を移動
 			SrcCapsule2.SetCenter(SrcCapsule.GetCenter() + SrcVelocity * mid);
-			Vec3 RetVec;
+			bsm::Vec3 RetVec;
 			if (!HitTest::CAPSULE_TRIANGLE(SrcCapsule2, DestTri, RetVec)) {
 				return false;
 			}
@@ -3689,25 +3689,25 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestCapsuleRect(const CAPSULE& SrcCapsule, const Vec3& SrcVelocity,
+		static bool CollisionTestCapsuleRect(const CAPSULE& SrcCapsule, const bsm::Vec3& SrcVelocity,
 			const COLRECT& DestRect, float StartTime, float EndTime, float& HitTime) {
 			CAPSULE SrcCapsule2 = SrcCapsule;
 			float mid = (StartTime + EndTime) * 0.5f;
-			SrcCapsule2.m_Radius = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcCapsule.m_Radius;
+			SrcCapsule2.m_Radius = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcCapsule.m_Radius;
 			float Scale = SrcCapsule2.m_Radius / SrcCapsule.m_Radius;
 			//中心が原点の元のカプセルを作成
 			CAPSULE SrcBaseCapsule = SrcCapsule;
-			SrcBaseCapsule.SetCenter(Vec3(0, 0, 0));
+			SrcBaseCapsule.SetCenter(bsm::Vec3(0, 0, 0));
 			//原点カプセルでスケーリング
 			//スケーリング行列の作成
-			Mat4x4 ScalMat;
-			ScalMat.scale(Vec3(Scale));
+			bsm::Mat4x4 ScalMat;
+			ScalMat.scale(bsm::Vec3(Scale));
 			//各頂点をスケーリング
 			SrcCapsule2.m_PointBottom = SrcBaseCapsule.m_PointBottom * ScalMat;
 			SrcCapsule2.m_PointTop = SrcBaseCapsule.m_PointTop * ScalMat;
 			//中心を移動
 			SrcCapsule2.SetCenter(SrcCapsule.GetCenter() + SrcVelocity * mid);
-			Vec3 RetVec;
+			bsm::Vec3 RetVec;
 			if (!HitTest::CAPSULE_COLRECT(SrcCapsule2, DestRect, RetVec)) {
 				return false;
 			}
@@ -3732,15 +3732,15 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestObbObbSub(const OBB& SrcObb, const Vec3& SrcVelocity,
+		static bool CollisionTestObbObbSub(const OBB& SrcObb, const bsm::Vec3& SrcVelocity,
 			const OBB& DestObb, float StartTime, float EndTime, float& HitTime) {
 			OBB SrcObb2 = SrcObb;
 			float mid = (StartTime + EndTime) * 0.5f;
 			SrcObb2.m_Center = SrcObb.m_Center + SrcVelocity * mid;
 			//OBBの各辺の長さを拡大
-			SrcObb2.m_Size.x = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcObb.m_Size.x;
-			SrcObb2.m_Size.y = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcObb.m_Size.y;
-			SrcObb2.m_Size.z = (mid - StartTime) * bsmUtil::length(SrcVelocity) + SrcObb.m_Size.z;
+			SrcObb2.m_Size.x = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcObb.m_Size.x;
+			SrcObb2.m_Size.y = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcObb.m_Size.y;
+			SrcObb2.m_Size.z = (mid - StartTime) * bsm::bsmUtil::length(SrcVelocity) + SrcObb.m_Size.z;
 			if (!HitTest::OBB_OBB(SrcObb2, DestObb)) {
 				return false;
 			}
@@ -3766,11 +3766,11 @@ namespace basecross {
 		@return	衝突していればtrue
 		*/
 		//--------------------------------------------------------------------------------------
-		static bool CollisionTestObbObb(const OBB& SrcObb, const Vec3& SrcVelocity,
+		static bool CollisionTestObbObb(const OBB& SrcObb, const bsm::Vec3& SrcVelocity,
 			const OBB& DestObb, float StartTime, float EndTime, float& HitTime) {
 			SPHERE BeforeSrcSphere;
 			BeforeSrcSphere.m_Center = SrcObb.m_Center;
-			BeforeSrcSphere.m_Radius = bsmUtil::length(SrcObb.m_Size);
+			BeforeSrcSphere.m_Radius = bsm::bsmUtil::length(SrcObb.m_Size);
 			if (!CollisionTestSphereObb(BeforeSrcSphere, SrcVelocity, DestObb, StartTime, EndTime, HitTime)) {
 				//衝突がなければOBBも衝突なし
 				return false;

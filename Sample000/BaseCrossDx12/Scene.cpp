@@ -10,8 +10,9 @@
 
 namespace basecross {
 
-	using namespace std;
+	
 	using namespace SceneEnums;
+	using namespace std;
 
 
 	Scene::Scene(UINT frameCount, PrimDevice* pPrimDevice) :

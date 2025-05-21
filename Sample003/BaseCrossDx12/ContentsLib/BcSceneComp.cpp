@@ -7,8 +7,10 @@
 #include "Project.h"
 
 namespace basecross {
+	
+	
 	using namespace std;
-	using namespace bsm;
+	using namespace basecross::bsm;
 	using namespace SceneEnums;
 
 	IMPLEMENT_DX12SHADER(BcVSPNTStaticPL, App::GetShadersDir() + L"BcVSPNTStaticPL.cso")

@@ -10,7 +10,9 @@
 
 namespace basecross {
 
+	
 	using namespace std;
+	using namespace basecross::bsm;
 	using namespace SceneEnums;
 
 

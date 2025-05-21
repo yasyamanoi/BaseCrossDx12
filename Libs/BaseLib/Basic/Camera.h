@@ -16,34 +16,34 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class Camera  {
 	protected:
-		XMFLOAT3 m_eye;	//カメラ位置　
-		XMFLOAT3 m_at;	//注目点
-		XMFLOAT3 m_up;   //カメラの傾き（アップ）
+		bsm::Vec3 m_eye;	//カメラ位置　
+		bsm::Vec3 m_at;	//注目点
+		bsm::Vec3 m_up;   //カメラの傾き（アップ）
 
 		float m_near;	//手前の最小距離
 		float m_far;	//奥の最大距離
-		XMFLOAT4X4 m_viewMatrix;
-		XMFLOAT4X4 m_projMatrix;
+		bsm::Mat4x4 m_viewMatrix;
+		bsm::Mat4x4 m_projMatrix;
 		Camera();
 		virtual ~Camera() {}
 	public:
 		//アクセサ
-		virtual const XMFLOAT3& GetEye() const;
-		virtual void SetEye(const XMFLOAT3& eye);
+		virtual const bsm::Vec3& GetEye() const;
+		virtual void SetEye(const bsm::Vec3& eye);
 		virtual void SetEye(float x, float y, float z);
-		virtual const XMFLOAT3& GetAt() const;
-		virtual void SetAt(const XMFLOAT3& at);
+		virtual const bsm::Vec3& GetAt() const;
+		virtual void SetAt(const bsm::Vec3& at);
 		virtual void SetAt(float x, float y, float z);
-		virtual const XMFLOAT3& GetUp() const;
-		virtual void SetUp(const XMFLOAT3& up);
+		virtual const bsm::Vec3& GetUp() const;
+		virtual void SetUp(const bsm::Vec3& up);
 		virtual void SetUp(float x, float y, float z);
 		virtual float GetNear() const;
 		virtual void SetNear(float f);
 		virtual float GetFar() const;
 		virtual void SetFar(float f);
 		virtual void CalculateMatrix() = 0;
-		virtual const XMFLOAT4X4& GetViewMatrix() const;
-		virtual const XMFLOAT4X4& GetProjMatrix() const;
+		virtual const bsm::Mat4x4& GetViewMatrix() const;
+		virtual const bsm::Mat4x4& GetProjMatrix() const;
 		virtual void OnCreate();
 		virtual void OnUpdate(double elapsedTime);
 

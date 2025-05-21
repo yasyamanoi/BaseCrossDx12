@@ -12,8 +12,8 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace bsm;
+	
+	
 
 	class Stage;
 
@@ -21,10 +21,10 @@ namespace basecross {
 	// 配置されるオブジェクトの親
 	//--------------------------------------------------------------------------------------
 	class GameObject : public ObjectInterface {
-		weak_ptr<Stage> m_stage;
+		std::weak_ptr<Stage> m_stage;
 		TransParam m_tempParam;
 	protected:
-		GameObject(const shared_ptr<Stage>& stage,const TransParam& param):
+		GameObject(const std::shared_ptr<Stage>& stage,const TransParam& param):
 			m_stage(stage),
 			m_tempParam(param)
 		{
@@ -32,15 +32,15 @@ namespace basecross {
 		virtual ~GameObject() {}
 
 		//コンポーネントのマップ
-		map<type_index, shared_ptr<Component> > m_compMap;
+		std::map<std::type_index, std::shared_ptr<Component> > m_compMap;
 		//コンポーネント実行順番
-		list<type_index> m_compOrder;
+		std::list<std::type_index> m_compOrder;
 		//指定のコンポーネントを探す（派生クラスも検索）
 		template<typename T>
-		shared_ptr<T> SearchDynamicComponent()const {
+		std::shared_ptr<T> SearchDynamicComponent()const {
 			auto it = m_compMap.begin();
 			while (it != m_compMap.end()) {
-				auto ptr = dynamic_pointer_cast<T>(it->second);
+				auto ptr = std::dynamic_pointer_cast<T>(it->second);
 				if (ptr) {
 					return ptr;
 				}
@@ -50,14 +50,14 @@ namespace basecross {
 		}
 
 	public:
-		shared_ptr<Stage> GetStage(bool exceptionActive = true) const;
+		std::shared_ptr<Stage> GetStage(bool exceptionActive = true) const;
 		template<typename T, typename... Ts>
-		shared_ptr<T> AddComponent(Ts&&... params) {
-			type_index t_index = type_index(typeid(T));
+		std::shared_ptr<T> AddComponent(Ts&&... params) {
+			std::type_index t_index = std::type_index(typeid(T));
 			auto ptr = SearchDynamicComponent<T>();
 			//指定の型のコンポーネントが見つかった
 			if (ptr) {
-				auto retPtr = dynamic_pointer_cast<T>(ptr);
+				auto retPtr = std::dynamic_pointer_cast<T>(ptr);
 				if (retPtr) {
 					return retPtr;
 				}
@@ -71,7 +71,7 @@ namespace basecross {
 			}
 			else {
 				//見つからない。新たに作成する
-				shared_ptr<T> newPtr = ObjectFactory::Create<T>(GetThis<GameObject>(), params...);
+				std::shared_ptr<T> newPtr = ObjectFactory::Create<T>(GetThis<GameObject>(), params...);
 				//そのコンポーネントがまだなければ新規登録
 				m_compOrder.push_back(t_index);
 				//mapに追加もしくは更新
@@ -83,7 +83,7 @@ namespace basecross {
 
 
 		template <typename T>
-		shared_ptr<T> GetComponent(bool exceptionActive = true)const {
+		std::shared_ptr<T> GetComponent(bool exceptionActive = true)const {
 			auto Ptr = SearchDynamicComponent<T>();
 			if (Ptr) {
 				//指定の型のコンポーネントが見つかった

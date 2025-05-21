@@ -95,7 +95,7 @@ namespace basecross {
 		}
 		virtual ~MyObject() {}
 		shared_ptr<BaseMesh> m_mesh;
-		shared_ptr < BaseTexture> m_texture;
+		shared_ptr<BaseTexture> m_texture;
 	public:
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;

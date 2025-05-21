@@ -21,7 +21,7 @@
 namespace basecross {
 
 
-	using namespace std;
+	
 
 	UILayer::UILayer(UINT frameCount, ID3D12Device* pDevice, ID3D12CommandQueue* pCommandQueue) :
 		m_width(0.0f),
@@ -111,7 +111,7 @@ namespace basecross {
 		}
 	}
 
-	void UILayer::UpdateLabels(const wstring& uiText)
+	void UILayer::UpdateLabels(const std::wstring& uiText)
 	{
 		// Update the UI elements.
 		m_textBlocks[0] = { uiText, D2D1::RectF(0.0f, 0.0f, m_width, m_height), m_textFormat.Get() };

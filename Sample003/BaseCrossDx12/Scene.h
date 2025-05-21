@@ -9,10 +9,13 @@
 
 namespace basecross {
 
+	using namespace std;
+	using namespace basecross::bsm;
+
 	class MyObject;
 	class Stage;
 
-	using namespace std;
+	
 
 	//--------------------------------------------------------------------------------------
 	// ÉVÅ[Éì

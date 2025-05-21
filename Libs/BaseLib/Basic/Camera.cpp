@@ -10,6 +10,10 @@
 
 namespace basecross {
 
+	
+	
+
+
 	//--------------------------------------------------------------------------------------
 	//	class Camera;
 	//--------------------------------------------------------------------------------------
@@ -26,8 +30,8 @@ namespace basecross {
 	}
 
 	//アクセサ
-	const XMFLOAT3& Camera::GetEye() const { return m_eye; }
-	void Camera::SetEye(const XMFLOAT3& eye) {
+	const bsm::Vec3& Camera::GetEye() const { return m_eye; }
+	void Camera::SetEye(const bsm::Vec3& eye) {
 		m_eye = eye;
 		CalculateMatrix();
 	}
@@ -36,8 +40,8 @@ namespace basecross {
 		CalculateMatrix();
 	}
 
-	const XMFLOAT3& Camera::GetAt() const { return m_at; }
-	void Camera::SetAt(const XMFLOAT3& at) {
+	const bsm::Vec3& Camera::GetAt() const { return m_at; }
+	void Camera::SetAt(const bsm::Vec3& at) {
 		m_at = at;
 		CalculateMatrix();
 	}
@@ -46,8 +50,8 @@ namespace basecross {
 		CalculateMatrix();
 	}
 
-	const XMFLOAT3& Camera::GetUp() const { return m_up; }
-	void Camera::SetUp(const XMFLOAT3& Up) {
+	const bsm::Vec3& Camera::GetUp() const { return m_up; }
+	void Camera::SetUp(const bsm::Vec3& Up) {
 		m_up = Up;
 		CalculateMatrix();
 	}
@@ -68,8 +72,8 @@ namespace basecross {
 		CalculateMatrix();
 	}
 
-	const XMFLOAT4X4& Camera::GetViewMatrix() const { return m_viewMatrix; }
-	const XMFLOAT4X4& Camera::GetProjMatrix() const { return m_projMatrix; }
+	const bsm::Mat4x4& Camera::GetViewMatrix() const { return m_viewMatrix; }
+	const bsm::Mat4x4& Camera::GetProjMatrix() const { return m_projMatrix; }
 
 	void Camera::OnCreate() {
 		CalculateMatrix();

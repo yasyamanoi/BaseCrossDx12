@@ -26,6 +26,9 @@
 #include <process.h>
 #include <wrl.h>
 #include <shellapi.h>
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 //C++î≈CêÈåæ
 #include <cfloat>
 #include <clocale>
@@ -89,9 +92,6 @@ using namespace DirectX;
 #include "Standerd/Transform.h"
 #include "Standerd/GameObject.h"
 #include "Standerd/Stage.h"
-
-
-
 
 
 #pragma comment( lib, "dxgi.lib" )

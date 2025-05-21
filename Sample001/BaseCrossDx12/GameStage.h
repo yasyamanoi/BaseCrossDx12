@@ -29,10 +29,10 @@ namespace basecross {
 		{}
 		virtual ~GameStage() {}
 		//アクセサ
-		std::shared_ptr<PerspecCamera> GetMyCamera() const {
+		shared_ptr<PerspecCamera> GetMyCamera() const {
 			return m_myCamera;
 		}
-		std::shared_ptr<LightSet> GetLightSet() const {
+		shared_ptr<LightSet> GetLightSet() const {
 			return m_myLightSet;
 		}
 		virtual void OnCreate()override;

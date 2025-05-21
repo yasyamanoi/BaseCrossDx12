@@ -59,13 +59,13 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\FrameResource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Light.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\ObjectInterface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\PipelineState.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\PrimDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\RootSignature.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Shadowmap.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\UILayer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ObjectInterface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Component.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GameObject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Stage.cpp" />

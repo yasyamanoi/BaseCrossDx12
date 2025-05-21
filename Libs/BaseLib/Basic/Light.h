@@ -15,11 +15,11 @@ namespace basecross {
 	//	ライト
 	//--------------------------------------------------------------------------------------
 	struct Light {
-		XMFLOAT3 m_directional;	//ライトの向き
-		XMFLOAT4 m_diffuseColor;	//ディフィーズ色
-		XMFLOAT4 m_specularColor;	//スペキュラー色
-		XMFLOAT3 m_position;	//位置（使用しない場合あり）
-		XMFLOAT3 m_at;		//指している場所（使用しない場合あり）
+		bsm::Vec3 m_directional;	//ライトの向き
+		bsm::Vec4 m_diffuseColor;	//ディフィーズ色
+		bsm::Vec4 m_specularColor;	//スペキュラー色
+		bsm::Vec3 m_position;	//位置（使用しない場合あり）
+		bsm::Vec3 m_at;		//指している場所（使用しない場合あり）
 
 		Light() :
 			m_directional(0, -1.0f, 0),
@@ -29,7 +29,7 @@ namespace basecross {
 			m_at(0.0f, 0.0f, 0.0f)
 		{
 		}
-		Light(const XMFLOAT3& dir, const XMFLOAT4& def, const XMFLOAT4& sp) :
+		Light(const bsm::Vec3& dir, const bsm::Vec4& def, const bsm::Vec4& sp) :
 			m_directional(dir),
 			m_diffuseColor(def),
 			m_specularColor(sp),
@@ -56,7 +56,7 @@ namespace basecross {
 			return *this;
 		}
 		~Light() {}
-		void SetPositionToDirectional(const XMFLOAT3& pos, const XMFLOAT3& at) {
+		void SetPositionToDirectional(const bsm::Vec3& pos, const bsm::Vec3& at) {
 			m_position = pos;
 			m_at = at;
 			auto dir = XMVectorSubtract(XMLoadFloat3(&at), XMLoadFloat3(&pos));
@@ -71,7 +71,7 @@ namespace basecross {
 	class LightSet {
 		const size_t m_maxLights = 3;
 		std::vector<Light> m_lights;
-		XMFLOAT4 m_ambient;
+		bsm::Vec4 m_ambient;
 		size_t m_mainIndex;
 	public:
 		LightSet();
@@ -116,7 +116,7 @@ namespace basecross {
 		@return	アンビエント
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual const XMFLOAT4 GetAmbient() const { return m_ambient; }
+		virtual const bsm::Vec4 GetAmbient() const { return m_ambient; }
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief アンビエントの設定
@@ -124,7 +124,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void SetAmbient(const XMFLOAT4& a) { m_ambient = a; }
+		virtual void SetAmbient(const bsm::Vec4& a) { m_ambient = a; }
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief メインライトインデックスの取得

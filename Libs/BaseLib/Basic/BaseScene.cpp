@@ -21,7 +21,7 @@
 namespace basecross {
 
 
-	using namespace std;
+	
 	using namespace SceneEnums;
 
 
@@ -497,7 +497,7 @@ namespace basecross {
 	{
 		for (UINT i = 0; i < m_frameCount; i++)
 		{
-			m_frameResources[i] = make_unique<FrameResource>(pDevice, pCommandQueue);
+			m_frameResources[i] = std::make_unique<FrameResource>(pDevice, pCommandQueue);
 		}
 	}
 

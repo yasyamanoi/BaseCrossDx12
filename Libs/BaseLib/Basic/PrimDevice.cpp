@@ -21,7 +21,7 @@
 namespace basecross {
 
 	using namespace Microsoft::WRL;
-	using namespace std;
+	
 
 	PrimDevice::PrimDevice(UINT width, UINT height, std::wstring name) :
 		m_width(width),
@@ -178,7 +178,7 @@ namespace basecross {
 
 	//スレッド用の変数
 	static bool g_threadEnded;
-	static string g_msg;
+	static std::string g_msg;
 	//ミューテックス
 	static std::mutex g_mtx;
 
@@ -216,7 +216,7 @@ namespace basecross {
 		}
 		catch (BaseException& e) {
 			//デバッグ出力をする。
-			string str = e.what_m() + "\n";
+			std::string str = e.what_m() + "\n";
 			OutputDebugStringA(str.c_str());
 			//メッセージボックス
 			g_msg = e.what_m() + "\n";
@@ -225,9 +225,9 @@ namespace basecross {
 			MsgThread.join();
 			retCode = 1;
 		}
-		catch (runtime_error& e) {
+		catch (std::runtime_error& e) {
 			//デバッグ出力をする。
-			string str(e.what());
+			std::string str(e.what());
 			str += "\n";
 			OutputDebugStringA(str.c_str());
 			//メッセージボックス
@@ -238,9 +238,9 @@ namespace basecross {
 			MsgThread.join();
 			retCode = 1;
 		}
-		catch (exception& e) {
+		catch (std::exception& e) {
 			//STLエラー
-			string str(e.what());
+			std::string str(e.what());
 			str += "\n";
 			OutputDebugStringA(str.c_str());
 			//メッセージボックス

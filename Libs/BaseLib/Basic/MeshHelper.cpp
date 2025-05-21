@@ -824,14 +824,14 @@ namespace basecross {
 
 	void MeshUtill::SetNormalTangent(std::vector<VertexPositionNormalTangentTexture>& vertices) {
 		for (size_t i = 0; i < vertices.size(); i++) {
-			bsm::Vec3 Norm = (bsm::Vec3)vertices[i].normal;
+			Vec3 Norm = (Vec3)vertices[i].normal;
 			Norm.normalize();
-			if (bsm::Vec3(XMVector3AngleBetweenNormals(Norm, bsm::Vec3(0, 1, 0))).x <= 0.1f ||
-				bsm::Vec3(XMVector3AngleBetweenNormals(Norm, bsm::Vec3(0, -1, 0))).x <= 0.1f) {
-				vertices[i].tangent = bsm::Vec4(bsm::cross(Norm, bsm::Vec3(0, 0, 1)), 0.0);
+			if (Vec3(XMVector3AngleBetweenNormals(Norm, Vec3(0, 1, 0))).x <= 0.1f ||
+				Vec3(XMVector3AngleBetweenNormals(Norm, Vec3(0, -1, 0))).x <= 0.1f) {
+				vertices[i].tangent = Vec4(cross(Norm, Vec3(0, 0, 1)), 0.0);
 			}
 			else {
-				vertices[i].tangent = bsm::Vec4(bsm::cross(Norm, bsm::Vec3(0, 1, 0)), 0.0);
+				vertices[i].tangent = Vec4(cross(Norm, Vec3(0, 1, 0)), 0.0);
 			}
 			vertices[i].tangent.w = 0.0f;
 		}

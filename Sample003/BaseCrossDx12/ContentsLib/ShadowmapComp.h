@@ -10,7 +10,7 @@
 namespace basecross {
 
 	using namespace std;
-	using namespace bsm;
+	using namespace basecross::bsm;
 
 	//--------------------------------------------------------------------------------------
 	///	Shadowコンスタントバッファ構造体

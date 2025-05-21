@@ -1023,11 +1023,11 @@ namespace basecross {
 			Vec3 Temp = norm;
 			Vec2 TempVec2(Temp.x, Temp.z);
 			if (TempVec2.length() < 0.1f) {
-				DefUp = bsm::Vec3(0, 0, 1.0f);
+				DefUp = Vec3(0, 0, 1.0f);
 			}
 			Temp.normalize();
 			Mat4x4 RotMatrix;
-			RotMatrix = XMMatrixLookAtLH(bsm::Vec3(0, 0, 0), Temp, DefUp);
+			RotMatrix = XMMatrixLookAtLH(Vec3(0, 0, 0), Temp, DefUp);
 			RotMatrix.inverse();
 			*this = RotMatrix.quatInMatrix();
 			(*this).normalize();

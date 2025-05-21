@@ -276,15 +276,15 @@ namespace basecross {
 				new_pntnt_v.position = vertices[i].position;
 				new_pntnt_v.normal = vertices[i].normal;
 				new_pntnt_v.textureCoordinate = vertices[i].textureCoordinate;
-				XMFLOAT3 n = bsm::cross((bsm::Vec3)new_pntnt_v.normal, bsm::Vec3(0, 1, 0));
-				new_pntnt_v.tangent = bsm::Vec4(n.x, n.y, n.z, 0.0f);
+				XMFLOAT3 n = cross((Vec3)new_pntnt_v.normal, Vec3(0, 1, 0));
+				new_pntnt_v.tangent = Vec4(n.x, n.y, n.z, 0.0f);
 				new_pntnt_v.tangent.w = 0.0f;
 
 				new_pnttn_v.position = vertices[i].position;
 				new_pnttn_v.normal = vertices[i].normal;
 				new_pnttn_v.textureCoordinate = vertices[i].textureCoordinate;
-				bsm::Vec3 n2 = bsm::cross((bsm::Vec3)new_pnttn_v.normal, bsm::Vec3(0, 1, 0));
-				new_pnttn_v.tangent = bsm::Vec4(n2.x, n2.y, n2.z, 0.0f);
+				Vec3 n2 = cross((Vec3)new_pnttn_v.normal, Vec3(0, 1, 0));
+				new_pnttn_v.tangent = Vec4(n2.x, n2.y, n2.z, 0.0f);
 				new_pnttn_v.tangent.w = 0.0f;
 
 

@@ -13,6 +13,7 @@ namespace basecross {
 	class Stage;
 
 	using namespace std;
+	using namespace bsm;
 
 	//--------------------------------------------------------------------------------------
 	// ÉVÅ[Éì

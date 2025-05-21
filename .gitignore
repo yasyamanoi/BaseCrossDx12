@@ -22,8 +22,9 @@ mono_crash.*
 
 # Build results
 *.exe
-/**/Temp/
+Temp/
 Libs/lib/
+V05/Libs/lib/
 x64/
 x86/
 [Aa][Rr][Mm]/

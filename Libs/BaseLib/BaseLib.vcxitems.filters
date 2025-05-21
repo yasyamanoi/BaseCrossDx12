@@ -177,11 +177,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Transform.cpp">
       <Filter>Standerd\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)ObjectInterface.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Stage.cpp">
       <Filter>Standerd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\ObjectInterface.cpp">
+      <Filter>Basic\Sources</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

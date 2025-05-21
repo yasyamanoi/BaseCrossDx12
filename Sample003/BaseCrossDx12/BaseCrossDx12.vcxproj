@@ -104,6 +104,8 @@
     <ClInclude Include="ContentsLib\ShadowmapComp.h" />
     <ClInclude Include="ContentsLib\SpSceneComp.h" />
     <ClInclude Include="GameStage.h" />
+    <ClInclude Include="MyCamera.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Scene.h" />
@@ -124,6 +126,8 @@
     <ClCompile Include="ContentsLib\ShadowmapComp.cpp" />
     <ClCompile Include="ContentsLib\SpSceneComp.cpp" />
     <ClCompile Include="GameStage.cpp" />
+    <ClCompile Include="MyCamera.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SkyGround.cpp" />
     <ClCompile Include="WallBox.cpp" />

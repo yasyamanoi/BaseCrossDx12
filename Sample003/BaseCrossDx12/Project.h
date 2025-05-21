@@ -13,7 +13,9 @@
 #include "ContentsLib/RigidComp.h"
 #include "ContentsLib/GravityComp.h"
 //個別オブジェクト等
+#include "MyCamera.h"
 #include "SkyGround.h"
 #include "WallBox.h"
+#include "Player.h"
 #include "GameStage.h"
 

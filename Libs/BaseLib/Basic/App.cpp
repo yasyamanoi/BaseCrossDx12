@@ -267,6 +267,7 @@ namespace basecross {
 		if (retCode) {
 			PostQuitMessage(0);
 		}
+
 		return retCode;
 	}
 

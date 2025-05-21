@@ -21,11 +21,11 @@
 namespace basecross {
 
 
-	using namespace std;
+	
 
 	BaseDevice* BaseDevice::s_app = nullptr;
 
-	BaseDevice::BaseDevice(UINT width, UINT height, wstring name) :
+	BaseDevice::BaseDevice(UINT width, UINT height, std::wstring name) :
 		PrimDevice(width, height, name),
 		m_frameIndex(0),
 		m_activeAdapter(0),
@@ -188,7 +188,7 @@ namespace basecross {
 	{
 		if (!m_scene)
 		{
-			m_scene = make_unique<Scene>(FrameCount, this);
+			m_scene = std::make_unique<Scene>(FrameCount, this);
 		}
 
 		// Create a temporary command queue and command list for initializing data on the GPU.
@@ -233,7 +233,7 @@ namespace basecross {
 		{
 			if (!m_uiLayer)
 			{
-				m_uiLayer = make_unique<UILayer>(FrameCount, m_device.Get(), m_commandQueue.Get());
+				m_uiLayer = std::make_unique<UILayer>(FrameCount, m_device.Get(), m_commandQueue.Get());
 			}
 			m_uiLayer->Resize(m_renderTargets, m_width, m_height);
 		}
@@ -607,7 +607,7 @@ namespace basecross {
 			DxgiAdapterInfo adapterInfo;
 			ThrowIfFailed(adapter->GetDesc1(&adapterInfo.desc));
 			adapterInfo.supportsDx12FL11 = SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr));
-			m_gpuAdapterDescs.push_back(move(adapterInfo));
+			m_gpuAdapterDescs.push_back(std::move(adapterInfo));
 		}
 	}
 
@@ -658,8 +658,8 @@ namespace basecross {
 			// Display FPS on the window title bar if UI is disabled.
 			if (!m_enableUI)
 			{
-				wstring fpsStr = to_wstring(m_fps);
-				wstring windowText = L"	fps: " + fpsStr;
+				std::wstring fpsStr = std::to_wstring(m_fps);
+				std::wstring windowText = L"	fps: " + fpsStr;
 				SetCustomWindowText(windowText.c_str());
 			}
 		}

@@ -22,6 +22,7 @@ namespace basecross {
 	IMPLEMENT_DX12SHADER(PNTShadowmap, App::GetShadersDir() + L"VSShadowmap.cso")
 
 	using namespace std;
+	using namespace bsm;
 	using namespace SceneEnums;
 
 

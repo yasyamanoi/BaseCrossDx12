@@ -12,8 +12,8 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace bsm;
+	
+	
 
 	class GameObject;
 
@@ -21,10 +21,10 @@ namespace basecross {
 	///	オブジェクト変換用
 	//--------------------------------------------------------------------------------------
 	struct TransParam {
-		Vec3 scale;
-		Vec3 rotOrigin;
-		Quat quaternion;
-		Vec3 position;
+		bsm::Vec3 scale;
+		bsm::Vec3 rotOrigin;
+		bsm::Quat quaternion;
+		bsm::Vec3 position;
 	};
 
 
@@ -35,14 +35,14 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class Component : public ObjectInterface {
 	protected:
-		weak_ptr<GameObject> m_gameObject;
-		explicit Component(const shared_ptr<GameObject>& gameObjectPtr);
+		std::weak_ptr<GameObject> m_gameObject;
+		explicit Component(const std::shared_ptr<GameObject>& gameObjectPtr);
 		virtual ~Component() {}
 	public:
-		void AttachGameObject(const shared_ptr<GameObject>& gameObjectPtr) {
+		void AttachGameObject(const std::shared_ptr<GameObject>& gameObjectPtr) {
 			m_gameObject = gameObjectPtr;
 		}
-		shared_ptr<GameObject> GetGameObject() const {
+		std::shared_ptr<GameObject> GetGameObject() const {
 			auto ptr = m_gameObject.lock();
 			if (!ptr) {
 				throw BaseException(
