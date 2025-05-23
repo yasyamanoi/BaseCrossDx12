@@ -4,7 +4,6 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 
-Compiled/
 
 # User-specific files
 *.cso
@@ -22,9 +21,11 @@ mono_crash.*
 
 # Build results
 *.exe
+Compiled/
 Temp/
-Libs/lib/
-V05/Libs/lib/
+/Simple/Libs/lib/
+/Simple/V05/Libs/lib/
+/Full/Libs/lib/
 x64/
 x86/
 [Aa][Rr][Mm]/
