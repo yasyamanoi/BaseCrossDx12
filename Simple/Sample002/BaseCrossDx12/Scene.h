@@ -12,22 +12,19 @@ namespace basecross {
 	class MyObject;
 	class Stage;
 
-	using namespace std;
-	using namespace bsm;
-
 	//--------------------------------------------------------------------------------------
 	// ÉVÅ[Éì
 	//--------------------------------------------------------------------------------------
 	class Scene : public BaseScene
 	{
-		shared_ptr<Stage> m_activeStage;
+		std::shared_ptr<Stage> m_activeStage;
 	public:
 		Scene(UINT frameCount, PrimDevice* pPrimDevice);
 		virtual ~Scene();
-		shared_ptr<Stage> GetActiveStage(bool ExceptionActive = true) const;
+		std::shared_ptr<Stage> GetActiveStage(bool ExceptionActive = true) const;
 
 		template<typename T, typename... Ts>
-		shared_ptr<T> ResetActiveStage(Ts&&... params) {
+		std::shared_ptr<T> ResetActiveStage(Ts&&... params) {
 			auto actStagePtr = GetActiveStage(false);
 			if (actStagePtr) {
 				//îjä¸Çì`Ç¶ÇÈ
@@ -47,7 +44,7 @@ namespace basecross {
 			return ptr;
 		}
 	protected:
-		void SetActiveStage(const shared_ptr<Stage>& stage) {
+		void SetActiveStage(const std::shared_ptr<Stage>& stage) {
 			m_activeStage = stage;
 		}
 		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)override;

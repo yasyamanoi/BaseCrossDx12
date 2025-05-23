@@ -9,8 +9,6 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace bsm;
 
 	//--------------------------------------------------------------------------------------
 	// 四角のオブジェクト

@@ -9,20 +9,16 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
-
 	//--------------------------------------------------------------------------------------
 	// 四角のオブジェクト
 	//--------------------------------------------------------------------------------------
 	class WallBox : public  GameObject {
 		double m_totalTime;
-		shared_ptr<BaseMesh> m_mesh;
-		shared_ptr < BaseTexture> m_texture;
+		std::shared_ptr<BaseMesh> m_mesh;
+		std::shared_ptr < BaseTexture> m_texture;
 	protected:
 	public:
-		WallBox(const shared_ptr<Stage>& stage, const TransParam& param);
+		WallBox(const std::shared_ptr<Stage>& stage, const TransParam& param);
 		virtual ~WallBox();
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;

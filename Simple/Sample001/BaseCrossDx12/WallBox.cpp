@@ -8,13 +8,10 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace bsm;
-
 	//--------------------------------------------------------------------------------------
 	// 四角のオブジェクト
 	//--------------------------------------------------------------------------------------
-	WallBox::WallBox(const shared_ptr<Stage>& stage, const TransParam& param) :
+	WallBox::WallBox(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		MyObject(stage,param),
 		m_totalTime(0.0)
 	{

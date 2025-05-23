@@ -10,13 +10,10 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
 	//--------------------------------------------------------------------------------------
 	///	 物理演算コンポーネント
 	//--------------------------------------------------------------------------------------
-	RigidComp::RigidComp(const shared_ptr<GameObject>& GameObjectPtr) :
+	RigidComp::RigidComp(const std::shared_ptr<GameObject>& GameObjectPtr) :
 		Component(GameObjectPtr)
 	{
 	}
@@ -35,7 +32,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	///	 スタティック物理演算コンポーネント
 	//--------------------------------------------------------------------------------------
-	RigidStaticComp::RigidStaticComp(const shared_ptr<GameObject>& GameObjectPtr,
+	RigidStaticComp::RigidStaticComp(const std::shared_ptr<GameObject>& GameObjectPtr,
 		const PhysxCreateParam& pxParam) :
 		RigidComp(GameObjectPtr),
 		m_pxParam(pxParam)
@@ -47,7 +44,7 @@ namespace basecross {
 
 	void RigidStaticComp::OnCreate() {
 		auto ptrGameObject = GetGameObject();
-		auto ptrGameStage = dynamic_pointer_cast<GameStage>(ptrGameObject->GetStage());
+		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(ptrGameObject->GetStage());
 		auto ptrPxPhysics = ptrGameStage->GetPxPhysics();
 		//Transformコンポーネントを取り出す
 		auto ptrTrans = ptrGameObject->GetComponent<Transform>();
@@ -87,7 +84,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	///	 ダイナミック物理演算コンポーネント
 	//--------------------------------------------------------------------------------------
-	RigidDynamicComp::RigidDynamicComp(const shared_ptr<GameObject>& GameObjectPtr,
+	RigidDynamicComp::RigidDynamicComp(const std::shared_ptr<GameObject>& GameObjectPtr,
 		const PhysxCreateParam& pxParam) :
 		RigidComp(GameObjectPtr),
 		m_pxParam(pxParam)
@@ -99,7 +96,7 @@ namespace basecross {
 
 	void RigidDynamicComp::OnCreate() {
 		auto ptrGameObject = GetGameObject();
-		auto ptrGameStage = dynamic_pointer_cast<GameStage>(ptrGameObject->GetStage());
+		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(ptrGameObject->GetStage());
 		auto ptrPxPhysics = ptrGameStage->GetPxPhysics();
 		//Transformコンポーネントを取り出す
 		auto ptrTrans = ptrGameObject->GetComponent<Transform>();
@@ -129,7 +126,7 @@ namespace basecross {
 
 	void RigidDynamicComp::OnUpdate(double elapsedTime) {
 		auto ptrGameObject = GetGameObject();
-		auto ptrGameStage = dynamic_pointer_cast<GameStage>(ptrGameObject->GetStage());
+		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(ptrGameObject->GetStage());
 		auto ptrPxPhysics = ptrGameStage->GetPxPhysics();
 		//Transformコンポーネントを取り出す
 		auto ptrTrans = ptrGameObject->GetComponent<Transform>();

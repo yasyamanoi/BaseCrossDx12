@@ -8,22 +8,18 @@
 
 namespace basecross {
 
-	
-	using namespace std;
-	using namespace basecross::bsm;
-
 
 	//--------------------------------------------------------------------------------------
 	// 土台のオブジェクト
 	//--------------------------------------------------------------------------------------
-	SkyGround::SkyGround(const shared_ptr<Stage>& stage, const TransParam& param) :
+	SkyGround::SkyGround(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		GameObject(stage,param)
 	{
 	}
 	SkyGround::~SkyGround() {}
 
 	void SkyGround::OnCreate() {
-		auto ptrGameStage = dynamic_pointer_cast<GameStage>(GetStage());
+		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(GetStage());
 		//Transformコンポーネントを取り出す
 		auto ptrTrans = GetComponent<Transform>();
 		auto& param = ptrTrans->GetTransParam();

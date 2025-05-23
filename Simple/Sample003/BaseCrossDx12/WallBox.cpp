@@ -8,15 +8,10 @@
 
 namespace basecross {
 
-	
-	using namespace std;
-	using namespace basecross::bsm;
-
-
 	//--------------------------------------------------------------------------------------
 	// 四角のオブジェクト
 	//--------------------------------------------------------------------------------------
-	WallBox::WallBox(const shared_ptr<Stage>& stage, const TransParam& param) :
+	WallBox::WallBox(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		GameObject(stage,param),
 		m_totalTime(0.0)
 	{
@@ -24,7 +19,7 @@ namespace basecross {
 	WallBox::~WallBox() {}
 
 	void WallBox::OnCreate() {
-		auto ptrGameStage = dynamic_pointer_cast<GameStage>(GetStage());
+		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(GetStage());
 		//Transformコンポーネントを取り出す
 		auto ptrTrans = GetComponent<Transform>();
 		auto& param = ptrTrans->GetTransParam();

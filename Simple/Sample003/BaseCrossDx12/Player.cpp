@@ -8,14 +8,10 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
-
 	//--------------------------------------------------------------------------------------
 	// プレイヤー
 	//--------------------------------------------------------------------------------------
-	Player::Player(const shared_ptr<Stage>& stage, const TransParam& param) :
+	Player::Player(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		GameObject(stage, param),
 		m_Speed(10.0f)
 	{
@@ -23,7 +19,7 @@ namespace basecross {
 	Player::~Player() {}
 
 	void Player::OnCreate() {
-		auto ptrGameStage = dynamic_pointer_cast<GameStage>(GetStage());
+		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(GetStage());
 		//Transformコンポーネントを取り出す
 		auto ptrTrans = GetComponent<Transform>();
 		auto& param = ptrTrans->GetTransParam();
@@ -76,7 +72,7 @@ namespace basecross {
 
 
 	Vec3 Player::GetMoveVector() const {
-		auto ptrGameStage = dynamic_pointer_cast<GameStage>(GetStage());
+		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(GetStage());
 		Vec3 angle(0, 0, 0);
 		//入力の取得
 		auto inPut = GetInputState();

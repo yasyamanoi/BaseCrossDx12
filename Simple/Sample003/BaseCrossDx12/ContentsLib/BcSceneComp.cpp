@@ -9,8 +9,6 @@
 namespace basecross {
 	
 	
-	using namespace std;
-	using namespace basecross::bsm;
 	using namespace SceneEnums;
 
 	IMPLEMENT_DX12SHADER(BcVSPNTStaticPL, App::GetShadersDir() + L"BcVSPNTStaticPL.cso")
@@ -21,7 +19,7 @@ namespace basecross {
 
 
 
-	BcSceneComp::BcSceneComp(const shared_ptr<GameObject>& gameObjectPtr) :
+	BcSceneComp::BcSceneComp(const std::shared_ptr<GameObject>& gameObjectPtr) :
 		Component(gameObjectPtr)
 	{
 		m_fogColor = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
@@ -42,12 +40,12 @@ namespace basecross {
 
 	void BcSceneComp::OnUpdateConstantBuffers() {
 		auto scene = dynamic_cast<Scene*>(BaseScene::Get());
-		auto gameStage = dynamic_pointer_cast<GameStage>(scene->GetActiveStage());
+		auto gameStage = std::dynamic_pointer_cast<GameStage>(scene->GetActiveStage());
 		auto& frameResources = scene->GetFrameResources();
 		auto pBaseDevice = BaseDevice::GetBaseDevice();
 		auto& viewport = scene->GetViewport();
-		shared_ptr<PerspecCamera> myCamera;
-		shared_ptr<LightSet> myLightSet;
+		std::shared_ptr<PerspecCamera> myCamera;
+		std::shared_ptr<LightSet> myLightSet;
 		if (gameStage) {
 			myCamera = gameStage->GetMyCamera();
 			myLightSet = gameStage->GetLightSet();

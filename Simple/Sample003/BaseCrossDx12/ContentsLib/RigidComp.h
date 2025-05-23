@@ -9,9 +9,6 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
 	//--------------------------------------------------------------------------------------
 	///	physxの構築パラメータ
 	//--------------------------------------------------------------------------------------
@@ -36,7 +33,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class RigidComp : public Component {
 	protected:
-		explicit RigidComp(const shared_ptr<GameObject>& GameObjectPtr);
+		explicit RigidComp(const std::shared_ptr<GameObject>& GameObjectPtr);
 		virtual ~RigidComp();
 	public:
 		virtual void OnCreate()override;
@@ -52,7 +49,7 @@ namespace basecross {
 		physx::PxRigidStatic* m_pRigidStatic = nullptr;
 		PhysxCreateParam m_pxParam;
 	public:
-		RigidStaticComp(const shared_ptr<GameObject>& GameObjectPtr,
+		RigidStaticComp(const std::shared_ptr<GameObject>& GameObjectPtr,
 			const PhysxCreateParam& pxParam);
 		virtual ~RigidStaticComp();
 		virtual void OnCreate()override;
@@ -68,7 +65,7 @@ namespace basecross {
 		physx::PxRigidDynamic* m_pRigidDynamic = nullptr;
 		PhysxCreateParam m_pxParam;
 	public:
-		explicit RigidDynamicComp(const shared_ptr<GameObject>& GameObjectPtr,
+		explicit RigidDynamicComp(const std::shared_ptr<GameObject>& GameObjectPtr,
 			const PhysxCreateParam& pxParam);
 		virtual ~RigidDynamicComp();
 		physx::PxRigidDynamic* GetRigidDynamic(){

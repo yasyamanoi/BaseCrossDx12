@@ -72,6 +72,9 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(SolutionDir)..\Libs\PhysX\dlls\$(Configuration)\" "$(SolutionDir)$(Configuration)\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -96,13 +99,11 @@
       <ObjectFileOutput>$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(SolutionDir)..\Libs\PhysX\dlls\$(Configuration)\" "$(SolutionDir)$(Configuration)\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ContentsLib\BcSceneComp.h" />
-    <ClInclude Include="ContentsLib\GravityComp.h" />
-    <ClInclude Include="ContentsLib\RigidComp.h" />
-    <ClInclude Include="ContentsLib\ShadowmapComp.h" />
-    <ClInclude Include="ContentsLib\SpSceneComp.h" />
     <ClInclude Include="GameStage.h" />
     <ClInclude Include="MyCamera.h" />
     <ClInclude Include="Player.h" />
@@ -120,11 +121,6 @@
     <Image Include="icon1.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ContentsLib\BcSceneComp.cpp" />
-    <ClCompile Include="ContentsLib\GravityComp.cpp" />
-    <ClCompile Include="ContentsLib\RigidComp.cpp" />
-    <ClCompile Include="ContentsLib\ShadowmapComp.cpp" />
-    <ClCompile Include="ContentsLib\SpSceneComp.cpp" />
     <ClCompile Include="GameStage.cpp" />
     <ClCompile Include="MyCamera.cpp" />
     <ClCompile Include="Player.cpp" />

@@ -9,10 +9,6 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
-
 	//--------------------------------------------------------------------------------------
 	//	MyCameraカメラ（コンポーネントではない）
 	//--------------------------------------------------------------------------------------
@@ -70,14 +66,14 @@ namespace basecross {
 	}
 
 
-	shared_ptr<GameObject> MyCamera::GetTargetObject() const {
+	std::shared_ptr<GameObject> MyCamera::GetTargetObject() const {
 		if (!m_TargetObject.expired()) {
 			return m_TargetObject.lock();
 		}
 		return nullptr;
 	}
 
-	void MyCamera::SetTargetObject(const shared_ptr<GameObject>& Obj) {
+	void MyCamera::SetTargetObject(const std::shared_ptr<GameObject>& Obj) {
 		m_TargetObject = Obj;
 	}
 

@@ -9,9 +9,6 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
 	//--------------------------------------------------------------------------------------
 	///	Shadowコンスタントバッファ構造体
 	//--------------------------------------------------------------------------------------
@@ -40,14 +37,14 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class ShadowmapComp : public Component {
 	protected:
-		weak_ptr<BaseMesh> m_mesh;
+		std::weak_ptr<BaseMesh> m_mesh;
 		ShadowConstantBuffer m_shadowConstantBuffer;
 		size_t m_shadowConstantBufferIndex;
 	public:
-		void SetBaseMesh(const shared_ptr<BaseMesh>& mesh) {
+		void SetBaseMesh(const std::shared_ptr<BaseMesh>& mesh) {
 			m_mesh = mesh;
 		}
-		ShadowmapComp(const shared_ptr<GameObject>& gameObjectPtr);
+		ShadowmapComp(const std::shared_ptr<GameObject>& gameObjectPtr);
 		virtual ~ShadowmapComp() {}
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;

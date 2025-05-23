@@ -7,6 +7,8 @@
 #pragma once
 
 ////コンテンツ側
+using namespace basecross::bsm;
+
 //個別オブジェクト等
 #include "MyObject.h"
 #include "SkyGround.h"

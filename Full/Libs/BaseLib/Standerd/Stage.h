@@ -36,6 +36,13 @@ namespace basecross {
 			}
 		}
 
+		virtual std::shared_ptr<Camera> GetTargetCamera() const = 0;
+		virtual std::shared_ptr<LightSet> GetTargetLightSet() const = 0;
+
+		virtual physx::PxPhysics* GetPxPhysics() = 0;
+		virtual physx::PxScene* GetPxScene() = 0;
+
+
 		virtual void OnUpdateConstantBuffers();
 		virtual void OnCommitConstantBuffers();
 		virtual void SetToBefore();

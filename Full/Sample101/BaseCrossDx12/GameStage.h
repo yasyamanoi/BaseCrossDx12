@@ -13,16 +13,13 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
 	//--------------------------------------------------------------------------------------
 	// 配置されるオブジェクトの親
 	//--------------------------------------------------------------------------------------
 	class GameStage : public Stage {
 	protected:
-		shared_ptr<MyCamera> m_myCamera;
-		shared_ptr<LightSet> m_myLightSet;
+		std::shared_ptr<MyCamera> m_myCamera;
+		std::shared_ptr<LightSet> m_myLightSet;
 		//コントローラ
 		InputDevice m_inputDevice;
 
@@ -47,18 +44,20 @@ namespace basecross {
 		{}
 		virtual ~GameStage();
 		//アクセサ
-		shared_ptr<MyCamera> GetMyCamera() const{
-			return m_myCamera;
-		}
-		physx::PxPhysics* GetPxPhysics() {
+		virtual physx::PxPhysics* GetPxPhysics()override {
 			return m_pPhysics;
 		}
-		physx::PxScene* GetPxScene() {
+		virtual physx::PxScene* GetPxScene() override {
 			return m_pScene;
 		}
-		std::shared_ptr<LightSet> GetLightSet() const {
+		virtual std::shared_ptr<Camera> GetTargetCamera() const override {
+			return m_myCamera;
+		}
+		virtual std::shared_ptr<LightSet> GetTargetLightSet() const override {
 			return m_myLightSet;
 		}
+
+
 		virtual void OnCreate()override;
 		virtual void OnUpdate(double elapsedTime)override;
 

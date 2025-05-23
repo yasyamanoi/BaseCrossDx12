@@ -8,9 +8,6 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
 
 	GameStage::~GameStage() {
 
@@ -38,10 +35,10 @@ namespace basecross {
 		scene_desc.cpuDispatcher = m_pDispatcher;
 		m_pScene = m_pPhysics->createScene(scene_desc);
 		//カメラとライト
-		m_myCamera = shared_ptr<MyCamera>(new MyCamera());
+		m_myCamera = std::shared_ptr<MyCamera>(new MyCamera());
 		m_myCamera->SetEye(Vec3(0, 3.43f, -6.37f));
 		m_myCamera->SetAt(Vec3(0, 0.125f, 0));
-		m_myLightSet = shared_ptr<LightSet>(new LightSet());
+		m_myLightSet = std::shared_ptr<LightSet>(new LightSet());
 		//コントローラー
 		m_inputDevice.ResetControlerState();
 

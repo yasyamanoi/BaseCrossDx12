@@ -21,7 +21,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 		}
 		FreeLibrary(hUser32);
 	}
-
 	basecross::BaseDevice device(1280, 720, L"BaseCrossDx12");
 	return basecross::App::Run(&device, hInstance, nCmdShow);
 }

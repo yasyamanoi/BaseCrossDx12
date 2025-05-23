@@ -8,22 +8,18 @@
 
 namespace basecross {
 
-	
-	using namespace std;
-	using namespace basecross::bsm;
-
 
 	//--------------------------------------------------------------------------------------
 	// 土台のオブジェクト
 	//--------------------------------------------------------------------------------------
-	SkyGround::SkyGround(const shared_ptr<Stage>& stage, const TransParam& param) :
+	SkyGround::SkyGround(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		GameObject(stage,param)
 	{
 	}
 	SkyGround::~SkyGround() {}
 
 	void SkyGround::OnCreate() {
-		auto ptrGameStage = dynamic_pointer_cast<GameStage>(GetStage());
+		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(GetStage());
 		//Transformコンポーネントを取り出す
 		auto ptrTrans = GetComponent<Transform>();
 		auto& param = ptrTrans->GetTransParam();
@@ -31,15 +27,15 @@ namespace basecross {
 		PhysxCreateParam pxParam;
 		physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);
 		pxParam.pGeometry = &scale;
-		AddComponent<RigidStaticComp>(pxParam);
+		AddComponent<RigidbodyStatic>(pxParam);
 		//BaseCross関連
 		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		m_mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
-		auto ptrShadow = AddComponent<ShadowmapComp>();
+		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->SetBaseMesh(m_mesh);
 		auto texFile = App::GetRelativeAssetsDir() + L"sky.jpg";
 		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
-		auto ptrScene = AddComponent<SpSceneComp>();
+		auto ptrScene = AddComponent<SpPNTStaticDraw>();
 		ptrScene->SetBaseMesh(m_mesh);
 		ptrScene->SetBaseTexture(m_texture);
 
@@ -47,38 +43,38 @@ namespace basecross {
 
 	void SkyGround::OnUpdate(double elapsedTime) {
 		//RigidStaticCompコンポーネントを取り出す
-		auto ptrRigid = GetComponent<RigidStaticComp>();
+		auto ptrRigid = GetComponent<RigidbodyStatic>();
 		ptrRigid->OnUpdate(elapsedTime);
 	}
 
 
 	void SkyGround::OnDestroy() {
 		//RigidStaticCompコンポーネントを取り出す
-		auto ptrRigid = GetComponent<RigidStaticComp>();
+		auto ptrRigid = GetComponent<RigidbodyStatic>();
 		ptrRigid->OnDestroy();
 	}
 
 
 	void SkyGround::OnUpdateConstantBuffers() {
-		auto ptrShadow = GetComponent<ShadowmapComp>();
+		auto ptrShadow = GetComponent<Shadowmap>();
 		ptrShadow->OnUpdateConstantBuffers();
-		auto ptrScene = GetComponent<SpSceneComp>();
+		auto ptrScene = GetComponent<SpPNTStaticDraw>();
 		ptrScene->OnUpdateConstantBuffers();
 	}
 
 	void SkyGround::OnCommitConstantBuffers() {
-		auto ptrShadow = GetComponent<ShadowmapComp>();
+		auto ptrShadow = GetComponent<Shadowmap>();
 		ptrShadow->OnCommitConstantBuffers();
-		auto ptrScene = GetComponent<SpSceneComp>();
+		auto ptrScene = GetComponent<SpPNTStaticDraw>();
 		ptrScene->OnCommitConstantBuffers();
 	}
 
 	void SkyGround::OnShadowDraw() {
-		auto ptrShadow = GetComponent<ShadowmapComp>();
+		auto ptrShadow = GetComponent<Shadowmap>();
 		ptrShadow->OnShadowDraw();
 	}
 	void SkyGround::OnSceneDraw() {
-		auto ptrScene = GetComponent<SpSceneComp>();
+		auto ptrScene = GetComponent<SpPNTStaticDraw>();
 		ptrScene->OnSceneDraw();
 	}
 

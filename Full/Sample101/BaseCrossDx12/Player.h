@@ -9,15 +9,12 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
 	//--------------------------------------------------------------------------------------
 	// プレイヤー
 	//--------------------------------------------------------------------------------------
 	class Player : public  GameObject {
-		shared_ptr<BaseMesh> m_mesh;
-		shared_ptr < BaseTexture> m_texture;
+		std::shared_ptr<BaseMesh> m_mesh;
+		std::shared_ptr < BaseTexture> m_texture;
 		//プレイヤーが使用するコントローラ入力
 		Vec2 GetInputState() const;
 		// コントローラから方向ベクトルを得る
@@ -28,7 +25,7 @@ namespace basecross {
 		float m_Speed;
 	protected:
 	public:
-		Player(const shared_ptr<Stage>& stage, const TransParam& param);
+		Player(const std::shared_ptr<Stage>& stage, const TransParam& param);
 		virtual ~Player();
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;

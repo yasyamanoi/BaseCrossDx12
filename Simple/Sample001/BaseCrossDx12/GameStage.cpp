@@ -8,12 +8,9 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace bsm;
-
 	void GameStage::OnCreate() {
-		m_myCamera = shared_ptr<PerspecCamera>(new PerspecCamera());
-		m_myLightSet = shared_ptr<LightSet>(new LightSet());
+		m_myCamera = std::shared_ptr<PerspecCamera>(new PerspecCamera());
+		m_myLightSet = std::shared_ptr<LightSet>(new LightSet());
 		TransParam param;
 		param.scale = Vec3(1.0f, 1.0f, 1.0f);
 		param.rotOrigin = Vec3(0.0f, 0.0f, 0.0f);

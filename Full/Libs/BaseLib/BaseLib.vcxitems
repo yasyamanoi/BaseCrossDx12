@@ -36,14 +36,18 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\PipelineState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\PrimDevice.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\RootSignature.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Shadowmap.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\StepTimer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\targetver.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\TransHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\UILayer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\BcStaticDraw.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Component.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\GameObject.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\GravityComp.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Rigidbody.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Shadowmap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\SpStaticDraw.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Stage.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Transform.h" />
   </ItemGroup>
@@ -63,11 +67,15 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\PipelineState.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\PrimDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\RootSignature.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Shadowmap.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\UILayer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\BcStaticDraw.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Component.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GameObject.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GravityComp.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Rigidbody.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Shadowmap.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\SpStaticDraw.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Stage.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Transform.cpp" />
   </ItemGroup>

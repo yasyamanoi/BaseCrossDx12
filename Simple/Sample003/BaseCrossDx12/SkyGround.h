@@ -9,18 +9,14 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
-
 	//--------------------------------------------------------------------------------------
 	// 土台のオブジェクト
 	//--------------------------------------------------------------------------------------
 	class SkyGround : public GameObject {
-		shared_ptr<BaseMesh> m_mesh;
-		shared_ptr < BaseTexture> m_texture;
+		std::shared_ptr<BaseMesh> m_mesh;
+		std::shared_ptr < BaseTexture> m_texture;
 	public:
-		SkyGround(const shared_ptr<Stage>& stage, const TransParam& param);
+		SkyGround(const std::shared_ptr<Stage>& stage, const TransParam& param);
 		virtual ~SkyGround();
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;

@@ -8,14 +8,11 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
 	//--------------------------------------------------------------------------------------
 	//	MyCameraカメラ（コンポーネントではない）
 	//--------------------------------------------------------------------------------------
 	class MyCamera : public PerspecCamera {
-		weak_ptr<GameObject> m_TargetObject;	//目標となるオブジェクト
+		std::weak_ptr<GameObject> m_TargetObject;	//目標となるオブジェクト
 		float m_ToTargetLerp;	//目標を追いかける際の補間値
 		Vec3 m_TargetToAt;	//目標から視点を調整する位置ベクトル
 		float m_RadY;
@@ -80,7 +77,7 @@ namespace basecross {
 		@return	カメラの目標
 		*/
 		//--------------------------------------------------------------------------------------
-		shared_ptr<GameObject> GetTargetObject() const;
+		std::shared_ptr<GameObject> GetTargetObject() const;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	カメラの目標オブジェクトを設定する
@@ -88,7 +85,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SetTargetObject(const shared_ptr<GameObject>& Obj);
+		void SetTargetObject(const std::shared_ptr<GameObject>& Obj);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	オブジェクトを追いかける場合の補間値を得る

@@ -9,11 +9,6 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
-	
-
 	DECLARE_DX12SHADER(BcVSPNTStaticPL)
 	DECLARE_DX12SHADER(BcPSPNTPL)
 	DECLARE_DX12SHADER(BcVSPNTStaticPLShadow)
@@ -58,8 +53,8 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class BcSceneComp : public Component {
 	protected:
-		weak_ptr<BaseMesh> m_mesh;
-		weak_ptr <BaseTexture> m_texture;
+		std::weak_ptr<BaseMesh> m_mesh;
+		std::weak_ptr <BaseTexture> m_texture;
 		BasicConstantBuffer m_constantBuffer;
 		size_t m_constantBufferIndex;
 
@@ -75,13 +70,13 @@ namespace basecross {
 		XMFLOAT3 m_fogVector;
 
 	public:
-		void SetBaseMesh(const shared_ptr<BaseMesh>& mesh) {
+		void SetBaseMesh(const std::shared_ptr<BaseMesh>& mesh) {
 			m_mesh = mesh;
 		}
-		void SetBaseTexture(const shared_ptr<BaseTexture>& texture) {
+		void SetBaseTexture(const std::shared_ptr<BaseTexture>& texture) {
 			m_texture = texture;
 		}
-		BcSceneComp(const shared_ptr<GameObject>& gameObjectPtr);
+		BcSceneComp(const std::shared_ptr<GameObject>& gameObjectPtr);
 		virtual ~BcSceneComp() {}
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;

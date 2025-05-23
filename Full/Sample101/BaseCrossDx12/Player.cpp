@@ -8,22 +8,18 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
-
 	//--------------------------------------------------------------------------------------
 	// プレイヤー
 	//--------------------------------------------------------------------------------------
-	Player::Player(const shared_ptr<Stage>& stage, const TransParam& param) :
+	Player::Player(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		GameObject(stage, param),
-		m_Speed(10.0f)
+		m_Speed(8.0f)
 	{
 	}
 	Player::~Player() {}
 
 	void Player::OnCreate() {
-		auto ptrGameStage = dynamic_pointer_cast<GameStage>(GetStage());
+		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(GetStage());
 		//Transformコンポーネントを取り出す
 		auto ptrTrans = GetComponent<Transform>();
 		auto& param = ptrTrans->GetTransParam();
@@ -34,26 +30,30 @@ namespace basecross {
 		pxParam.staticFriction = 1.0f;
 		pxParam.dynamicFriction = 1.0f;
 		pxParam.restitution = 1.0f;
-		auto pRigDynamicComp = AddComponent<RigidDynamicComp>(pxParam);
+		auto pRigDynamicComp = AddComponent<RigidbodyDynamic>(pxParam);
 		auto pRigDynamic = pRigDynamicComp->GetRigidDynamic();
 		//BaseCross関連
 		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		m_mesh = BaseMesh::CreateSphere(pCommandList, 1.0f,18);
-		auto ptrShadow = AddComponent<ShadowmapComp>();
+		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->SetBaseMesh(m_mesh);
 		auto texFile = App::GetRelativeAssetsDir() + L"trace.png";
 		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
-		auto ptrScene = AddComponent<SpSceneComp>();
+		auto ptrScene = AddComponent<SpPNTStaticDraw>();
 		ptrScene->SetBaseMesh(m_mesh);
 		ptrScene->SetBaseTexture(m_texture);
 		//カメラ関連
 		//カメラを得る
-		auto ptrCamera = ptrGameStage->GetMyCamera();
-		if (ptrCamera) {
-			//MyCameraである
+		auto tgtCamera = ptrGameStage->GetTargetCamera();
+		if (tgtCamera) {
 			//MyCameraに注目するオブジェクト（プレイヤー）の設定
-			ptrCamera->SetTargetObject(GetThis<GameObject>());
-			ptrCamera->SetTargetToAt(Vec3(0, 0.25f, 0));
+			auto myCamera = std::dynamic_pointer_cast<MyCamera>(ptrGameStage->GetTargetCamera());
+			if (!myCamera) {
+				return;
+			}
+			auto myLightSet = ptrGameStage->GetTargetLightSet();
+			myCamera->SetTargetObject(GetThis<GameObject>());
+			myCamera->SetTargetToAt(Vec3(0, 0.25f, 0));
 		}
 	}
 
@@ -76,7 +76,7 @@ namespace basecross {
 
 
 	Vec3 Player::GetMoveVector() const {
-		auto ptrGameStage = dynamic_pointer_cast<GameStage>(GetStage());
+		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(GetStage());
 		Vec3 angle(0, 0, 0);
 		//入力の取得
 		auto inPut = GetInputState();
@@ -85,7 +85,7 @@ namespace basecross {
 		if (moveX != 0 || moveZ != 0) {
 			float moveLength = 0;	//動いた時のスピード
 			auto ptrTransform = GetComponent<Transform>();
-			auto ptrCamera = ptrGameStage->GetMyCamera();
+			auto ptrCamera = ptrGameStage->GetTargetCamera();
 			//進行方向の向きを計算
 			auto front = ptrTransform->GetPosition() - ptrCamera->GetEye();
 			front.y = 0;
@@ -115,7 +115,7 @@ namespace basecross {
 	void Player::MovePlayer(double elapsedTime) {
 		auto angle = GetMoveVector();
 		//RigidDynamicCompコンポーネントを取り出す
-		auto ptrRigid = GetComponent<RigidDynamicComp>();
+		auto ptrRigid = GetComponent<RigidbodyDynamic>();
 		auto pRigDynamic = ptrRigid->GetRigidDynamic();
 		if (angle.length() > 0.0f) {
 			Vec3 tmpVelo = angle * m_Speed;
@@ -146,31 +146,31 @@ namespace basecross {
 	}
 
 	void Player::OnUpdateConstantBuffers() {
-		auto ptrShadow = GetComponent<ShadowmapComp>();
+		auto ptrShadow = GetComponent<Shadowmap>();
 		ptrShadow->OnUpdateConstantBuffers();
-		auto ptrScene = GetComponent<SpSceneComp>();
+		auto ptrScene = GetComponent<SpPNTStaticDraw>();
 		ptrScene->OnUpdateConstantBuffers();
 	}
 
 	void Player::OnCommitConstantBuffers() {
-		auto ptrShadow = GetComponent<ShadowmapComp>();
+		auto ptrShadow = GetComponent<Shadowmap>();
 		ptrShadow->OnCommitConstantBuffers();
-		auto ptrScene = GetComponent<SpSceneComp>();
+		auto ptrScene = GetComponent<SpPNTStaticDraw>();
 		ptrScene->OnCommitConstantBuffers();
 	}
 
 	void Player::OnDestroy() {
 		//RigidDynamicCompコンポーネントを取り出す
-		auto ptrRigid = GetComponent<RigidDynamicComp>();
+		auto ptrRigid = GetComponent<RigidbodyDynamic>();
 		ptrRigid->OnDestroy();
 	}
 
 	void Player::OnShadowDraw() {
-		auto ptrShadow = GetComponent<ShadowmapComp>();
+		auto ptrShadow = GetComponent<Shadowmap>();
 		ptrShadow->OnShadowDraw();
 	}
 	void Player::OnSceneDraw() {
-		auto ptrScene = GetComponent<SpSceneComp>();
+		auto ptrScene = GetComponent<SpPNTStaticDraw>();
 		ptrScene->OnSceneDraw();
 	}
 

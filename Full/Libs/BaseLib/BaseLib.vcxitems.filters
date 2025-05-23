@@ -65,9 +65,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\RootSignature.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\Shadowmap.h">
-      <Filter>Basic\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\StepTimer.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
@@ -80,20 +77,35 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.h">
       <Filter>Basic\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\GameObject.h">
-      <Filter>Standerd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Component.h">
-      <Filter>Standerd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Transform.h">
-      <Filter>Standerd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Stage.h">
-      <Filter>Standerd\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\TransHelper.h">
       <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Component.h">
+      <Filter>Standerd\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Transform.h">
+      <Filter>Standerd\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\GameObject.h">
+      <Filter>Standerd\Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Stage.h">
+      <Filter>Standerd\Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Shadowmap.h">
+      <Filter>Standerd\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Rigidbody.h">
+      <Filter>Standerd\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\SpStaticDraw.h">
+      <Filter>Standerd\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\GravityComp.h">
+      <Filter>Standerd\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\BcStaticDraw.h">
+      <Filter>Standerd\Components\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -109,11 +121,23 @@
     <Filter Include="Standerd">
       <UniqueIdentifier>{ab7b9c41-2f9b-49dc-9d4c-87fe20e3f760}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Standerd\Headers">
-      <UniqueIdentifier>{d9643c2f-e730-446c-b018-c9d4501a88b4}</UniqueIdentifier>
+    <Filter Include="Standerd\Components">
+      <UniqueIdentifier>{0cdfba07-db8b-4894-9e39-281e96d32921}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Standerd\Sources">
-      <UniqueIdentifier>{5240e64d-5cb7-4af5-a5de-52a971d42c4f}</UniqueIdentifier>
+    <Filter Include="Standerd\Objects">
+      <UniqueIdentifier>{a3757e8b-3990-40e1-9b18-cb29a522055b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Standerd\Components\Headers">
+      <UniqueIdentifier>{1077336a-8692-496d-b03a-3ce0a71e6df9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Standerd\Components\Sources">
+      <UniqueIdentifier>{26a00ac0-70f2-40aa-9547-a3645cb5492a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Standerd\Objects\Headers">
+      <UniqueIdentifier>{ee64315c-cdf3-4fe4-84bc-b772b259f460}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Standerd\Objects\Sources">
+      <UniqueIdentifier>{bb6e8878-a6e0-4af2-ae06-02ab93d8410f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -159,29 +183,41 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\RootSignature.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\Shadowmap.cpp">
-      <Filter>Basic\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\UILayer.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.cpp">
       <Filter>Basic\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GameObject.cpp">
-      <Filter>Standerd\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Component.cpp">
-      <Filter>Standerd\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Transform.cpp">
-      <Filter>Standerd\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Stage.cpp">
-      <Filter>Standerd\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\ObjectInterface.cpp">
       <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Component.cpp">
+      <Filter>Standerd\Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Transform.cpp">
+      <Filter>Standerd\Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GameObject.cpp">
+      <Filter>Standerd\Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Stage.cpp">
+      <Filter>Standerd\Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Shadowmap.cpp">
+      <Filter>Standerd\Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Rigidbody.cpp">
+      <Filter>Standerd\Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\SpStaticDraw.cpp">
+      <Filter>Standerd\Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GravityComp.cpp">
+      <Filter>Standerd\Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\BcStaticDraw.cpp">
+      <Filter>Standerd\Components\Sources</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

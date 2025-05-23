@@ -6,12 +6,8 @@
 
 #pragma once
 
-////コンテンツ側ライブラリ
-#include "ContentsLib/ShadowmapComp.h"
-#include "ContentsLib/SpSceneComp.h"
-#include "ContentsLib/BcSceneComp.h"
-#include "ContentsLib/RigidComp.h"
-#include "ContentsLib/GravityComp.h"
+using namespace basecross::bsm;
+
 //個別オブジェクト等
 #include "MyCamera.h"
 #include "SkyGround.h"

@@ -10,13 +10,11 @@
 
 namespace basecross {
 	
-	using namespace std;
-	using namespace basecross::bsm;
 
 	//--------------------------------------------------------------------------------------
 	///	 重力コンポーネント
 	//--------------------------------------------------------------------------------------
-	GravityComp::GravityComp(const shared_ptr<GameObject>& GameObjectPtr, const Vec3& gravity) :
+	GravityComp::GravityComp(const std::shared_ptr<GameObject>& GameObjectPtr, const Vec3& gravity) :
 		Component(GameObjectPtr),
 		m_Gravity(gravity),
 		m_GravityVelocity(0)

@@ -8,15 +8,12 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
 	//--------------------------------------------------------------------------------------
 	///	Shadowmap
 	//--------------------------------------------------------------------------------------
 	IMPLEMENT_DX12SHADER(PNTShadowmap, App::GetShadersDir() + L"VSShadowmap.cso")
 
-	ShadowmapComp::ShadowmapComp(const shared_ptr<GameObject>& gameObjectPtr):
+	ShadowmapComp::ShadowmapComp(const std::shared_ptr<GameObject>& gameObjectPtr):
 		Component(gameObjectPtr)
 	{ }
 
@@ -34,10 +31,10 @@ namespace basecross {
 
 	void ShadowmapComp::OnUpdateConstantBuffers() {
 		auto scene = dynamic_cast<Scene*>(BaseScene::Get());
-		auto gameStage = dynamic_pointer_cast<GameStage>(scene->GetActiveStage());
+		auto gameStage = std::dynamic_pointer_cast<GameStage>(scene->GetActiveStage());
 		auto& viewport = scene->GetViewport();
-		shared_ptr<PerspecCamera> myCamera;
-		shared_ptr<LightSet> myLightSet;
+		std::shared_ptr<PerspecCamera> myCamera;
+		std::shared_ptr<LightSet> myLightSet;
 		if (gameStage) {
 			myCamera = gameStage->GetMyCamera();
 			myLightSet = gameStage->GetLightSet();

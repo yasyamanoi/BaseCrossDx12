@@ -13,15 +13,12 @@ namespace basecross {
 	class MyObject;
 	class Stage;
 
-	using namespace std;
-
-
 	//--------------------------------------------------------------------------------------
 	// ÉVÅ[Éì
 	//--------------------------------------------------------------------------------------
 	class Scene : public BaseScene
 	{
-		shared_ptr<Stage> m_activeStage;
+		std::shared_ptr<Stage> m_activeStage;
 	public:
 		Scene(UINT frameCount, PrimDevice* pPrimDevice);
 		virtual ~Scene();

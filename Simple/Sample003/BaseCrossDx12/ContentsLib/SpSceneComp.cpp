@@ -9,9 +9,6 @@
 #include "Project.h"
 
 namespace basecross {
-
-	using namespace std;
-	using namespace basecross::bsm;
 	
 	using namespace SceneEnums;
 
@@ -33,7 +30,7 @@ namespace basecross {
 		}
 	}
 
-	shared_ptr<BaseMesh> SpSceneComp::GetBaseMesh() const {
+	std::shared_ptr<BaseMesh> SpSceneComp::GetBaseMesh() const {
 		auto mesh = m_mesh.lock();
 		if (mesh) {
 			return mesh;
@@ -42,7 +39,7 @@ namespace basecross {
 	}
 
 
-	shared_ptr<BaseTexture> SpSceneComp::GetBaseTexture() const {
+	std::shared_ptr<BaseTexture> SpSceneComp::GetBaseTexture() const {
 		auto texture = m_texture.lock();
 		if (texture) {
 			return texture;
@@ -54,12 +51,12 @@ namespace basecross {
 
 	void SpSceneComp::OnUpdateConstantBuffers() {
 		auto scene = dynamic_cast<Scene*>(BaseScene::Get());
-		auto gameStage = dynamic_pointer_cast<GameStage>(scene->GetActiveStage());
+		auto gameStage = std::dynamic_pointer_cast<GameStage>(scene->GetActiveStage());
 		auto& frameResources = scene->GetFrameResources();
 		auto pBaseDevice = BaseDevice::GetBaseDevice();
 		auto& viewport = scene->GetViewport();
-		shared_ptr<PerspecCamera> myCamera;
-		shared_ptr<LightSet> myLightSet;
+		std::shared_ptr<PerspecCamera> myCamera;
+		std::shared_ptr<LightSet> myLightSet;
 		if (gameStage) {
 			myCamera = gameStage->GetMyCamera();
 			myLightSet = gameStage->GetLightSet();

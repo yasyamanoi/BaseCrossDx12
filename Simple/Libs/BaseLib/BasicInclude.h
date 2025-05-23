@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 //C++”ÅCéŒ¾
+#include <cstdio>
 #include <cfloat>
 #include <clocale>
 #include <cassert>

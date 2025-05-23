@@ -8,13 +8,10 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace bsm;
-
 	//--------------------------------------------------------------------------------------
 	// 土台のオブジェクト
 	//--------------------------------------------------------------------------------------
-	SkyGround::SkyGround(const shared_ptr<Stage>& stage, const TransParam& param) :
+	SkyGround::SkyGround(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		MyObject(stage,param)
 	{
 	}

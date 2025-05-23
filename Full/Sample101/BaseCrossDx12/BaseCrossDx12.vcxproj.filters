@@ -16,15 +16,6 @@
     <Filter Include="シェーダーファイル">
       <UniqueIdentifier>{5e6741ac-b71b-4eaf-bcff-41822a51c24e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ContentsLib">
-      <UniqueIdentifier>{f88a1a0c-5601-47e0-bcb3-820c5761e756}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ContentsLib\Headers">
-      <UniqueIdentifier>{c9fb0c2d-8162-4662-b446-a65a6eaf24d2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ContentsLib\Sources">
-      <UniqueIdentifier>{ae4be3a9-96ff-49aa-bdb3-8880ababe403}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -47,21 +38,6 @@
     </ClInclude>
     <ClInclude Include="GameStage.h">
       <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ContentsLib\ShadowmapComp.h">
-      <Filter>ContentsLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="ContentsLib\BcSceneComp.h">
-      <Filter>ContentsLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="ContentsLib\GravityComp.h">
-      <Filter>ContentsLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="ContentsLib\SpSceneComp.h">
-      <Filter>ContentsLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="ContentsLib\RigidComp.h">
-      <Filter>ContentsLib\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -98,21 +74,6 @@
     </ClCompile>
     <ClCompile Include="GameStage.cpp">
       <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="ContentsLib\ShadowmapComp.cpp">
-      <Filter>ContentsLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="ContentsLib\BcSceneComp.cpp">
-      <Filter>ContentsLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="ContentsLib\SpSceneComp.cpp">
-      <Filter>ContentsLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="ContentsLib\GravityComp.cpp">
-      <Filter>ContentsLib\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="ContentsLib\RigidComp.cpp">
-      <Filter>ContentsLib\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Player.cpp">
       <Filter>ソース ファイル</Filter>

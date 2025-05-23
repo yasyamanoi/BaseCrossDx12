@@ -125,22 +125,16 @@ namespace basecross {
 		ZeroMemory(&winInfo, sizeof(winInfo));
 		try
 		{
-
 			// デバッグ時、deleteもれのチェック用
 			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 			//ロケールの設定
-			setlocale(LC_ALL, "JPN");
-
-			
-
+//			setlocale(LC_ALL, "JPN");
 			// Parse the command line parameters
 			int argc;
 			LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 			pPrimDevice->ParseCommandLineArgs(argv, argc);
 			LocalFree(argv);
-
 			m_pPrimDevice = pPrimDevice;
-
 			// Initialize the window class.
 			WNDCLASSEX windowClass = { 0 };
 			windowClass.cbSize = sizeof(WNDCLASSEX);

@@ -13,16 +13,13 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
 	//--------------------------------------------------------------------------------------
 	// 配置されるオブジェクトの親
 	//--------------------------------------------------------------------------------------
 	class GameStage : public Stage {
 	protected:
-		shared_ptr<MyCamera> m_myCamera;
-		shared_ptr<LightSet> m_myLightSet;
+		std::shared_ptr<MyCamera> m_myCamera;
+		std::shared_ptr<LightSet> m_myLightSet;
 		//コントローラ
 		InputDevice m_inputDevice;
 
@@ -38,8 +35,6 @@ namespace basecross {
 		physx::PxDefaultCpuDispatcher* m_pDispatcher = nullptr;
 		// シミュレーションする空間の単位でActorの追加などもここで行う
 		physx::PxScene* m_pScene = nullptr;
-		// PVDと通信する際に必要
-//		physx::PxPvd* m_pPvd = nullptr;
 
 	public:
 		GameStage(ID3D12Device* pDevice):
@@ -47,7 +42,7 @@ namespace basecross {
 		{}
 		virtual ~GameStage();
 		//アクセサ
-		shared_ptr<MyCamera> GetMyCamera() const{
+		std::shared_ptr<MyCamera> GetMyCamera() const{
 			return m_myCamera;
 		}
 		physx::PxPhysics* GetPxPhysics() {

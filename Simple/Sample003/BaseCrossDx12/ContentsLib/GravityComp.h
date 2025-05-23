@@ -8,9 +8,6 @@
 #include "stdafx.h"
 
 namespace basecross {
-	
-	using namespace std;
-	using namespace basecross::bsm;
 
 	//--------------------------------------------------------------------------------------
 	///	 重力コンポーネント
@@ -19,7 +16,7 @@ namespace basecross {
 		Vec3 m_Gravity;
 		Vec3 m_GravityVelocity;
 	public:
-		explicit GravityComp(const shared_ptr<GameObject>& GameObjectPtr,
+		explicit GravityComp(const std::shared_ptr<GameObject>& GameObjectPtr,
 			const Vec3& gravity = Vec3(0, -9.8f, 0));
 		virtual ~GravityComp();
 		Vec3 GetGravity() const;

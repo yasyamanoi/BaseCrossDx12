@@ -9,9 +9,6 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
 	//--------------------------------------------------------------------------------------
 	///	SimpleConstantコンスタントバッファ構造体
 	//--------------------------------------------------------------------------------------
@@ -68,12 +65,12 @@ namespace basecross {
 		//自分自身に影を描画するかどうか
 		bool m_ownShadowActive;
 	protected:
-		weak_ptr<BaseMesh> m_mesh;
-		weak_ptr <BaseTexture> m_texture;
+		std::weak_ptr<BaseMesh> m_mesh;
+		std::weak_ptr <BaseTexture> m_texture;
 		SimpleConstant m_constantBuffer;
 		size_t m_constantBufferIndex;
 	public:
-		explicit SpSceneComp(const shared_ptr<GameObject>& gameObjectPtr) :
+		explicit SpSceneComp(const std::shared_ptr<GameObject>& gameObjectPtr) :
 			Component(gameObjectPtr),
 			m_emissive(0.0f),
 			m_diffuse(1.0f),
@@ -106,12 +103,12 @@ namespace basecross {
 		void SetOwnShadowActive(bool b) {
 			m_ownShadowActive = b;
 		}
-		shared_ptr<BaseMesh> GetBaseMesh() const;
-		void SetBaseMesh(const shared_ptr<BaseMesh>& mesh) {
+		std::shared_ptr<BaseMesh> GetBaseMesh() const;
+		void SetBaseMesh(const std::shared_ptr<BaseMesh>& mesh) {
 			m_mesh = mesh;
 		}
-		shared_ptr<BaseTexture> GetBaseTexture() const;
-		void SetBaseTexture(const shared_ptr<BaseTexture>& baseTexture) {
+		std::shared_ptr<BaseTexture> GetBaseTexture() const;
+		void SetBaseTexture(const std::shared_ptr<BaseTexture>& baseTexture) {
 			m_texture = baseTexture;
 		}
 		virtual void OnUpdateConstantBuffers()override;

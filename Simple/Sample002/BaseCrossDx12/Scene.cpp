@@ -10,8 +10,6 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace bsm;
 	using namespace SceneEnums;
 
 
@@ -228,30 +226,19 @@ namespace basecross {
 	}
 
 	void Scene::UpdateUI(std::unique_ptr<UILayer>& uiLayer) {
-		vector<wstring> labels;
-		{
-			auto device = BaseDevice::GetBaseDevice();
-			//1•bŠÔ‚É‚P‰ñXV‚³‚ê‚éˆÀ’è‚µ‚½fps‚ð“¾‚é
-			auto fps = device->GetStableFps();
-			//1•bŠÔ‚É‚P‰ñXV‚³‚ê‚éˆÀ’è‚µ‚½elapsedTime‚ð“¾‚é
-			auto elapsedTime = device->GetStableElapsedTime();
-			wstringstream wLabel;
-			wLabel.precision(1);
-			wLabel << fixed << L"FPS: " << fps
-				<< L"\n";
-			wLabel.precision(6);
-			wLabel << L"ElapsedTime: " << elapsedTime
-				<< L"\n";
-			labels.push_back(wLabel.str());
-		}
+		auto device = BaseDevice::GetBaseDevice();
+		//1•bŠÔ‚É‚P‰ñXV‚³‚ê‚éˆÀ’è‚µ‚½fps‚ð“¾‚é
+		auto fps = device->GetStableFps();
+		//1•bŠÔ‚É‚P‰ñXV‚³‚ê‚éˆÀ’è‚µ‚½elapsedTime‚ð“¾‚é
+		auto elapsedTime = device->GetStableElapsedTime();
 
-		wstring uiText = L"";
-		for (auto s : labels)
-		{
-			uiText += s;
-		}
+		std::wstring uiText = L"";
+		wchar_t buff[512];
+		swprintf_s(buff, 500, L"FPS: %.1f\n", fps);
+		uiText = buff;
+		swprintf_s(buff, 500, L"ElapsedTime: %.6f\n", elapsedTime);
+		uiText += buff;
 		uiLayer->UpdateLabels(uiText);
-
 	}
 
 

@@ -7,6 +7,9 @@
 #pragma once
 
 ////コンテンツ側ライブラリ
+
+using namespace basecross::bsm;
+
 #include "ContentsLib/ShadowmapComp.h"
 #include "ContentsLib/BcSceneComp.h"
 //個別オブジェクト等

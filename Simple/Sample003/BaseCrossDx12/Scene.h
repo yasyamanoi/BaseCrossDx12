@@ -9,9 +9,6 @@
 
 namespace basecross {
 
-	using namespace std;
-	using namespace basecross::bsm;
-
 	class MyObject;
 	class Stage;
 
@@ -22,14 +19,14 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class Scene : public BaseScene
 	{
-		shared_ptr<Stage> m_activeStage;
+		std::shared_ptr<Stage> m_activeStage;
 	public:
 		Scene(UINT frameCount, PrimDevice* pPrimDevice);
 		virtual ~Scene();
-		shared_ptr<Stage> GetActiveStage(bool ExceptionActive = true) const;
+		std::shared_ptr<Stage> GetActiveStage(bool ExceptionActive = true) const;
 
 		template<typename T, typename... Ts>
-		shared_ptr<T> ResetActiveStage(Ts&&... params) {
+		std::shared_ptr<T> ResetActiveStage(Ts&&... params) {
 			auto actStagePtr = GetActiveStage(false);
 			if (actStagePtr) {
 				//îjä¸Çì`Ç¶ÇÈ
@@ -37,7 +34,7 @@ namespace basecross {
 				actStagePtr = nullptr;
 			}
 			auto ptr = ObjectFactory::Create<T>(params...);
-			auto stagePtr = dynamic_pointer_cast<Stage>(ptr);
+			auto stagePtr = std::dynamic_pointer_cast<Stage>(ptr);
 			if (!stagePtr) {
 				throw BaseException(
 					L"à»â∫ÇÕStageÇ…å^ÉLÉÉÉXÉgÇ≈Ç´Ç‹ÇπÇÒÅB",
@@ -49,7 +46,7 @@ namespace basecross {
 			return ptr;
 		}
 	protected:
-		void SetActiveStage(const shared_ptr<Stage>& stage) {
+		void SetActiveStage(const std::shared_ptr<Stage>& stage) {
 			m_activeStage = stage;
 		}
 		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)override;
