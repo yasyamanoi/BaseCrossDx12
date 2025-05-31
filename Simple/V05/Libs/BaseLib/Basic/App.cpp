@@ -109,7 +109,7 @@ namespace basecross {
 		// デバッグ時、deleteもれのチェック用
 		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 		//ロケールの設定
-		setlocale(LC_ALL, "JPN");
+//		setlocale(LC_ALL, "JPN");
 
 		m_pBaseScene = pBaseScene;
 		m_EventDispatcher = shared_ptr<EventDispatcher>(new EventDispatcher);

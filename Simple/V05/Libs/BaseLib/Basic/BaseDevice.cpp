@@ -531,8 +531,8 @@ namespace basecross {
 		CD3DX12_RESOURCE_DESC shadowTextureDesc(
 			D3D12_RESOURCE_DIMENSION_TEXTURE2D,
 			0,
-			static_cast<UINT>(m_viewport.Width),
-			static_cast<UINT>(m_viewport.Height),
+			static_cast<UINT>(m_viewport.Width *2),
+			static_cast<UINT>(m_viewport.Height*2),
 			1,
 			1,
 			DXGI_FORMAT_D32_FLOAT,

@@ -95,17 +95,20 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Shadowmap.h">
       <Filter>Standerd\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Rigidbody.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\BcScene.h">
       <Filter>Standerd\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\SpStaticDraw.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Behavior.h">
+      <Filter>Standerd\Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Gravity.h">
       <Filter>Standerd\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\GravityComp.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Collision.h">
       <Filter>Standerd\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\BcStaticDraw.h">
-      <Filter>Standerd\Components\Headers</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\CollisionManager.h">
+      <Filter>Standerd\Objects\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -122,22 +125,25 @@
       <UniqueIdentifier>{ab7b9c41-2f9b-49dc-9d4c-87fe20e3f760}</UniqueIdentifier>
     </Filter>
     <Filter Include="Standerd\Components">
-      <UniqueIdentifier>{0cdfba07-db8b-4894-9e39-281e96d32921}</UniqueIdentifier>
+      <UniqueIdentifier>{40db5963-5500-44ec-be83-8df93e9dcb2c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Standerd\Objects">
-      <UniqueIdentifier>{a3757e8b-3990-40e1-9b18-cb29a522055b}</UniqueIdentifier>
+      <UniqueIdentifier>{6dec40ed-376a-46d5-a071-76a4240ce853}</UniqueIdentifier>
     </Filter>
     <Filter Include="Standerd\Components\Headers">
-      <UniqueIdentifier>{1077336a-8692-496d-b03a-3ce0a71e6df9}</UniqueIdentifier>
+      <UniqueIdentifier>{7c58790c-4199-4112-9a2f-b601e3dad889}</UniqueIdentifier>
     </Filter>
     <Filter Include="Standerd\Components\Sources">
-      <UniqueIdentifier>{26a00ac0-70f2-40aa-9547-a3645cb5492a}</UniqueIdentifier>
+      <UniqueIdentifier>{ff52c41f-5517-4489-ae64-7cb0d8431bcc}</UniqueIdentifier>
     </Filter>
     <Filter Include="Standerd\Objects\Headers">
-      <UniqueIdentifier>{ee64315c-cdf3-4fe4-84bc-b772b259f460}</UniqueIdentifier>
+      <UniqueIdentifier>{90f2a41a-880e-4f35-86c6-91f89dd4c8db}</UniqueIdentifier>
     </Filter>
     <Filter Include="Standerd\Objects\Sources">
-      <UniqueIdentifier>{bb6e8878-a6e0-4af2-ae06-02ab93d8410f}</UniqueIdentifier>
+      <UniqueIdentifier>{425a845c-b8a7-4cf8-9602-17e7d749adbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{ed842153-0b43-4af5-b160-5290c14710c5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -207,17 +213,57 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Shadowmap.cpp">
       <Filter>Standerd\Components\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Rigidbody.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\BcScene.cpp">
       <Filter>Standerd\Components\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\SpStaticDraw.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Behavior.cpp">
+      <Filter>Standerd\Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Gravity.cpp">
       <Filter>Standerd\Components\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GravityComp.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Collision.cpp">
       <Filter>Standerd\Components\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\BcStaticDraw.cpp">
-      <Filter>Standerd\Components\Sources</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\CollisionManager.cpp">
+      <Filter>Standerd\Objects\Sources</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCCommon.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCConstant.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCLighting.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCShadow.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCStructs.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\INCShadowmap.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcPSPNTPL.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcPSPNTPLShadow.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTStaticPL.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTStaticPLShadow.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\VSShadowmap.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -26,6 +26,7 @@ namespace basecross {
 	using namespace DirectX;
 	class FrameResource;
 	class PrimDevice;
+	class Stage;
 
 	class BaseScene
 	{
@@ -42,8 +43,10 @@ namespace basecross {
 		void ReleaseD3DObjects();
 		void KeyDown(UINT8 key);
 		void KeyUp(UINT8 key);
+		std::shared_ptr<Stage> GetActiveStage(bool ExceptionActive = true) const;
+
 		virtual void UpdateUI(std::unique_ptr<UILayer>& uiLayer) = 0;
-		virtual void Update(double elapsedTime) = 0;
+		virtual void Update(double elapsedTime);
 		virtual void Destroy() {}
 		virtual void Render(ID3D12CommandQueue* pCommandQueue, bool setBackbufferReadyForPresent);
 		virtual void SetToBefore() {}
@@ -139,6 +142,67 @@ namespace basecross {
 			);
 			return 0;
 		}
+		template<typename T, typename... Ts>
+		std::shared_ptr<T> ResetActiveStage(Ts&&... params) {
+			auto actStagePtr = GetActiveStage(false);
+			if (actStagePtr) {
+				//破棄を伝える
+				actStagePtr->OnDestroy();
+				actStagePtr = nullptr;
+			}
+			auto ptr = ObjectFactory::Create<T>(params...);
+			auto stagePtr = std::dynamic_pointer_cast<Stage>(ptr);
+			if (!stagePtr) {
+				throw BaseException(
+					L"以下はStageに型キャストできません。",
+					Util::GetWSTypeName<T>(),
+					L"Scene::ResetActiveStage<T>()"
+				);
+			}
+			SetActiveStage(stagePtr);
+			return ptr;
+		}
+
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	メッシュをリソース登録する
+		@param[in]	key	リソースのキー
+		@param[in]	mesh	メッシュ
+		@param[in]	keyCheck	キーの重複チェックするかどうか
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void RegisterMesh(const std::wstring& key, const std::shared_ptr<BaseMesh>& mesh, bool keyCheck = false);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	登録されているメッシュを取得する
+		@param[in]	key	リソースのキー
+		@return	メッシュ
+		*/
+		//--------------------------------------------------------------------------------------
+		std::shared_ptr<BaseMesh> GetMesh(const std::wstring& key);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	テクスチャをリソース登録する
+		@param[in]	key	リソースのキー
+		@param[in]	texture	テクスチャ
+		@param[in]	keyCheck	キーの重複チェックするかどうか
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void RegisterTexture(const std::wstring& key, const std::shared_ptr<BaseTexture>& texture, bool keyCheck = false);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	登録されているテクスチャを取得する
+		@param[in]	key	リソースのキー
+		@return	テクスチャ
+		*/
+		//--------------------------------------------------------------------------------------
+		std::shared_ptr<BaseTexture> GetTexture(const std::wstring& key);
+
+		static double GetElapsedTime() {
+			return s_elapsedTime;
+		}
 		float m_fogDensity;
 	protected:
 		UINT m_frameCount;
@@ -178,6 +242,13 @@ namespace basecross {
 
 		// App resources.
 		PrimDevice* m_pPrimDevice;
+		//Stage
+		std::shared_ptr<Stage> m_activeStage;
+		//mesh map
+		std::map<const std::wstring, std::shared_ptr<BaseMesh> > m_meshMap;
+		//texture map
+		std::map<const std::wstring, std::shared_ptr<BaseTexture> > m_textureMap;
+
 
 		static const float s_clearColor[4];
 
@@ -200,7 +271,7 @@ namespace basecross {
 		//CbvUavの開始インデックス
 		const UINT m_cbvUavStartIndex = 1024;
 		//CbvUavの最大値
-		const UINT m_cbvUavMax = 4096;
+		const UINT m_cbvUavMax = 2048;
 		//CbvUavの発行インデックス
 		UINT m_cbvUavSendIndex;
 		//sampler管理用
@@ -217,15 +288,18 @@ namespace basecross {
 		HANDLE m_threadHandles;
 		// Singleton object so that worker threads can share members.
 		static BaseScene* s_baseScene;
+		//elapsedTime
+		static double s_elapsedTime;
+
 		// Updates the shadow copies of the constant buffers.
-		virtual void UpdateConstantBuffers() = 0; 
+		virtual void UpdateConstantBuffers(); 
 		// Commits the shadows copies of the constant buffers to GPU-visible memory for the current frame.
-		virtual void CommitConstantBuffers() = 0; 
+		virtual void CommitConstantBuffers(); 
 		virtual void DrawInScattering(ID3D12GraphicsCommandList* pCommandList, const D3D12_CPU_DESCRIPTOR_HANDLE& renderTargetHandle);
 		void WorkerThread();
 
-		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList) = 0;
-		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList) = 0;
+		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList);
+		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList);
 		virtual void PostprocessPass(ID3D12GraphicsCommandList* pCommandList);
 
 
@@ -237,12 +311,17 @@ namespace basecross {
 		virtual void CreateDescriptorHeaps(ID3D12Device* pDevice);
 		virtual void CreateCommandLists(ID3D12Device* pDevice);
 		virtual void CreateRootSignatures(ID3D12Device* pDevice);
-		virtual void CreatePipelineStates(ID3D12Device* pDevice) = 0;
 		virtual void CreateFrameResources(ID3D12Device* pDevice, ID3D12CommandQueue* pCommandQueue);
 		virtual void CreateBasicResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList);
+		virtual void CreateDefaultResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList);
 		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) = 0;
 		virtual void CreatePostprocessPassResources(ID3D12Device* pDevice);
 		virtual void CreateSamplers(ID3D12Device* pDevice);
+
+		void SetActiveStage(const std::shared_ptr<Stage>& stage) {
+			m_activeStage = stage;
+		}
+
 
 		inline HRESULT CreateDepthStencilTexture2D(
 			ID3D12Device* pDevice,

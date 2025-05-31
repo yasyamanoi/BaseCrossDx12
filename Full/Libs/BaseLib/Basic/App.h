@@ -37,7 +37,6 @@ namespace basecross {
 		static ID3D12Device* GetD3D12Device();
 		static ComPtr<ID3D12Device> GetID3D12Device();
 
-
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	モジュール名フルパスを得る

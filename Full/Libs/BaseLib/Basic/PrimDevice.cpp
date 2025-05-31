@@ -210,6 +210,7 @@ namespace basecross {
 
 			}
 #endif
+			App::GetInputDevice().ResetControlerState();
 			OnUpdate();
 			OnRender();
 			SetToBefore();

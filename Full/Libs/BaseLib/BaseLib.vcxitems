@@ -41,13 +41,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\TransHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\UILayer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\BcStaticDraw.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\BcScene.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Behavior.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Collision.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\CollisionManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Component.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\GameObject.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\GravityComp.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Rigidbody.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Gravity.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Shadowmap.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\SpStaticDraw.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Stage.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Transform.h" />
   </ItemGroup>
@@ -69,14 +70,55 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\RootSignature.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\UILayer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\BcStaticDraw.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\BcScene.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Behavior.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Collision.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\CollisionManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Component.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GameObject.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\GravityComp.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Rigidbody.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Gravity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Shadowmap.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\SpStaticDraw.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Stage.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Transform.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCCommon.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCConstant.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCLighting.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCShadow.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCStructs.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\INCShadowmap.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcPSPNTPL.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcPSPNTPLShadow.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTStaticPL.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTStaticPLShadow.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\VSShadowmap.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemGroup>
 </Project>

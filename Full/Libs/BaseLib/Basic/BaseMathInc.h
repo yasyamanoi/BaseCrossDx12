@@ -240,6 +240,28 @@ namespace basecross {
 			return *this;
 		}
 
+		inline Vec2& Vec2::floor(int len) {
+			x = bsm::bsmUtil::floor(x, len);
+			y = bsm::bsmUtil::floor(y, len);
+			return *this;
+
+		}
+
+		inline Vec2& Vec2::round(int len) {
+			x = bsm::bsmUtil::round(x, len);
+			y = bsm::bsmUtil::round(y, len);
+
+			return *this;
+		}
+
+		inline Vec2& Vec2::ceil(int len) {
+			x = bsm::bsmUtil::ceil(x, len);
+			y = bsm::bsmUtil::ceil(y, len);
+			return *this;
+		}
+
+
+
 		inline float Vec2::dot(const Vec2& vec1)const {
 			return ((Vec2)XMVector2Dot(*this, vec1)).x;
 		}
@@ -509,6 +531,27 @@ namespace basecross {
 			return *this;
 		}
 
+		inline Vec3& Vec3::floor(int len) {
+			x = bsm::bsmUtil::floor(x, len);
+			y = bsm::bsmUtil::floor(y, len);
+			z = bsm::bsmUtil::floor(z, len);
+			return *this;
+
+		}
+
+		inline Vec3& Vec3::round(int len) {
+			x = bsm::bsmUtil::round(x, len);
+			y = bsm::bsmUtil::round(y, len);
+			z = bsm::bsmUtil::round(z, len);
+			return *this;
+		}
+
+		inline Vec3& Vec3::ceil(int len) {
+			x = bsm::bsmUtil::ceil(x, len);
+			y = bsm::bsmUtil::ceil(y, len);
+			z = bsm::bsmUtil::ceil(z, len);
+			return *this;
+		}
 
 		inline float Vec3::dot(const Vec3& vec1)const {
 			return ((Vec3)XMVector3Dot(*this, vec1)).x;
@@ -810,6 +853,32 @@ namespace basecross {
 			*this = (Vec4)XMVector4Normalize(*this);
 			return *this;
 		}
+
+		inline Vec4& Vec4::floor(int len) {
+			x = bsm::bsmUtil::floor(x, len);
+			y = bsm::bsmUtil::floor(y, len);
+			z = bsm::bsmUtil::floor(z, len);
+			w = bsm::bsmUtil::floor(w, len);
+			return *this;
+
+		}
+
+		inline Vec4& Vec4::round(int len) {
+			x = bsm::bsmUtil::round(x, len);
+			y = bsm::bsmUtil::round(y, len);
+			z = bsm::bsmUtil::round(z, len);
+			w = bsm::bsmUtil::round(w, len);
+			return *this;
+		}
+
+		inline Vec4& Vec4::ceil(int len) {
+			x = bsm::bsmUtil::ceil(x, len);
+			y = bsm::bsmUtil::ceil(y, len);
+			z = bsm::bsmUtil::ceil(z, len);
+			w = bsm::bsmUtil::ceil(w, len);
+			return *this;
+		}
+
 
 
 		inline float Vec4::dot(const Vec4& vec1)const {

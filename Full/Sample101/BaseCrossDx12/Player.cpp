@@ -13,57 +13,14 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	Player::Player(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		GameObject(stage, param),
-		m_Speed(8.0f)
+		m_Speed(6.0f)
 	{
-	}
-	Player::~Player() {}
-
-	void Player::OnCreate() {
-		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(GetStage());
-		//Transformコンポーネントを取り出す
-		auto ptrTrans = GetComponent<Transform>();
-		auto& param = ptrTrans->GetTransParam();
-		//PhysX関連
-		PhysxCreateParam pxParam;
-		physx::PxSphereGeometry scale(param.scale.x * 0.5f);
-		pxParam.pGeometry = &scale;
-		pxParam.staticFriction = 1.0f;
-		pxParam.dynamicFriction = 1.0f;
-		pxParam.restitution = 1.0f;
-		auto pRigDynamicComp = AddComponent<RigidbodyDynamic>(pxParam);
-		auto pRigDynamic = pRigDynamicComp->GetRigidDynamic();
-		//BaseCross関連
-		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
-		m_mesh = BaseMesh::CreateSphere(pCommandList, 1.0f,18);
-		auto ptrShadow = AddComponent<Shadowmap>();
-		ptrShadow->SetBaseMesh(m_mesh);
-		auto texFile = App::GetRelativeAssetsDir() + L"trace.png";
-		m_texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
-		auto ptrScene = AddComponent<SpPNTStaticDraw>();
-		ptrScene->SetBaseMesh(m_mesh);
-		ptrScene->SetBaseTexture(m_texture);
-		//カメラ関連
-		//カメラを得る
-		auto tgtCamera = ptrGameStage->GetTargetCamera();
-		if (tgtCamera) {
-			//MyCameraに注目するオブジェクト（プレイヤー）の設定
-			auto myCamera = std::dynamic_pointer_cast<MyCamera>(ptrGameStage->GetTargetCamera());
-			if (!myCamera) {
-				return;
-			}
-			auto myLightSet = ptrGameStage->GetTargetLightSet();
-			myCamera->SetTargetObject(GetThis<GameObject>());
-			myCamera->SetTargetToAt(Vec3(0, 0.25f, 0));
-		}
 	}
 
 	Vec2 Player::GetInputState() const {
 		Vec2 ret;
 		//コントローラの取得
-		//入力の取得
-		InputDevice inputDevice;
-		inputDevice.ResetControlerState();
-		auto cntlVec = inputDevice.GetControlerVec();
+		auto cntlVec = App::GetInputDevice().GetControlerVec();
 		ret.x = 0.0f;
 		ret.y = 0.0f;
 		WORD wButtons = 0;
@@ -76,7 +33,6 @@ namespace basecross {
 
 
 	Vec3 Player::GetMoveVector() const {
-		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(GetStage());
 		Vec3 angle(0, 0, 0);
 		//入力の取得
 		auto inPut = GetInputState();
@@ -85,7 +41,7 @@ namespace basecross {
 		if (moveX != 0 || moveZ != 0) {
 			float moveLength = 0;	//動いた時のスピード
 			auto ptrTransform = GetComponent<Transform>();
-			auto ptrCamera = ptrGameStage->GetTargetCamera();
+			auto ptrCamera = GetStage()->GetCamera();
 			//進行方向の向きを計算
 			auto front = ptrTransform->GetPosition() - ptrCamera->GetEye();
 			front.y = 0;
@@ -111,70 +67,58 @@ namespace basecross {
 		return angle;
 	}
 
-
-	void Player::MovePlayer(double elapsedTime) {
+	void Player::MovePlayer() {
+		float elapsedTime = (float)Scene::GetElapsedTime();
 		auto angle = GetMoveVector();
-		//RigidDynamicCompコンポーネントを取り出す
-		auto ptrRigid = GetComponent<RigidbodyDynamic>();
-		auto pRigDynamic = ptrRigid->GetRigidDynamic();
 		if (angle.length() > 0.0f) {
-			Vec3 tmpVelo = angle * m_Speed;
-			pRigDynamic->setLinearVelocity(bsmUtil::ToPxVec3(tmpVelo));
-			//auto pos = GetComponent<Transform>()->GetPosition();
-			//pos += angle * (float)elapsedTime * m_Speed;
-			//GetComponent<Transform>()->SetPosition(pos);
+			auto pos = GetComponent<Transform>()->GetPosition();
+			pos += angle * elapsedTime * m_Speed;
+			GetComponent<Transform>()->SetPosition(pos);
 		}
-		else {
-			pRigDynamic->setLinearVelocity(bsmUtil::ToPxVec3(Vec3(0)));
-		}
-		ptrRigid->OnUpdate(elapsedTime);
 		//回転の計算
-		//if (angle.length() > 0.0f) {
-		//	auto utilPtr = GetBehavior<UtilBehavior>();
-		//	utilPtr->RotToHead(angle, 1.0f);
-		//}
+		if (angle.length() > 0.0f) {
+			auto utilPtr = GetBehavior<UtilBehavior>();
+			utilPtr->RotToHead(angle, 1.0f);
+		}
 	}
 
 
+
+
+	void Player::OnCreate() {
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+		auto ptrShadow = AddComponent<Shadowmap>();
+		ptrShadow->AddBaseMesh(L"DEFAULT_SPHERE");
+		//CollisionSphere衝突判定を付ける
+		auto ptrColl = AddComponent<CollisionSphere>();
+		//重力をつける
+		auto ptrGra = AddComponent<Gravity>();
+
+		auto ptrScene = AddComponent<BcScene>();
+		ptrScene->AddBaseMesh(L"DEFAULT_SPHERE");
+		ptrScene->AddBaseTexture(L"TRACE_TX");
+
+		//カメラを得る
+		auto ptrCamera = std::dynamic_pointer_cast<MyCamera>(GetStage()->GetCamera());
+		if (ptrCamera) {
+			//MyCameraである
+			//MyCameraに注目するオブジェクト（プレイヤー）の設定
+			ptrCamera->SetTargetObject(GetThis<GameObject>());
+			ptrCamera->SetTargetToAt(Vec3(0, 0.25f, 0));
+		}
+
+	}
 
 	void Player::OnUpdate(double elapsedTime) {
-		////RigidDynamicCompコンポーネントを取り出す
-		//auto ptrRigid = GetComponent<RigidDynamicComp>();
-		//ptrRigid->OnUpdate(elapsedTime);
-		MovePlayer(elapsedTime);
-
+		//コントローラチェックして入力があればコマンド呼び出し
+		m_InputHandler.PushHandle(GetThis<Player>());
+		MovePlayer();
 	}
 
-	void Player::OnUpdateConstantBuffers() {
-		auto ptrShadow = GetComponent<Shadowmap>();
-		ptrShadow->OnUpdateConstantBuffers();
-		auto ptrScene = GetComponent<SpPNTStaticDraw>();
-		ptrScene->OnUpdateConstantBuffers();
+	void Player::OnPushA() {
+		auto grav = GetComponent<Gravity>();
+		grav->StartJump(Vec3(0, 4.0f, 0));
 	}
-
-	void Player::OnCommitConstantBuffers() {
-		auto ptrShadow = GetComponent<Shadowmap>();
-		ptrShadow->OnCommitConstantBuffers();
-		auto ptrScene = GetComponent<SpPNTStaticDraw>();
-		ptrScene->OnCommitConstantBuffers();
-	}
-
-	void Player::OnDestroy() {
-		//RigidDynamicCompコンポーネントを取り出す
-		auto ptrRigid = GetComponent<RigidbodyDynamic>();
-		ptrRigid->OnDestroy();
-	}
-
-	void Player::OnShadowDraw() {
-		auto ptrShadow = GetComponent<Shadowmap>();
-		ptrShadow->OnShadowDraw();
-	}
-	void Player::OnSceneDraw() {
-		auto ptrScene = GetComponent<SpPNTStaticDraw>();
-		ptrScene->OnSceneDraw();
-	}
-
-
 
 }
 // end namespace basecross

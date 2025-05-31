@@ -10,7 +10,9 @@
 namespace basecross {
 
 	Component::Component(const std::shared_ptr<GameObject>& gameObjectPtr) :
-		m_gameObject(gameObjectPtr)
+		m_gameObject(gameObjectPtr),
+		m_updateActive(true),
+		m_drawActive(false)
 	{
 	}
 

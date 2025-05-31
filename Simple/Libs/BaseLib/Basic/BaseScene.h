@@ -200,7 +200,7 @@ namespace basecross {
 		//CbvUavの開始インデックス
 		const UINT m_cbvUavStartIndex = 1024;
 		//CbvUavの最大値
-		const UINT m_cbvUavMax = 4096;
+		const UINT m_cbvUavMax = 2048;
 		//CbvUavの発行インデックス
 		UINT m_cbvUavSendIndex;
 		//sampler管理用

@@ -17,6 +17,54 @@ namespace basecross {
 	{
 	}
 
+	//Get&Set	Before
+	Vec3 Transform::GetBeforeScale() const {
+		return m_beforeParam.scale;
+	}
+
+	Vec3 Transform::GetBeforePivot() const {
+		return m_beforeParam.rotOrigin;
+	}
+
+	Quat Transform::GetBeforeQuaternion() const {
+		return m_beforeParam.quaternion;
+	}
+
+	Vec3 Transform::GetBeforeRotation() const {
+		return m_beforeParam.quaternion.toRotVec();
+	}
+
+	Vec3 Transform::GetBeforePosition() const {
+		return m_beforeParam.position;
+	}
+
+	Vec3 Transform::GetBeforeWorldPosition() const {
+		return GetBeforeWorldMatrix().transInMatrix();
+	}
+
+	bool Transform::IsSameBeforeWorldMatrix(const bsm::Mat4x4& mat) const {
+		return mat.equalInt(GetBeforeWorldMatrix());
+	}
+
+
+	const Mat4x4 Transform::GetBeforeWorldMatrix() const {
+		auto ParPtr = GetParent();
+		Mat4x4 BefWorld;
+		BefWorld.affineTransformation(
+			m_beforeParam.scale,
+			m_beforeParam.rotOrigin,
+			m_beforeParam.quaternion,
+			m_beforeParam.position
+		);
+		if (ParPtr) {
+			auto ParBeforeWorld = ParPtr->GetComponent<Transform>()->GetBeforeWorldMatrix();
+			ParBeforeWorld.scaleIdentity();
+			BefWorld *= ParBeforeWorld;
+		}
+		return BefWorld;
+	}
+
+	//Get&Set
 	bsm::Vec3 Transform::GetScale() const {
 		return m_param.scale;
 	}
@@ -220,6 +268,15 @@ namespace basecross {
 		}
 		m_parent.reset();
 	}
+
+	Vec3 Transform::GetVelocity() const {
+		//‘O‰ñ‚Ìƒ^[ƒ“‚©‚ç‚ÌŠÔ
+		auto ElapsedTime = (float)Scene::GetElapsedTime();
+		Vec3 Velocity = m_param.position - m_beforeParam.position;
+		Velocity /= ElapsedTime;
+		return Velocity;
+	}
+
 
 	bsm::Vec3 Transform::GetMovePositiom() const {
 		return m_param.position - m_beforeParam.position;

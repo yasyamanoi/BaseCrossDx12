@@ -26,6 +26,7 @@ namespace basecross {
 
 
 	BaseScene* BaseScene::s_baseScene = nullptr;
+	double BaseScene::s_elapsedTime(0.0);
 	const float BaseScene::s_clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 	BaseScene::BaseScene(UINT frameCount, PrimDevice* pPrimDevice) :
@@ -100,12 +101,12 @@ namespace basecross {
 	{
 		CreateDescriptorHeaps(pDevice);
 		CreateRootSignatures(pDevice);
-		CreatePipelineStates(pDevice);
 		CreatePostprocessPassResources(pDevice);
 		CreateSamplers(pDevice);
 		CreateFrameResources(pDevice, pDirectCommandQueue);
 		CreateCommandLists(pDevice);
 		CreateBasicResources(pDevice, pCommandList);
+		CreateDefaultResources(pDevice, pCommandList);
 		CreateAssetResources(pDevice, pCommandList);
 		SetFrameIndex(frameIndex);
 	}
@@ -451,6 +452,18 @@ namespace basecross {
 		}
 	}
 
+
+	void BaseScene::CreateDefaultResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) {
+		auto mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
+		RegisterMesh(L"DEFAULT_CUBE", mesh);
+		mesh = BaseMesh::CreateSphere(pCommandList, 1.0f, 18);
+		RegisterMesh(L"DEFAULT_SPHERE", mesh);
+
+
+
+	}
+
+
 	void BaseScene::CreatePostprocessPassResources(ID3D12Device* pDevice)
 	{
 /*
@@ -504,6 +517,7 @@ namespace basecross {
 	// Load resources that are dependent on the size of the main window.
 	void BaseScene::LoadSizeDependentResources(ID3D12Device* pDevice, ComPtr<ID3D12Resource>* ppRenderTargets, UINT width, UINT height)
 	{
+
 		m_viewport.Width = static_cast<float>(width);
 		m_viewport.Height = static_cast<float>(height);
 
@@ -532,13 +546,14 @@ namespace basecross {
 			// Shadow depth resource.
 			m_depthDsvs[DepthGenPass::Shadow] = dsvCpuHandle;
 			ThrowIfFailed(CreateDepthStencilTexture2D(pDevice, width, height, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_D32_FLOAT, DXGI_FORMAT_R32_FLOAT, &m_depthTextures[DepthGenPass::Shadow], m_depthDsvs[DepthGenPass::Shadow], m_depthSrvCpuHandles[DepthGenPass::Shadow]));
+
 			NAME_D3D12_OBJECT(m_depthTextures[DepthGenPass::Shadow]);
 
 			dsvCpuHandle.Offset(dsvDescriptorSize);
 
 			// Scene depth resource.
 			m_depthDsvs[DepthGenPass::Scene] = dsvCpuHandle;
-			ThrowIfFailed(CreateDepthStencilTexture2D(pDevice, width, height, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_D32_FLOAT, DXGI_FORMAT_R32_FLOAT, &m_depthTextures[DepthGenPass::Scene], m_depthDsvs[DepthGenPass::Scene], m_depthSrvCpuHandles[DepthGenPass::Scene]));
+			ThrowIfFailed(CreateDepthStencilTexture2D(pDevice, width*2, height*2, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_D32_FLOAT, DXGI_FORMAT_R32_FLOAT, &m_depthTextures[DepthGenPass::Scene], m_depthDsvs[DepthGenPass::Scene], m_depthSrvCpuHandles[DepthGenPass::Scene]));
 			NAME_D3D12_OBJECT(m_depthTextures[DepthGenPass::Scene]);
 
 		}
@@ -612,6 +627,179 @@ namespace basecross {
 			break;
 		}
 	}
+
+	std::shared_ptr<Stage> BaseScene::GetActiveStage(bool ExceptionActive) const {
+		if (!m_activeStage) {
+			//アクティブなステージが無効なら
+			if (ExceptionActive) {
+				throw BaseException(
+					L"アクティブなステージがありません",
+					L"if(!m_activeStage)",
+					L"BaseScene::GetActiveStage()"
+				);
+			}
+			else {
+				return nullptr;
+			}
+		}
+		return m_activeStage;
+	}
+
+	void BaseScene::RegisterMesh(const std::wstring& key, const std::shared_ptr<BaseMesh>& mesh, bool keyCheck) {
+		if (keyCheck) {
+			auto it = m_meshMap.find(key);
+			if (it != m_meshMap.end()) {
+				throw BaseException(
+					L"指定のキーのメッシュがすでに存在します",
+					key,
+					L"BaseScene::AddMesh()"
+				);
+			}
+		}
+		m_meshMap[key] = mesh;
+	}
+
+	std::shared_ptr<BaseMesh> BaseScene::GetMesh(const std::wstring& key) {
+		auto it = m_meshMap.find(key);
+		if (it != m_meshMap.end()) {
+			return it->second;
+		}
+		else {
+			throw BaseException(
+				L"指定のキーのメッシュが見つかりません",
+				key,
+				L"BaseScene::GetMesh()"
+			);
+		}
+		return nullptr;
+	}
+
+	void BaseScene::RegisterTexture(const std::wstring& key, const std::shared_ptr<BaseTexture>& texture, bool keyCheck) {
+		if (keyCheck) {
+			auto it = m_textureMap.find(key);
+			if (it != m_textureMap.end()) {
+				throw BaseException(
+					L"指定のキーのテクスチャがすでに存在します",
+					key,
+					L"BaseScene::AddTexture()"
+				);
+			}
+		}
+		m_textureMap[key] = texture;
+		//textureに名前を付ける
+		auto texRes = texture->GetTexture();
+		texRes->SetName(key.c_str());
+	}
+
+	std::shared_ptr<BaseTexture> BaseScene::GetTexture(const std::wstring& key) {
+		auto it = m_textureMap.find(key);
+		if (it != m_textureMap.end()) {
+			return it->second;
+		}
+		else {
+			throw BaseException(
+				L"指定のキーのテクスチャが見つかりません",
+				key,
+				L"BaseScene::GetTexture()"
+			);
+		}
+		return nullptr;
+	}
+
+
+
+	void BaseScene::Update(double elapsedTime) {
+		s_elapsedTime = elapsedTime;
+		if (m_activeStage) {
+			m_activeStage->UpdateStage();
+			UpdateConstantBuffers();
+			CommitConstantBuffers();
+		}
+	}
+
+	void BaseScene::UpdateConstantBuffers() {
+		if (m_activeStage) {
+			m_activeStage->OnUpdateConstantBuffers();
+		}
+	}
+
+	void BaseScene::CommitConstantBuffers() {
+		if (m_activeStage) {
+			m_activeStage->OnCommitConstantBuffers();
+		}
+	}
+
+	void BaseScene::ShadowPass(ID3D12GraphicsCommandList* pCommandList) {
+		// Set necessary state.
+		auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
+		pCommandList->SetGraphicsRootSignature(rootSignature.Get());
+		//PipelineState
+		auto shadowPipeline = PipelineStatePool::GetPipelineState(L"PNTShadowmap", true);
+		pCommandList->SetPipelineState(shadowPipeline.Get());
+		pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		pCommandList->RSSetViewports(1, &m_viewport);
+		pCommandList->RSSetScissorRects(1, &m_scissorRect);
+		// No render target needed for the shadow pass.
+		pCommandList->OMSetRenderTargets(0, nullptr, FALSE, &m_depthDsvs[DepthGenPass::Shadow]);
+
+		if (m_activeStage) {
+			m_pTgtCommandList = pCommandList;
+			m_activeStage->OnShadowDraw();
+		}
+	}
+
+	void BaseScene::ScenePass(ID3D12GraphicsCommandList* pCommandList)
+	{
+		auto& viewport = GetViewport();
+		auto& scissorRect = GetScissorRect();
+		auto depthDsvs = GetDepthDsvs();
+		// Set necessary state.
+		auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
+		pCommandList->SetGraphicsRootSignature(rootSignature.Get());
+		pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		pCommandList->RSSetViewports(1, &viewport);
+		pCommandList->RSSetScissorRects(1, &scissorRect);
+		//t0: DepthGenPass::Shadow
+		pCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"t0"), m_depthSrvGpuHandles[DepthGenPass::Shadow]);        // Set the shadow texture as an SRV.
+		pCommandList->OMSetRenderTargets(1, &GetCurrentBackBufferRtvCpuHandle(), FALSE, &depthDsvs[DepthGenPass::Scene]);
+		//PipelineState
+		auto scenePipelineState = PipelineStatePool::GetPipelineState(L"BcPNTStaticShadow", true);
+		pCommandList->SetPipelineState(scenePipelineState.Get());
+		//Sampler
+		UINT index = GetSamplerIndex(L"LinearClamp");
+		if (index == UINT_MAX) {
+			throw BaseException(
+				L"LinearClampサンプラーが特定できません。",
+				L"Scene::ScenePass()"
+			);
+		}
+		CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle(
+			GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
+			index,
+			GetSamplerDescriptorHandleIncrementSize()
+		);
+		pCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"s0"), samplerHandle);
+
+		index = GetSamplerIndex(L"ComparisonLinear");
+		if (index == UINT_MAX) {
+			throw BaseException(
+				L"ComparisonLinearサンプラーが特定できません。",
+				L"Scene::ScenePass()"
+			);
+		}
+		CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle2(
+			GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
+			index,
+			GetSamplerDescriptorHandleIncrementSize()
+		);
+		pCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"s1"), samplerHandle2);
+
+		if (m_activeStage) {
+			m_pTgtCommandList = pCommandList;
+			m_activeStage->OnSceneDraw();
+		}
+	}
+
 
 
 	// Render the scene.

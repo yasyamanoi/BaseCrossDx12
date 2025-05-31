@@ -1,20 +1,19 @@
 /*!
 @file MyCamera.h
-@brief カメラクラス
+@brief マイカメラクラス
 */
 
 #pragma once
 #include "stdafx.h"
 
 namespace basecross {
-
 	//--------------------------------------------------------------------------------------
 	//	MyCameraカメラ（コンポーネントではない）
 	//--------------------------------------------------------------------------------------
 	class MyCamera : public PerspecCamera {
 		std::weak_ptr<GameObject> m_TargetObject;	//目標となるオブジェクト
 		float m_ToTargetLerp;	//目標を追いかける際の補間値
-		Vec3 m_TargetToAt;	//目標から視点を調整する位置ベクトル
+		bsm::Vec3 m_TargetToAt;	//目標から視点を調整する位置ベクトル
 		float m_RadY;
 		float m_RadXZ;
 		//カメラの上下スピード
@@ -60,7 +59,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void SetEye(const Vec3& Eye)override;
+		virtual void SetEye(const bsm::Vec3& Eye)override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief カメラの位置を設定する
@@ -166,7 +165,7 @@ namespace basecross {
 		@return	ターゲットからAtへの調整ベクトル
 		*/
 		//--------------------------------------------------------------------------------------
-		Vec3 GetTargetToAt() const;
+		bsm::Vec3 GetTargetToAt() const;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	ターゲットからAtへの調整ベクトルを設定する
@@ -174,7 +173,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		void SetTargetToAt(const Vec3& v);
+		void SetTargetToAt(const bsm::Vec3& v);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	Rスティックの左右変更をBaseモードにするかどうかを得る
@@ -226,7 +225,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void SetAt(const Vec3& At)override;
+		virtual void SetAt(const bsm::Vec3& At)override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief カメラの視点を設定する

@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 //C++î≈CêÈåæ
+#include <cstdio>
 #include <cfloat>
 #include <clocale>
 #include <cassert>
@@ -88,14 +89,17 @@ using namespace DirectX;
 #include "Basic/FrameResource.h"
 #include "Basic/BaseScene.h"
 #include "Standerd/Component.h"
-#include "Standerd/Transform.h"
-#include "Standerd/Rigidbody.h"
-#include "Standerd/GravityComp.h"
-#include "Standerd/Shadowmap.h"
-#include "Standerd/SpStaticDraw.h"
-#include "Standerd/BcStaticDraw.h"
 #include "Standerd/GameObject.h"
+#include "Standerd/Transform.h"
+#include "Standerd/Gravity.h"
+#include "Standerd/Collision.h"
+#include "Standerd/CollisionManager.h"
 #include "Standerd/Stage.h"
+
+#include "Standerd/Behavior.h"
+#include "Standerd/Shadowmap.h"
+#include "Standerd/BcScene.h"
+
 
 
 #pragma comment( lib, "dxgi.lib" )

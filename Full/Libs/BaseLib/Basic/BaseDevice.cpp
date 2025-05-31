@@ -385,10 +385,8 @@ namespace basecross {
 	void BaseDevice::OnUpdate()
 	{
 		m_timer.Tick();
-
 		CalculateFrameStats();
 		m_scene->Update(m_timer.GetElapsedSeconds());
-
 		if (m_enableUI)
 		{
 			UpdateUI();

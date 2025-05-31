@@ -37,9 +37,17 @@ namespace basecross {
 		TransParam& GetBeforeParam() {
 			return m_beforeParam;
 		}
-		void SetBeforeParam(const TransParam& param) {
+		void SetBeforeParam(const TransParam& param){
 			m_beforeParam = param;
 		}
+		bsm::Vec3 GetBeforeScale() const;
+		bsm::Vec3 GetBeforePivot() const;
+		bsm::Quat GetBeforeQuaternion() const;
+		bsm::Vec3 GetBeforeRotation() const;
+		bsm::Vec3 GetBeforePosition() const;
+		bsm::Vec3 GetBeforeWorldPosition() const;
+		bool IsSameBeforeWorldMatrix(const bsm::Mat4x4& mat) const;
+		const bsm::Mat4x4 GetBeforeWorldMatrix() const;
 		bsm::Vec3 GetScale() const;
 		void SetScale(const bsm::Vec3& scale);
 		void SetScale(float x, float y, float z);
@@ -62,9 +70,13 @@ namespace basecross {
 		bool IsSameWorldMatrix(const bsm::Mat4x4& mat);
 		const bsm::Mat4x4& GetWorldMatrix();
 		const bsm::Mat4x4& Get2DWorldMatrix();
+
+
+
 		std::shared_ptr<GameObject> GetParent()const;
 		void SetParent(const std::shared_ptr<GameObject>& obj);
 		void ClearParent();
+		bsm::Vec3 GetVelocity() const;
 		bsm::Vec3 GetMovePositiom() const;
 		float GetMoveSize() const;
 		void SetToBefore();
