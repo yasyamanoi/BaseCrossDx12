@@ -211,7 +211,7 @@ namespace basecross {
 	//	Õ“Ë”»’èŠÇ—Ò
 	//--------------------------------------------------------------------------------------
 	CollisionManager::CollisionManager(const std::shared_ptr<Stage>& StagePtr) :
-		GameObject(StagePtr, TransParam()),
+		GameObject(StagePtr),
 		m_NewIndex(0),
 		m_KeepIndex(1),
 		m_PriorityUnderEscapeY(false),

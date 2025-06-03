@@ -96,7 +96,10 @@ using namespace DirectX;
 #include "Standerd/CollisionManager.h"
 #include "Standerd/Stage.h"
 
+#include "Standerd/StateMachine.h"
+#include "Standerd/Steering.h"
 #include "Standerd/Behavior.h"
+#include "Standerd/BehaviorSteering.h"
 #include "Standerd/Shadowmap.h"
 #include "Standerd/BcStaticDraw.h"
 

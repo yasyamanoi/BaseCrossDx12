@@ -110,6 +110,15 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\CollisionManager.h">
       <Filter>Standerd\Objects\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\StateMachine.h">
+      <Filter>Standerd\Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\BehaviorSteering.h">
+      <Filter>Standerd\Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Steering.h">
+      <Filter>Standerd\Objects\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Basic">
@@ -226,6 +235,12 @@
       <Filter>Standerd\Components\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\CollisionManager.cpp">
+      <Filter>Standerd\Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\BehaviorSteering.cpp">
+      <Filter>Standerd\Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Steering.cpp">
       <Filter>Standerd\Objects\Sources</Filter>
     </ClCompile>
   </ItemGroup>

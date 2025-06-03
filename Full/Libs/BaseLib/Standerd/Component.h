@@ -21,6 +21,12 @@ namespace basecross {
 		bsm::Vec3 rotOrigin;
 		bsm::Quat quaternion;
 		bsm::Vec3 position;
+		TransParam():
+			scale(1.0f),
+			rotOrigin(0.0f),
+			quaternion(),
+			position(0.0f)
+		{ }
 	};
 
 

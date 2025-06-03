@@ -78,6 +78,15 @@ namespace basecross {
 		void SetOwnShadowActive(bool b) {
 			m_ownShadowActive = b;
 		}
+		bool IsSetFogEnabled()const {
+			return m_fogEnabled;
+		}
+		void SetFogEnabled(bool b) {
+			m_fogEnabled = b;
+		}
+
+		
+
 		BcStaticDraw(const std::shared_ptr<GameObject>& gameObjectPtr);
 		virtual ~BcStaticDraw() {}
 		virtual void OnUpdateConstantBuffers()override;

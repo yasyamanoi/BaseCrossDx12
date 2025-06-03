@@ -12,9 +12,10 @@ namespace basecross {
 	// プレイヤー
 	//--------------------------------------------------------------------------------------
 	Player::Player(const std::shared_ptr<Stage>& stage, const TransParam& param) :
-		GameObject(stage, param),
+		GameObject(stage),
 		m_Speed(6.0f)
 	{
+		m_tempParam = param;
 	}
 
 	Vec2 Player::GetInputState() const {
@@ -86,6 +87,8 @@ namespace basecross {
 
 
 	void Player::OnCreate() {
+		GetStage()->SetSharedGameObject(L"Player",GetThis<Player>());
+
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_SPHERE");
 		//CollisionSphere衝突判定を付ける

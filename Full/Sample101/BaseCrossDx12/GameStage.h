@@ -23,6 +23,10 @@ namespace basecross {
 			Stage(pDevice)
 		{}
 		virtual ~GameStage() {}
+
+		//追いかけるオブジェクトの作成
+		void CreateSeekObject();
+
 		virtual void OnCreate()override;
 	};
 

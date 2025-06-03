@@ -22,7 +22,6 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class GameObject : public ObjectInterface {
 		std::weak_ptr<Stage> m_stage;
-		TransParam m_tempParam;
 
 		//update‚·‚é‚©‚Ç‚¤‚©
 		bool m_updateActive;
@@ -77,9 +76,10 @@ namespace basecross {
 			m_BehaviorMap[TypeIndex] = Ptr;
 		}
 	protected:
-		GameObject(const std::shared_ptr<Stage>& stage,const TransParam& param):
+		TransParam m_tempParam;
+		GameObject(const std::shared_ptr<Stage>& stage):
 			m_stage(stage),
-			m_tempParam(param),
+			m_tempParam(),
 			m_updateActive(true),
 			m_drawActive(true),
 			m_alphaActive(false)

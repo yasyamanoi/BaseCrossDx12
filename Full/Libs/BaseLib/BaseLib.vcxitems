@@ -43,6 +43,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\BcStaticDraw.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Behavior.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\BehaviorSteering.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Collision.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\CollisionManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Component.h" />
@@ -50,6 +51,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Gravity.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Shadowmap.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Stage.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\StateMachine.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Steering.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Transform.h" />
   </ItemGroup>
   <ItemGroup>
@@ -72,6 +75,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\BcStaticDraw.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Behavior.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\BehaviorSteering.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Collision.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\CollisionManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Component.cpp" />
@@ -79,6 +83,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Gravity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Shadowmap.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Stage.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Steering.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>

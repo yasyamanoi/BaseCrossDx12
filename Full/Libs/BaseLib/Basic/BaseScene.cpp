@@ -555,7 +555,7 @@ namespace basecross {
 
 			// Scene depth resource.
 			m_depthDsvs[DepthGenPass::Scene] = dsvCpuHandle;
-			ThrowIfFailed(CreateDepthStencilTexture2D(pDevice, width*2, height*2, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_D32_FLOAT, DXGI_FORMAT_R32_FLOAT, &m_depthTextures[DepthGenPass::Scene], m_depthDsvs[DepthGenPass::Scene], m_depthSrvCpuHandles[DepthGenPass::Scene]));
+			ThrowIfFailed(CreateDepthStencilTexture2D(pDevice, width, height, DXGI_FORMAT_R32_TYPELESS, DXGI_FORMAT_D32_FLOAT, DXGI_FORMAT_R32_FLOAT, &m_depthTextures[DepthGenPass::Scene], m_depthDsvs[DepthGenPass::Scene], m_depthSrvCpuHandles[DepthGenPass::Scene]));
 			NAME_D3D12_OBJECT(m_depthTextures[DepthGenPass::Scene]);
 
 		}
