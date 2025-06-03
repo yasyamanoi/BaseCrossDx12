@@ -9,15 +9,15 @@
 namespace basecross {
 
 	//--------------------------------------------------------------------------------------
-	// 土台のオブジェクト
+	// ボックスオブジェクト
 	//--------------------------------------------------------------------------------------
-	SkyGround::SkyGround(const std::shared_ptr<Stage>& stage, const TransParam& param) :
+	FixedBox::FixedBox(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		GameObject(stage, param)
 	{
 	}
-	SkyGround::~SkyGround() {}
+	FixedBox::~FixedBox() {}
 
-	void SkyGround::OnCreate() {
+	void FixedBox::OnCreate() {
 		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		//OBB衝突j判定を付ける
 		auto ptrColl = AddComponent<CollisionObb>();
@@ -26,9 +26,10 @@ namespace basecross {
 		AddTag(L"FixedBox");
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
-		auto ptrScene = AddComponent<BcScene>();
-		ptrScene->AddBaseMesh(L"DEFAULT_CUBE");
-		ptrScene->AddBaseTexture(L"SKY_TX");
+		auto ptrDraw = AddComponent<BcStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->AddBaseTexture(L"SKY_TX");
+		ptrDraw->SetOwnShadowActive(true);
 	}
 
 	//--------------------------------------------------------------------------------------
@@ -42,12 +43,18 @@ namespace basecross {
 	WallBox::~WallBox() {}
 
 	void WallBox::OnCreate() {
-		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+		//OBB衝突j判定を付ける
+		auto ptrColl = AddComponent<CollisionObb>();
+	//	ptrColl->SetFixed(true);
+		//重力をつける
+		auto ptrGra = AddComponent<Gravity>();
+
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
-		auto ptrScene = AddComponent<BcScene>();
-		ptrScene->AddBaseMesh(L"DEFAULT_CUBE");
-		ptrScene->AddBaseTexture(L"WALL_TX");
+		auto ptrDraw = AddComponent<BcStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->AddBaseTexture(L"WALL_TX");
+		ptrDraw->SetOwnShadowActive(true);
 	}
 
 	void WallBox::OnUpdate(double elapsedTime) {
@@ -62,7 +69,7 @@ namespace basecross {
 		Quat spanQt(Vec3(1.0f, 1.0f, 0.0f), (float)(elapsedTime * 4));
 		Quat quaternion(param.quaternion);
 		quaternion *= spanQt;
-		param.quaternion = quaternion;
+//		param.quaternion = quaternion;
 		param.position.x = (float)sin(m_totalTime) * 2.0f;
 	}
 

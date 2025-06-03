@@ -172,10 +172,6 @@ namespace basecross {
 		static void SetPosAdjustment(float f) {
 			m_posAdjustment = f;
 		}
-
-		//void SetBaseMesh(const std::shared_ptr<BaseMesh>& mesh) {
-		//	m_mesh = mesh;
-		//}
 		Shadowmap(const std::shared_ptr<GameObject>& gameObjectPtr);
 		virtual ~Shadowmap() {}
 		virtual void OnUpdateConstantBuffers()override;

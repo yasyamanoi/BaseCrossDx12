@@ -1,7 +1,8 @@
 /*!
 @file BcINCConstant.hlsli
 @brief Basicコンスタントバッファ
-@copyright Copyright (c) 2021 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 Texture2D<float4> Texture : register(t1);

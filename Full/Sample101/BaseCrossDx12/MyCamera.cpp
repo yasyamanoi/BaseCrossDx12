@@ -10,9 +10,8 @@
 namespace basecross {
 
 	//--------------------------------------------------------------------------------------
-	//	MyCameraカメラ（コンポーネントではない）
+	//	MyCameraカメラ
 	//--------------------------------------------------------------------------------------
-	//構築と破棄
 	MyCamera::MyCamera() :
 		PerspecCamera(),
 		m_ToTargetLerp(1.0f),
@@ -56,7 +55,7 @@ namespace basecross {
 	MyCamera::~MyCamera() {}
 	//アクセサ
 
-	void MyCamera::SetEye(const bsm::Vec3& Eye) {
+	void MyCamera::SetEye(const Vec3& Eye) {
 		PerspecCamera::SetEye(Eye);
 		UpdateArmLengh();
 	}
@@ -90,7 +89,7 @@ namespace basecross {
 
 	void MyCamera::UpdateArmLengh() {
 		auto vec = GetEye() - GetAt();
-		m_ArmLen = bsm::bsmUtil::length(vec);
+		m_ArmLen = bsmUtil::length(vec);
 		if (m_ArmLen >= m_MaxArm) {
 			//m_MaxArm以上離れないようにする
 			m_ArmLen = m_MaxArm;
@@ -123,11 +122,11 @@ namespace basecross {
 		m_RotSpeed = abs(f);
 	}
 
-	bsm::Vec3 MyCamera::GetTargetToAt() const {
+	Vec3 MyCamera::GetTargetToAt() const {
 		return m_TargetToAt;
 
 	}
-	void MyCamera::SetTargetToAt(const bsm::Vec3& v) {
+	void MyCamera::SetTargetToAt(const Vec3& v) {
 		m_TargetToAt = v;
 	}
 
@@ -155,7 +154,7 @@ namespace basecross {
 	}
 
 
-	void MyCamera::SetAt(const bsm::Vec3& At) {
+	void MyCamera::SetAt(const Vec3& At) {
 		PerspecCamera::SetAt(At);
 		Vec3 armVec = GetEye() - GetAt();
 		armVec.normalize();
@@ -177,11 +176,11 @@ namespace basecross {
 	void MyCamera::OnUpdate(double elapsedTime) {
 		auto cntlVec = App::GetInputDevice().GetControlerVec();
 		//		auto keyData = App::GetInputDevice().GetKeyState();
-				//前回のターンからの時間
+		//前回のターンからの時間
 		Vec3 newEye = GetEye();
 		Vec3 newAt = GetAt();
 		//計算に使うための腕角度（ベクトル）
-		bsm::Vec3 armVec = newEye - newAt;
+		Vec3 armVec = newEye - newAt;
 		//正規化しておく
 		armVec.normalize();
 		float fThumbRY = 0.0f;
@@ -236,13 +235,13 @@ namespace basecross {
 		}
 		//クオータニオンでY回転（つまりXZベクトルの値）を計算
 		Quat qtXZ;
-		qtXZ.rotationAxis(bsm::Vec3(0, 1.0f, 0),m_RadXZ);
+		qtXZ.rotationAxis(Vec3(0, 1.0f, 0),m_RadXZ);
 		qtXZ.normalize();
 		//移動先行の行列計算することで、XZの値を算出
 		Mat4x4 Mat;
 		Mat.strTransformation(
-			bsm::Vec3(1.0f, 1.0f, 1.0f),
-			bsm::Vec3(0.0f, 0.0f, -1.0f),
+			Vec3(1.0f, 1.0f, 1.0f),
+			Vec3(0.0f, 0.0f, -1.0f),
 			qtXZ
 		);
 

@@ -98,7 +98,7 @@ using namespace DirectX;
 
 #include "Standerd/Behavior.h"
 #include "Standerd/Shadowmap.h"
-#include "Standerd/BcScene.h"
+#include "Standerd/BcStaticDraw.h"
 
 
 

@@ -1,7 +1,9 @@
-//--------------------------------------------------------------------------------------
-// File: INCShadowmap.hlsli
-//
-//--------------------------------------------------------------------------------------
+/*!
+@file INCShadowmap.hlsli
+@brief シャドウマップインクルード
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
+*/
 
 cbuffer ShadowmapConstantBuffer : register(b0)
 {

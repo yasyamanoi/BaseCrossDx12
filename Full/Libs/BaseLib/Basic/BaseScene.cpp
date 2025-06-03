@@ -454,6 +454,8 @@ namespace basecross {
 
 
 	void BaseScene::CreateDefaultResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) {
+		m_pTgtCommandList = pCommandList;
+
 		auto mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
 		RegisterMesh(L"DEFAULT_CUBE", mesh);
 		mesh = BaseMesh::CreateSphere(pCommandList, 1.0f, 18);
@@ -753,47 +755,14 @@ namespace basecross {
 		auto& viewport = GetViewport();
 		auto& scissorRect = GetScissorRect();
 		auto depthDsvs = GetDepthDsvs();
-		// Set necessary state.
+		// set RootSignature
 		auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
 		pCommandList->SetGraphicsRootSignature(rootSignature.Get());
-		pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		// set Viewports & ScissorRects
 		pCommandList->RSSetViewports(1, &viewport);
 		pCommandList->RSSetScissorRects(1, &scissorRect);
-		//t0: DepthGenPass::Shadow
-		pCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"t0"), m_depthSrvGpuHandles[DepthGenPass::Shadow]);        // Set the shadow texture as an SRV.
+		// set RenderTargets
 		pCommandList->OMSetRenderTargets(1, &GetCurrentBackBufferRtvCpuHandle(), FALSE, &depthDsvs[DepthGenPass::Scene]);
-		//PipelineState
-		auto scenePipelineState = PipelineStatePool::GetPipelineState(L"BcPNTStaticShadow", true);
-		pCommandList->SetPipelineState(scenePipelineState.Get());
-		//Sampler
-		UINT index = GetSamplerIndex(L"LinearClamp");
-		if (index == UINT_MAX) {
-			throw BaseException(
-				L"LinearClampサンプラーが特定できません。",
-				L"Scene::ScenePass()"
-			);
-		}
-		CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle(
-			GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
-			index,
-			GetSamplerDescriptorHandleIncrementSize()
-		);
-		pCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"s0"), samplerHandle);
-
-		index = GetSamplerIndex(L"ComparisonLinear");
-		if (index == UINT_MAX) {
-			throw BaseException(
-				L"ComparisonLinearサンプラーが特定できません。",
-				L"Scene::ScenePass()"
-			);
-		}
-		CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle2(
-			GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
-			index,
-			GetSamplerDescriptorHandleIncrementSize()
-		);
-		pCommandList->SetGraphicsRootDescriptorTable(GetGpuSlotID(L"s1"), samplerHandle2);
-
 		if (m_activeStage) {
 			m_pTgtCommandList = pCommandList;
 			m_activeStage->OnSceneDraw();

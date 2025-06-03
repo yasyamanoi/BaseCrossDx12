@@ -41,7 +41,6 @@ namespace basecross {
 
 	void GameObject::ComponentUpdate() {
 		auto transPtr = GetComponent<Transform>();
-//		auto rigidPtr = GetComponent<Rigidbody>(false);
 
 		//マップを検証してUpdate
 		std::list<std::type_index>::iterator it = m_compOrder.begin();
@@ -52,16 +51,12 @@ namespace basecross {
 				//指定の型のコンポーネントが見つかった
 				if (it2->second->IsUpdateActive()
 					&& (it2->second != transPtr)
-//					&& (it2->second != rigidPtr)
 					) {
 					it2->second->OnUpdate(Scene::GetElapsedTime());
 				}
 			}
 			it++;
 		}
-		//if (rigidPtr && physicsFlg && rigidPtr->IsUpdateActive()) {
-		//	rigidPtr->OnUpdate();
-		//}
 		//TransformのUpdate
 		if (transPtr->IsUpdateActive()) {
 			transPtr->OnUpdate(Scene::GetElapsedTime());

@@ -10,9 +10,9 @@
 
 namespace basecross {
 
-	using namespace SceneEnums;
-
-
+	//--------------------------------------------------------------------------------------
+	// シーン
+	//--------------------------------------------------------------------------------------
 	Scene::Scene(UINT frameCount, PrimDevice* pPrimDevice) :
 		BaseScene(frameCount, pPrimDevice)
 	{
@@ -24,7 +24,6 @@ namespace basecross {
 
 	void Scene::CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)
 	{
-		m_pTgtCommandList = pCommandList;
 		//テクスチャ
 		auto texFile = App::GetRelativeAssetsDir() + L"wall.jpg";
 		auto texture = BaseTexture::CreateTextureFlomFile(pCommandList,texFile);

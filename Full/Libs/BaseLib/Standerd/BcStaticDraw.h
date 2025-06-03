@@ -1,6 +1,6 @@
 /*!
-@file BcSceneComp.h
-@brief ベイシックシーンコンポーネント
+@file BcStaticDraw.h
+@brief ベイシックスタティック描画コンポーネント
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
  MIT License URL: https://opensource.org/license/mit
 */
@@ -11,7 +11,6 @@
 
 namespace basecross {
 
-	using namespace bsm;
 
 	DECLARE_DX12SHADER(BcVSPNTStaticPL)
 	DECLARE_DX12SHADER(BcPSPNTPL)
@@ -24,44 +23,43 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	struct BasicConstantBuffer
 	{
-		Col4 diffuseColor;
-		Col4 emissiveColor;
-		Col4 specularColorAndPower;
+		bsm::Col4 diffuseColor;
+		bsm::Col4 emissiveColor;
+		bsm::Col4 specularColorAndPower;
 
-		Vec4 lightDirection[3];
-		Vec4 lightDiffuseColor[3];
-		Vec4 lightSpecularColor[3];
+		bsm::Vec4 lightDirection[3];
+		bsm::Vec4 lightDiffuseColor[3];
+		bsm::Vec4 lightSpecularColor[3];
 
-		Vec4 eyePosition;
+		bsm::Vec4 eyePosition;
 
-		Col4 fogColor;
-		Vec4 fogVector;
+		bsm::Col4 fogColor;
+		bsm::Vec4 fogVector;
 
-		Mat4x4 world;
-		Vec4 worldInverseTranspose[3];
-		Mat4x4 worldViewProj;
+		bsm::Mat4x4 world;
+		bsm::Vec4 worldInverseTranspose[3];
+		bsm::Mat4x4 worldViewProj;
 		//汎用フラグ
 		XMUINT4 activeFlg;
 		//以下影
-		Vec4 lightPos;
-		Vec4 eyePos;
-		Mat4x4 lightView;
-		Mat4x4 lightProjection;
+		bsm::Vec4 lightPos;
+		bsm::Vec4 eyePos;
+		bsm::Mat4x4 lightView;
+		bsm::Mat4x4 lightProjection;
 
-		Vec4 bones[3 * 72];
+		bsm::Vec4 bones[3 * 72];
 	};
 
 
 	//--------------------------------------------------------------------------------------
-	///	ベイシックシーンコンポーネント
+	///	BcStaticDrawコンポーネント
 	//--------------------------------------------------------------------------------------
-	class BcScene : public Component {
+	class BcStaticDraw : public Component {
 	protected:
-//		std::weak_ptr<BaseMesh> m_mesh;
-//		std::weak_ptr <BaseTexture> m_texture;
 		BasicConstantBuffer m_constantBuffer;
 		size_t m_constantBufferIndex;
-
+		//自分自身に影を描画するかどうか
+		bool m_ownShadowActive;
 		//フォグが有効かどうか
 		bool m_fogEnabled = true;
 		//フォグの開始位置
@@ -74,8 +72,14 @@ namespace basecross {
 		XMFLOAT3 m_fogVector;
 
 	public:
-		BcScene(const std::shared_ptr<GameObject>& gameObjectPtr);
-		virtual ~BcScene() {}
+		bool IsOwnShadowActive()const {
+			return m_ownShadowActive;
+		}
+		void SetOwnShadowActive(bool b) {
+			m_ownShadowActive = b;
+		}
+		BcStaticDraw(const std::shared_ptr<GameObject>& gameObjectPtr);
+		virtual ~BcStaticDraw() {}
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;
 		virtual void OnCreate()override;

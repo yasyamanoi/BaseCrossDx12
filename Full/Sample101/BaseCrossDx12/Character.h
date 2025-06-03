@@ -9,14 +9,13 @@
 
 namespace basecross {
 
-
 	//--------------------------------------------------------------------------------------
-	// 土台のオブジェクト
+	// ボックスオブジェクト
 	//--------------------------------------------------------------------------------------
-	class SkyGround : public GameObject {
+	class FixedBox : public GameObject {
 	public:
-		SkyGround(const std::shared_ptr<Stage>& stage, const TransParam& param);
-		virtual ~SkyGround();
+		FixedBox(const std::shared_ptr<Stage>& stage, const TransParam& param);
+		virtual ~FixedBox();
 		virtual void OnCreate()override;
 		virtual void OnUpdate(double elapsedTime)override {}
 	};

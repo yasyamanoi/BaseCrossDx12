@@ -86,7 +86,6 @@ namespace basecross {
 
 
 	void Player::OnCreate() {
-		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_SPHERE");
 		//CollisionSphereÕ“Ë”»’è‚ğ•t‚¯‚é
@@ -94,10 +93,11 @@ namespace basecross {
 		//d—Í‚ğ‚Â‚¯‚é
 		auto ptrGra = AddComponent<Gravity>();
 
-		auto ptrScene = AddComponent<BcScene>();
-		ptrScene->AddBaseMesh(L"DEFAULT_SPHERE");
-		ptrScene->AddBaseTexture(L"TRACE_TX");
-
+		auto ptrDraw = AddComponent<BcStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_SPHERE");
+		ptrDraw->AddBaseTexture(L"TRACE_TX");
+		//“§–¾ˆ—
+		SetAlphaActive(true);
 		//ƒJƒƒ‰‚ğ“¾‚é
 		auto ptrCamera = std::dynamic_pointer_cast<MyCamera>(GetStage()->GetCamera());
 		if (ptrCamera) {

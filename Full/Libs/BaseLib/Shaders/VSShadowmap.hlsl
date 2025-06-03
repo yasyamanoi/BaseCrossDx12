@@ -1,8 +1,9 @@
-//--------------------------------------------------------------------------------------
-// File: VSShadowmap.hlsl
-//
-//--------------------------------------------------------------------------------------
-
+/*!
+@file VSShadowmap.hlsli
+@brief シャドウマップ頂点シェーダー
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
+*/
 
 #include "INCShadowmap.hlsli"
 

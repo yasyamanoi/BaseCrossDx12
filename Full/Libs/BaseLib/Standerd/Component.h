@@ -5,15 +5,11 @@
  MIT License URL: https://opensource.org/license/mit
 */
 
-
 #pragma once
 #include "stdafx.h"
 
 
 namespace basecross {
-
-	
-	
 
 	class GameObject;
 

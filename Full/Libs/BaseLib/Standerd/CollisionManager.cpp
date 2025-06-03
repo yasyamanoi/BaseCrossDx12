@@ -48,7 +48,7 @@ namespace basecross {
 		CollisionBlocks() :
 			m_CollisionCountOfTern(0)
 		{
-			AABB aabb(Vec3(-100.0f, -1000, -100.0f), Vec3(100.0f, 1000, 100.0f));
+			AABB aabb(bsm::Vec3(-100.0f, -1000, -100.0f), bsm::Vec3(100.0f, 1000, 100.0f));
 			m_RootAABB = aabb;
 			m_RootPiece.SetAABB(m_RootAABB);
 		}
@@ -235,7 +235,7 @@ namespace basecross {
 
 	void CollisionManager::SetRootXZ(float f) {
 		float h = f / 2.0f;
-		AABB aabb(Vec3(-h, -1000, -h), Vec3(h, 1000, h));
+		AABB aabb(bsm::Vec3(-h, -1000, -h), bsm::Vec3(h, 1000, h));
 		pImpl->m_CollisionBlocks.SetRootAABB(aabb);
 
 	}
@@ -396,7 +396,7 @@ namespace basecross {
 			if (ShSrc) {
 				auto Gr = ShSrc->GetGameObject()->GetComponent<Gravity>(false);
 				if (Gr) {
-					auto f = bsm::bsmUtil::angleBetweenNormals(v.m_SrcHitNormal, Vec3(0, 1, 0));
+					auto f = bsm::bsmUtil::angleBetweenNormals(v.m_SrcHitNormal, bsm::Vec3(0, 1, 0));
 					if (abs(f) < XM_PIDIV4) {
 						Gr->SetGravityVerocityZero();
 					}
@@ -414,7 +414,7 @@ namespace basecross {
 			if (ShSrc) {
 				auto Gr = ShSrc->GetGameObject()->GetComponent<Gravity>(false);
 				if (Gr) {
-					auto f = bsm::bsmUtil::angleBetweenNormals(v.m_SrcHitNormal, Vec3(0, 1, 0));
+					auto f = bsm::bsmUtil::angleBetweenNormals(v.m_SrcHitNormal, bsm::Vec3(0, 1, 0));
 					if (abs(f) < XM_PIDIV4) {
 						Gr->SetGravityVerocityZero();
 					}

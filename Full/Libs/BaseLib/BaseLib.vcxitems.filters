@@ -95,7 +95,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Shadowmap.h">
       <Filter>Standerd\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\BcScene.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\BcStaticDraw.h">
       <Filter>Standerd\Components\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Standerd\Behavior.h">
@@ -213,7 +213,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Shadowmap.cpp">
       <Filter>Standerd\Components\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\BcScene.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\BcStaticDraw.cpp">
       <Filter>Standerd\Components\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Standerd\Behavior.cpp">

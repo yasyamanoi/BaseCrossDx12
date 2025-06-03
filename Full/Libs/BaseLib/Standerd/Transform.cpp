@@ -18,27 +18,27 @@ namespace basecross {
 	}
 
 	//Get&Set	Before
-	Vec3 Transform::GetBeforeScale() const {
+	bsm::Vec3 Transform::GetBeforeScale() const {
 		return m_beforeParam.scale;
 	}
 
-	Vec3 Transform::GetBeforePivot() const {
+	bsm::Vec3 Transform::GetBeforePivot() const {
 		return m_beforeParam.rotOrigin;
 	}
 
-	Quat Transform::GetBeforeQuaternion() const {
+	bsm::Quat Transform::GetBeforeQuaternion() const {
 		return m_beforeParam.quaternion;
 	}
 
-	Vec3 Transform::GetBeforeRotation() const {
+	bsm::Vec3 Transform::GetBeforeRotation() const {
 		return m_beforeParam.quaternion.toRotVec();
 	}
 
-	Vec3 Transform::GetBeforePosition() const {
+	bsm::Vec3 Transform::GetBeforePosition() const {
 		return m_beforeParam.position;
 	}
 
-	Vec3 Transform::GetBeforeWorldPosition() const {
+	bsm::Vec3 Transform::GetBeforeWorldPosition() const {
 		return GetBeforeWorldMatrix().transInMatrix();
 	}
 
@@ -47,9 +47,9 @@ namespace basecross {
 	}
 
 
-	const Mat4x4 Transform::GetBeforeWorldMatrix() const {
+	const bsm::Mat4x4 Transform::GetBeforeWorldMatrix() const {
 		auto ParPtr = GetParent();
-		Mat4x4 BefWorld;
+		bsm::Mat4x4 BefWorld;
 		BefWorld.affineTransformation(
 			m_beforeParam.scale,
 			m_beforeParam.rotOrigin,
@@ -269,10 +269,10 @@ namespace basecross {
 		m_parent.reset();
 	}
 
-	Vec3 Transform::GetVelocity() const {
+	bsm::Vec3 Transform::GetVelocity() const {
 		//ëOâÒÇÃÉ^Å[ÉìÇ©ÇÁÇÃéûä‘
 		auto ElapsedTime = (float)Scene::GetElapsedTime();
-		Vec3 Velocity = m_param.position - m_beforeParam.position;
+		bsm::Vec3 Velocity = m_param.position - m_beforeParam.position;
 		Velocity /= ElapsedTime;
 		return Velocity;
 	}
