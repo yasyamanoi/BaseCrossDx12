@@ -1397,6 +1397,14 @@ namespace basecross {
 		{
 		}
 
+		inline Mat4x4::Mat4x4(const aiMatrix4x4& mat) {
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++) {
+					m[i][j] = mat[i][j];
+				}
+			}
+		}
+
 		inline Mat4x4::Mat4x4(const Vec3& _major0, const Vec3& _major1, const Vec3& _major2, const Vec3& _major3) :
 			XMFLOAT4X4()
 		{

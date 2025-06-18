@@ -26,15 +26,35 @@ namespace basecross {
 	using namespace DirectX;
 	class FrameResource;
 	class PrimDevice;
+	class Stage;
 
+	//--------------------------------------------------------------------------------------
+	///	シーンクラス（親）
+	//--------------------------------------------------------------------------------------
 	class BaseScene
 	{
 	public:
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンストラクタ
+		@param[in]	frameCount	フレーム数
+		@param[in]	pPrimDevice	基本デバイス
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		BaseScene(UINT frameCount, PrimDevice* pPrimDevice);
 		virtual ~BaseScene();
 		ID3D12GraphicsCommandList* m_pTgtCommandList;
-
-
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	初期化
+		@param[in]	pDevice	ID3D12Deviceのポインタ
+		@param[in]	pDirectCommandQueue	コマンドキュー
+		@param[in]	pCommandList	コマンドリスト
+		@param[in]	frameIndex	フレーム番号
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		virtual void Initialize(ID3D12Device* pDevice, ID3D12CommandQueue* pDirectCommandQueue, ID3D12GraphicsCommandList* pCommandList, UINT frameIndex);
 		virtual void LoadSizeDependentResources(ID3D12Device* pDevice, ComPtr<ID3D12Resource>* ppRenderTargets, UINT width, UINT height);
 		virtual void ReleaseSizeDependentResources();
@@ -42,8 +62,10 @@ namespace basecross {
 		void ReleaseD3DObjects();
 		void KeyDown(UINT8 key);
 		void KeyUp(UINT8 key);
+		std::shared_ptr<Stage> GetActiveStage(bool ExceptionActive = true) const;
+
 		virtual void UpdateUI(std::unique_ptr<UILayer>& uiLayer) = 0;
-		virtual void Update(double elapsedTime) = 0;
+		virtual void Update(double elapsedTime);
 		virtual void Destroy() {}
 		virtual void Render(ID3D12CommandQueue* pCommandQueue, bool setBackbufferReadyForPresent);
 		virtual void SetToBefore() {}
@@ -139,6 +161,85 @@ namespace basecross {
 			);
 			return 0;
 		}
+		template<typename T, typename... Ts>
+		std::shared_ptr<T> ResetActiveStage(Ts&&... params) {
+			auto actStagePtr = GetActiveStage(false);
+			if (actStagePtr) {
+				//破棄を伝える
+				actStagePtr->OnDestroy();
+				actStagePtr = nullptr;
+			}
+			auto ptr = ObjectFactory::Create<T>(params...);
+			auto stagePtr = std::dynamic_pointer_cast<Stage>(ptr);
+			if (!stagePtr) {
+				throw BaseException(
+					L"以下はStageに型キャストできません。",
+					Util::GetWSTypeName<T>(),
+					L"Scene::ResetActiveStage<T>()"
+				);
+			}
+			SetActiveStage(stagePtr);
+			return ptr;
+		}
+
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	メッシュをリソース登録する
+		@param[in]	key	リソースのキー
+		@param[in]	mesh	メッシュ
+		@param[in]	keyCheck	キーの重複チェックするかどうか
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void RegisterMesh(const std::wstring& key, const std::shared_ptr<BaseMesh>& mesh, bool keyCheck = false);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	登録されているメッシュを取得する
+		@param[in]	key	リソースのキー
+		@return	メッシュ
+		*/
+		//--------------------------------------------------------------------------------------
+		std::shared_ptr<BaseMesh> GetMesh(const std::wstring& key);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	テクスチャをリソース登録する
+		@param[in]	key	リソースのキー
+		@param[in]	texture	テクスチャ
+		@param[in]	keyCheck	キーの重複チェックするかどうか
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void RegisterTexture(const std::wstring& key, const std::shared_ptr<BaseTexture>& texture, bool keyCheck = false);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	登録されているテクスチャを取得する
+		@param[in]	key	リソースのキー
+		@return	テクスチャ
+		*/
+		//--------------------------------------------------------------------------------------
+		std::shared_ptr<BaseTexture> GetTexture(const std::wstring& key);
+
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	PhysXオブジェクトを得る
+		@return	PhysXオブジェクトのポインタ
+		*/
+		//--------------------------------------------------------------------------------------
+		physx::PxPhysics* GetPxPhysics() {
+			return m_pPhysics;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	PhysXシーンを得る
+		@return	PhysXシーンのポインタ
+		*/
+		//--------------------------------------------------------------------------------------
+		physx::PxScene* GetPxScene() {
+			return m_pScene;
+		}
+		static double GetElapsedTime() {
+			return s_elapsedTime;
+		}
 		float m_fogDensity;
 	protected:
 		UINT m_frameCount;
@@ -178,6 +279,13 @@ namespace basecross {
 
 		// App resources.
 		PrimDevice* m_pPrimDevice;
+		//Stage
+		std::shared_ptr<Stage> m_activeStage;
+		//mesh map
+		std::map<const std::wstring, std::shared_ptr<BaseMesh> > m_meshMap;
+		//texture map
+		std::map<const std::wstring, std::shared_ptr<BaseTexture> > m_textureMap;
+
 
 		static const float s_clearColor[4];
 
@@ -217,15 +325,33 @@ namespace basecross {
 		HANDLE m_threadHandles;
 		// Singleton object so that worker threads can share members.
 		static BaseScene* s_baseScene;
+		//elapsedTime
+		static double s_elapsedTime;
+
+		//以下、PhysX関連
+		// PhysX内で利用するアロケーター
+		physx::PxDefaultAllocator m_defaultAllocator;
+		// エラー時用のコールバックでエラー内容が入ってる
+		physx::PxDefaultErrorCallback m_defaultErrorCallback;
+		// 上位レベルのSDK(PxPhysicsなど)をインスタンス化する際に必要
+		physx::PxFoundation* m_pFoundation = nullptr;
+		// 実際に物理演算を行う
+		physx::PxPhysics* m_pPhysics = nullptr;
+		// シミュレーションをどう処理するかの設定でマルチスレッドの設定もできる
+		physx::PxDefaultCpuDispatcher* m_pDispatcher = nullptr;
+		// シミュレーションする空間の単位でActorの追加などもここで行う
+		physx::PxScene* m_pScene = nullptr;
+
+
 		// Updates the shadow copies of the constant buffers.
-		virtual void UpdateConstantBuffers() = 0; 
+		virtual void UpdateConstantBuffers(); 
 		// Commits the shadows copies of the constant buffers to GPU-visible memory for the current frame.
-		virtual void CommitConstantBuffers() = 0; 
+		virtual void CommitConstantBuffers(); 
 		virtual void DrawInScattering(ID3D12GraphicsCommandList* pCommandList, const D3D12_CPU_DESCRIPTOR_HANDLE& renderTargetHandle);
 		void WorkerThread();
 
-		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList) = 0;
-		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList) = 0;
+		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList);
+		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList);
 		virtual void PostprocessPass(ID3D12GraphicsCommandList* pCommandList);
 
 
@@ -237,12 +363,17 @@ namespace basecross {
 		virtual void CreateDescriptorHeaps(ID3D12Device* pDevice);
 		virtual void CreateCommandLists(ID3D12Device* pDevice);
 		virtual void CreateRootSignatures(ID3D12Device* pDevice);
-		virtual void CreatePipelineStates(ID3D12Device* pDevice) = 0;
 		virtual void CreateFrameResources(ID3D12Device* pDevice, ID3D12CommandQueue* pCommandQueue);
 		virtual void CreateBasicResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList);
+		virtual void CreateDefaultResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList);
 		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) = 0;
 		virtual void CreatePostprocessPassResources(ID3D12Device* pDevice);
 		virtual void CreateSamplers(ID3D12Device* pDevice);
+
+		void SetActiveStage(const std::shared_ptr<Stage>& stage) {
+			m_activeStage = stage;
+		}
+
 
 		inline HRESULT CreateDepthStencilTexture2D(
 			ID3D12Device* pDevice,

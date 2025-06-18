@@ -14,7 +14,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	//	class Camera;
 	//--------------------------------------------------------------------------------------
-	class Camera  {
+	class Camera : public ObjectInterface {
 	protected:
 		bsm::Vec3 m_eye;	//カメラ位置　
 		bsm::Vec3 m_at;	//注目点

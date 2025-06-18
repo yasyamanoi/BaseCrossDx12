@@ -1,7 +1,8 @@
 /*!
 @file InputDevice.h
 @brief 入力デバイスクラス
-@copyright Copyright (c) 2022 WiZ Tamura Hiroki,Yamanoi Yasushi.
+@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
+ MIT License URL: https://opensource.org/license/mit
 */
 
 #pragma once

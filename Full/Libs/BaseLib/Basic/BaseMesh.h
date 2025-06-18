@@ -11,6 +11,32 @@
 namespace basecross {
 
 	//--------------------------------------------------------------------------------------
+	///	アニメーション
+	//--------------------------------------------------------------------------------------
+	class Animation {
+		const aiScene* m_pScene;
+		const aiAnimation* m_pAnimation;
+		const std::string m_nodeName;
+		const aiNodeAnim* m_rootNode;
+		bool m_hasAnimation;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief アニメーションを再帰的に作成する
+		@param[in]	AnimationTime	アニメタイム
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const bsm::Mat4x4& ParentTransform);
+	public:
+		Animation(const aiScene* pScene,const aiAnimation* pAnimation, const std::string& nodeName);
+		bool CreateAnimation();
+		bool HasAnimation() const {
+			return m_hasAnimation;
+		}
+	};
+
+
+	//--------------------------------------------------------------------------------------
 	///	メッシュ
 	//--------------------------------------------------------------------------------------
 	class BaseMesh {
@@ -23,39 +49,83 @@ namespace basecross {
 		D3D12_INDEX_BUFFER_VIEW m_indexBufferView; //インデックスバッファビュー
 		UINT m_numVertices; //頂点数
 		UINT m_numIndices; //インデックス数
+
+		static Assimp::Importer m_importer;
+		static const aiScene* m_pScene;
+		std::vector<std::shared_ptr<Animation>> m_AnimationVec;
 	protected:
 		BaseMesh() {}
 	public:
 		~BaseMesh() {}
-		//頂点バッファの取得
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	頂点バッファの取得
+		@return	リソースのComPt
+		*/
+		//--------------------------------------------------------------------------------------
 		ComPtr<ID3D12Resource> GetVertexBuffer() const {
 			return m_vertexBuffer;
 		}
-		//頂点バッファアップロードヒープの取得
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	頂点バッファアップロードヒープの取得
+		@return	リソースのComPt
+		*/
+		//--------------------------------------------------------------------------------------
 		ComPtr<ID3D12Resource> GetVertexBufferUploadHeap() const {
 			return m_vertexBufferUploadHeap;
 		}
-		//インデックスバッファの取得
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	インデックスバッファの取得
+		@return	リソースのComPt
+		*/
+		//--------------------------------------------------------------------------------------
 		ComPtr<ID3D12Resource> GetIndexBuffer() const {
 			return m_vertexBuffer;
 		}
-		//インデックスバッファアップロードヒープの取得
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	インデックスバッファアップロードヒープの取得
+		@return	リソースのComPt
+		*/
+		//--------------------------------------------------------------------------------------
 		ComPtr<ID3D12Resource> GetIndexBufferUploadHeap() const {
 			return m_indexBufferUploadHeap;
 		}
-		//頂点バッファの頂点数の取得
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	頂点バッファの頂点数の取得
+		@return	頂点バッファの頂点数
+		*/
+		//--------------------------------------------------------------------------------------
 		UINT GetNumVertices()const {
 			return m_numVertices;
 		}
-		//インデックスバッファの数の取得
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	インデックスバッファの数の取得
+		@return	インデックスバッファの数
+		*/
+		//--------------------------------------------------------------------------------------
 		UINT GetNumIndices()const {
 			return m_numIndices;
 		}
-		//頂点バッファビューの取得
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	頂点バッファビューの取得
+		@return	頂点バッファビューの参照
+		*/
+		//--------------------------------------------------------------------------------------
 		const D3D12_VERTEX_BUFFER_VIEW& GetVertexBufferView() const {
 			return m_vertexBufferView;
 		}
-		//インデックスバッファビューの取得
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	インデックスバッファビューの取得
+		@return	インデックスバッファビューの参照
+		*/
+		//--------------------------------------------------------------------------------------
 		const D3D12_INDEX_BUFFER_VIEW& GetIndexBufferView() const {
 			return m_indexBufferView;
 		}
@@ -63,9 +133,9 @@ namespace basecross {
 		/*!
 		@brief 頂点のみで構成されるメッシュの作成
 		@tparam T	作成する頂点の型
-		@param[in]	commandList	コマンドリスト
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	vertices	頂点の配列
-		@return	BaseMeshのComPtr
+		@return	BaseMeshのshared_ptr
 		*/
 		//--------------------------------------------------------------------------------------
 		template<typename T>
@@ -125,10 +195,10 @@ namespace basecross {
 		/*!
 		@brief 頂点とインデックスで構成されるメッシュの作成
 		@tparam T	作成する頂点の型
-		@param[in]	commandList	コマンドリスト
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	vertices	頂点の配列
 		@param[in]	indices	インデックスの配列
-		@return	BaseMeshのComPtr
+		@return	BaseMeshのshared_ptr
 		*/
 		//--------------------------------------------------------------------------------------
 		template<typename T>
@@ -231,9 +301,29 @@ namespace basecross {
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
+		@brief 頂点とインデックスで構成されるボーンモデルメッシュの作成
+		@param[in]	pCommandList	コマンドリスト
+		@param[in]	dataDir	データディレクトリ
+		@param[in]	dataFile　データファイル名
+		@return	BaseMeshのshared_ptr
+		*/
+		//--------------------------------------------------------------------------------------
+		static std::shared_ptr<BaseMesh> CreateBoneModelMesh(
+			ID3D12GraphicsCommandList* pCommandList,
+			const std::wstring& dataDir, const std::wstring& dataFile);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief アニメーションの作成
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void CreateAnimations();
+		//--------------------------------------------------------------------------------------
+		/*!
 		@brief	頂点の変更.<br />
 		AccessWriteがtrueで作成されたリソースは、頂点の配列によって頂点を変更する。
 		@tparam	T	頂点の型
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	vertices	頂点の配列
 		@return	なし
 		*/
@@ -279,10 +369,10 @@ namespace basecross {
 			m_vertexBufferView.StrideInBytes = static_cast<UINT>(sizeof(T));
 			m_vertexBufferView.SizeInBytes = vertexBufferSize;
 		}
-
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	4角形平面の作成
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	size		1辺のサイズ
 		@return	メッシュのスマートポインタ
 		*/
@@ -291,6 +381,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	キューブ（立方体）の作成
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	size	1辺のサイズ
 		@return	メッシュのスマートポインタ
 		*/
@@ -299,6 +390,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	球体の作成
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	diameter	直径
 		@param[in]	tessellation	分割数
 		@return	メッシュのスマートポインタ
@@ -308,6 +400,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	カプセルの作成
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	diameter	直径
 		@param[in]	height	高さ
 		@param[in]	tessellation	分割数
@@ -318,6 +411,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	シリンダーの作成
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	height	高さ
 		@param[in]	diameter	直径
 		@param[in]	tessellation	分割数
@@ -328,6 +422,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	コーンの作成
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	diameter	直径
 		@param[in]	height	高さ
 		@param[in]	tessellation	分割数
@@ -338,6 +433,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	トーラスの作成
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	diameter	直径
 		@param[in]	thickness	ドーナッツの太さ
 		@param[in]	tessellation	分割数
@@ -348,6 +444,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	正4面体の作成
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	size	1辺のサイズ
 		@return	メッシュのスマートポインタ
 		*/
@@ -356,6 +453,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	正8面体の作成
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	size	1辺のサイズ
 		@return	メッシュのスマートポインタ
 		*/
@@ -364,6 +462,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	正12面体の作成
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	size	1辺のサイズ
 		@return	メッシュのスマートポインタ
 		*/
@@ -372,6 +471,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	正20面体の作成
+		@param[in]	pCommandList	コマンドリスト
 		@param[in]	size	1辺のサイズ
 		@return	メッシュのスマートポインタ
 		*/

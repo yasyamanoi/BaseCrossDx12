@@ -63,6 +63,11 @@ using namespace DirectX;
 
 //PhysX
 #include "PxPhysicsAPI.h"
+//assimp
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>           // Output data structure
+#include <assimp/postprocess.h>     // Post processing flags
+
 //BaseLib
 //シンプルオブジェクト
 #include "Basic/BaseMath.h"
@@ -87,12 +92,17 @@ using namespace DirectX;
 #include "Basic/PipelineState.h"
 #include "Basic/BaseDevice.h"
 #include "Basic/FrameResource.h"
-#include "Basic/Shadowmap.h"
 #include "Basic/BaseScene.h"
-#include "Standerd/Component.h"
-#include "Standerd/Transform.h"
-#include "Standerd/GameObject.h"
-#include "Standerd/Stage.h"
+
+#include "Standerd/Components/Component.h"
+#include "Standerd/Objects/GameObject.h"
+#include "Standerd/Components/Transform.h"
+#include "Standerd/Objects/Stage.h"
+
+
+
+
+
 
 
 #pragma comment( lib, "dxgi.lib" )
@@ -125,4 +135,13 @@ using namespace DirectX;
 #pragma comment(lib, "PhysXTask_static_64.lib")
 #pragma comment(lib, "SceneQuery_static_64.lib")
 #pragma comment(lib, "SimulationController_static_64.lib")
+
+#if defined(_DEBUG)
+#pragma comment(lib, "assimp-vc143-mtd.lib")
+#pragma comment(lib, "zlibstaticd.lib")
+#else
+#pragma comment(lib, "assimp-vc143-mt.lib")
+#pragma comment(lib, "zlibstatic.lib")
+#endif
+
 

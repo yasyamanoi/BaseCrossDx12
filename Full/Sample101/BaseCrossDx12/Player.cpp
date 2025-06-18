@@ -96,9 +96,10 @@ namespace basecross {
 		//d—Í‚ğ‚Â‚¯‚é
 		auto ptrGra = AddComponent<Gravity>();
 
-		auto ptrDraw = AddComponent<BcStaticDraw>();
+		auto ptrDraw = AddComponent<SpPNTStaticDraw>();
+//		auto ptrDraw = AddComponent<BcStaticDraw>();
 		ptrDraw->AddBaseMesh(L"DEFAULT_SPHERE");
-		ptrDraw->AddBaseTexture(L"TRACE_TX");
+		ptrDraw->AddBaseTexture(L"TRACE3_TX");
 		//“§–¾ˆ—
 		SetAlphaActive(true);
 		//ƒJƒƒ‰‚ğ“¾‚é

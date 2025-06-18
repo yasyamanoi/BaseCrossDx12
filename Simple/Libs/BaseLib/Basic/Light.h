@@ -68,7 +68,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	//	ライトのセット
 	//--------------------------------------------------------------------------------------
-	class LightSet {
+	class LightSet :public ObjectInterface {
 		const size_t m_maxLights = 3;
 		std::vector<Light> m_lights;
 		bsm::Vec4 m_ambient;

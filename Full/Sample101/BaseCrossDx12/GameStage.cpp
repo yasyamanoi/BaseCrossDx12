@@ -49,6 +49,20 @@ namespace basecross {
 		param.scale = Vec3(50.0f, 1.0f, 50.0f);
 		param.position = Vec3(0.0f, -0.5, 0.0f);
 		AddGameObject<FixedBox>(param);
+
+		param.scale = Vec3(5.0f, 1.0f, 5.0f);
+		param.position = Vec3(10.0f, 0.0, 10.0f);
+		AddGameObject<FixedBox>(param);
+
+		param.position = Vec3(10.0f, 0.0, 10.0f);
+		param.quaternion = Quat(Vec3(-1, 0, 1), XM_PIDIV4);
+		AddGameObject<FixedBox>(param);
+
+		param.position = Vec3(-10.0f, 0.0, 10.0f);
+		param.quaternion = Quat(Vec3(0, 1, 1), XM_PIDIV4);
+		AddGameObject<FixedBox>(param);
+
+
 		CreateSeekObject();
 		param.scale = Vec3(0.25f, 0.25f, 0.25f);
 		param.position = Vec3(0.0f, 0.125f, 0.0f);

@@ -52,6 +52,11 @@ namespace basecross {
 
 	BaseScene::~BaseScene()
 	{
+		PxCloseExtensions();
+		m_pScene->release();
+		m_pDispatcher->release();
+		m_pPhysics->release();
+		m_pFoundation->release();
 	}
 
 	UINT BaseScene::GetSrvNextIndex() {
@@ -455,6 +460,67 @@ namespace basecross {
 
 	void BaseScene::CreateDefaultResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) {
 		m_pTgtCommandList = pCommandList;
+		//PhysX関連
+		m_pFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, m_defaultAllocator, m_defaultErrorCallback);
+		if (!m_pFoundation) {
+			return;
+		}
+		m_pPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_pFoundation, physx::PxTolerancesScale(), true);
+		if (!m_pPhysics) {
+			return;
+		}
+		m_pDispatcher = physx::PxDefaultCpuDispatcherCreate(8);
+		physx::PxSceneDesc scene_desc(m_pPhysics->getTolerancesScale());
+		scene_desc.gravity = physx::PxVec3(0, -9, 0);
+		scene_desc.filterShader = physx::PxDefaultSimulationFilterShader;
+		scene_desc.cpuDispatcher = m_pDispatcher;
+		m_pScene = m_pPhysics->createScene(scene_desc);
+
+
+		// シャドウマップパイプラインステート
+		//ここであらかじめ作成しておく
+		//{
+		//	ComPtr<ID3D12PipelineState> PNTShadowmapPipelineState
+		//		= PipelineStatePool::GetPipelineState(L"PNTShadowmap");
+		//	auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
+
+		//	// シャドウマップ用
+		//	CD3DX12_DEPTH_STENCIL_DESC depthStencilDesc(D3D12_DEFAULT);
+		//	depthStencilDesc.DepthEnable = TRUE;
+		//	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+		//	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		//	depthStencilDesc.StencilEnable = FALSE;
+
+		//	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		//	psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };;
+		//	psoDesc.pRootSignature = rootSignature.Get();
+		//	psoDesc.VS =
+		//	{
+		//		reinterpret_cast<UINT8*>(PNTShadowmap::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+		//		PNTShadowmap::GetPtr()->GetShaderComPtr()->GetBufferSize()
+
+		//	};
+		//	psoDesc.PS =
+		//	{
+		//		CD3DX12_SHADER_BYTECODE(0, 0)
+		//	};
+		//	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+		//	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		//	psoDesc.DepthStencilState = depthStencilDesc;
+		//	psoDesc.SampleMask = UINT_MAX;
+		//	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		//	psoDesc.NumRenderTargets = 0;
+		//	psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+		//	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+		//	psoDesc.SampleDesc.Count = 1;
+		//	if (!PNTShadowmapPipelineState) {
+		//		ThrowIfFailed(pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&PNTShadowmapPipelineState)));
+		//		NAME_D3D12_OBJECT(PNTShadowmapPipelineState);
+		//		PipelineStatePool::AddPipelineState(L"PNTShadowmap", PNTShadowmapPipelineState);
+		//	}
+		//}
+
+
 
 		auto mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
 		RegisterMesh(L"DEFAULT_CUBE", mesh);
@@ -654,7 +720,7 @@ namespace basecross {
 				throw BaseException(
 					L"指定のキーのメッシュがすでに存在します",
 					key,
-					L"BaseScene::AddMesh()"
+					L"BaseScene::RegisterMesh()"
 				);
 			}
 		}
@@ -736,8 +802,10 @@ namespace basecross {
 		auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
 		pCommandList->SetGraphicsRootSignature(rootSignature.Get());
 		//PipelineState
-		auto shadowPipeline = PipelineStatePool::GetPipelineState(L"PNTShadowmap", true);
-		pCommandList->SetPipelineState(shadowPipeline.Get());
+		auto shadowPipeline = PipelineStatePool::GetPipelineState(L"PNTShadowmap", false);
+		if (shadowPipeline) {
+			pCommandList->SetPipelineState(shadowPipeline.Get());
+		}
 		pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		pCommandList->RSSetViewports(1, &m_viewport);
 		pCommandList->RSSetScissorRects(1, &m_scissorRect);

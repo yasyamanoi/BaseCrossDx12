@@ -10,9 +10,9 @@
 namespace basecross {
 
 	LightSet::LightSet() :
+		ObjectInterface(),
 		m_mainIndex(0)
 	{
-		OnCreate();
 	}
 
 

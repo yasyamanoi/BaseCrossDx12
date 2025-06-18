@@ -1813,6 +1813,13 @@ namespace basecross {
 			inline Mat4x4(const Mat4x4& mat);
 			//--------------------------------------------------------------------------------------
 			/*!
+			@brief	コンストラクタ
+			@param[in]	mat	aiMatrix4x4構造体
+			*/
+			//--------------------------------------------------------------------------------------
+			inline Mat4x4(const aiMatrix4x4& mat);
+			//--------------------------------------------------------------------------------------
+			/*!
 			@brief	コンストラクタ(major)
 			@param[in]	major0	Majorの0番目
 			@param[in]	major1	Majorの1番目
@@ -2463,6 +2470,11 @@ namespace basecross {
 			static float angleBetweenNormals(const Vec3& norm11, const Vec3& norm2) {
 				return ((Vec3)XMVector3AngleBetweenNormals(norm11, norm2)).x;
 			}
+
+			static Mat4x4 transpose(const bsm::Mat4x4& mat) {
+				return  (Mat4x4)XMMatrixTranspose(mat);
+			}
+
 
 
 

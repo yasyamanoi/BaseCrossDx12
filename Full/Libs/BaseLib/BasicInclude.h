@@ -63,6 +63,11 @@ using namespace DirectX;
 
 //PhysX
 #include "PxPhysicsAPI.h"
+//assimp
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>           // Output data structure
+#include <assimp/postprocess.h>     // Post processing flags
+
 //BaseLib
 //シンプルオブジェクト
 #include "Basic/BaseMath.h"
@@ -88,20 +93,27 @@ using namespace DirectX;
 #include "Basic/BaseDevice.h"
 #include "Basic/FrameResource.h"
 #include "Basic/BaseScene.h"
-#include "Standerd/Component.h"
-#include "Standerd/GameObject.h"
-#include "Standerd/Transform.h"
-#include "Standerd/Gravity.h"
-#include "Standerd/Collision.h"
-#include "Standerd/CollisionManager.h"
-#include "Standerd/Stage.h"
 
-#include "Standerd/StateMachine.h"
-#include "Standerd/Steering.h"
-#include "Standerd/Behavior.h"
-#include "Standerd/BehaviorSteering.h"
-#include "Standerd/Shadowmap.h"
-#include "Standerd/BcStaticDraw.h"
+#include "Standerd/Components/Component.h"
+#include "Standerd/Objects/GameObject.h"
+#include "Standerd/Components/Transform.h"
+#include "Standerd/Components/Rigidbody.h"
+#include "Standerd/Components/Gravity.h"
+#include "Standerd/Components/Collision.h"
+#include "Standerd/Objects/CollisionManager.h"
+#include "Standerd/Objects/Stage.h"
+
+#include "Standerd/Objects/StateMachine.h"
+#include "Standerd/Objects/Steering.h"
+#include "Standerd/Objects/Behavior.h"
+#include "Standerd/Objects/BehaviorSteering.h"
+#include "Standerd/Components/Shadowmap.h"
+#include "Standerd/Components/BcStaticDraw.h"
+#include "Standerd/Components/SpStaticDraw.h"
+#include "Standerd/Components/BcBoneDraw.h"
+
+
+
 
 
 
@@ -135,4 +147,13 @@ using namespace DirectX;
 #pragma comment(lib, "PhysXTask_static_64.lib")
 #pragma comment(lib, "SceneQuery_static_64.lib")
 #pragma comment(lib, "SimulationController_static_64.lib")
+
+#if defined(_DEBUG)
+#pragma comment(lib, "assimp-vc143-mtd.lib")
+#pragma comment(lib, "zlibstaticd.lib")
+#else
+#pragma comment(lib, "assimp-vc143-mt.lib")
+#pragma comment(lib, "zlibstatic.lib")
+#endif
+
 

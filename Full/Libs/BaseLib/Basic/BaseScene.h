@@ -28,14 +28,33 @@ namespace basecross {
 	class PrimDevice;
 	class Stage;
 
+	//--------------------------------------------------------------------------------------
+	///	シーンクラス（親）
+	//--------------------------------------------------------------------------------------
 	class BaseScene
 	{
 	public:
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンストラクタ
+		@param[in]	frameCount	フレーム数
+		@param[in]	pPrimDevice	基本デバイス
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		BaseScene(UINT frameCount, PrimDevice* pPrimDevice);
 		virtual ~BaseScene();
 		ID3D12GraphicsCommandList* m_pTgtCommandList;
-
-
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	初期化
+		@param[in]	pDevice	ID3D12Deviceのポインタ
+		@param[in]	pDirectCommandQueue	コマンドキュー
+		@param[in]	pCommandList	コマンドリスト
+		@param[in]	frameIndex	フレーム番号
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		virtual void Initialize(ID3D12Device* pDevice, ID3D12CommandQueue* pDirectCommandQueue, ID3D12GraphicsCommandList* pCommandList, UINT frameIndex);
 		virtual void LoadSizeDependentResources(ID3D12Device* pDevice, ComPtr<ID3D12Resource>* ppRenderTargets, UINT width, UINT height);
 		virtual void ReleaseSizeDependentResources();
@@ -200,6 +219,24 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		std::shared_ptr<BaseTexture> GetTexture(const std::wstring& key);
 
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	PhysXオブジェクトを得る
+		@return	PhysXオブジェクトのポインタ
+		*/
+		//--------------------------------------------------------------------------------------
+		physx::PxPhysics* GetPxPhysics() {
+			return m_pPhysics;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	PhysXシーンを得る
+		@return	PhysXシーンのポインタ
+		*/
+		//--------------------------------------------------------------------------------------
+		physx::PxScene* GetPxScene() {
+			return m_pScene;
+		}
 		static double GetElapsedTime() {
 			return s_elapsedTime;
 		}
@@ -290,6 +327,21 @@ namespace basecross {
 		static BaseScene* s_baseScene;
 		//elapsedTime
 		static double s_elapsedTime;
+
+		//以下、PhysX関連
+		// PhysX内で利用するアロケーター
+		physx::PxDefaultAllocator m_defaultAllocator;
+		// エラー時用のコールバックでエラー内容が入ってる
+		physx::PxDefaultErrorCallback m_defaultErrorCallback;
+		// 上位レベルのSDK(PxPhysicsなど)をインスタンス化する際に必要
+		physx::PxFoundation* m_pFoundation = nullptr;
+		// 実際に物理演算を行う
+		physx::PxPhysics* m_pPhysics = nullptr;
+		// シミュレーションをどう処理するかの設定でマルチスレッドの設定もできる
+		physx::PxDefaultCpuDispatcher* m_pDispatcher = nullptr;
+		// シミュレーションする空間の単位でActorの追加などもここで行う
+		physx::PxScene* m_pScene = nullptr;
+
 
 		// Updates the shadow copies of the constant buffers.
 		virtual void UpdateConstantBuffers(); 
