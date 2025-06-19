@@ -11,11 +11,141 @@
 <div class="container bg-light">
 <h2>BaseCrossDx12ドキュメント</h2>
 <h4>【Sample000】Emptyプロジェクト</h4>
-　このサンプルは<strong>Sample000</strong>ディレクトリ内にあります。VisualStdioで該当ソリューション（VS2022で<strong>BaseCrossDx12VS2022.sln</strong>）を開いてください。<br>
-　ビルド後実行すると、以下の画面が現れます。<strong>Escキーを押す</strong>か<strong>×ボタン</strong>で終了します。<strong>Alt</strong>を押しながら<strong>Enter</strong>で、全画面に変更できます。Windowモードに戻すときは、再び<strong>Alt</strong>を押しながら<strong>Enter</strong>を押します。
+　このサンプルは<strong>Simple/Sample000</strong>ディレクトリ内にあります。VisualStdioで該当ソリューション（VS2022で<strong>BaseCrossDx12VS2022.sln</strong>）を開いてください。ビルド後実行すると、以下の画面が現れます。<strong>Escキーを押す</strong>か<strong>×ボタン</strong>で終了します。<strong>Alt</strong>を押しながら<strong>Enter</strong>で、全画面に変更できます。Windowモードに戻すときは、再び<strong>Alt</strong>を押しながら<strong>Enter</strong>を押します。
 <div class="py-3">
 <img src="img/0000a.png" width="80%" />
 </div>
+<h5>Emptyプロジェクトとは</h5>
+　<strong>Emptyプロジェクト</strong>とは、ゲーム制作開始時の<strong>何も表示しない</strong>プロジェクトを指します。<br>
+　何も表示しないと言っても、フレームワークごとの特有の情報や仕組みが実装されているのが通常です。<br>
+　<strong>BaseCrossDx12</strong>も例外ではなく、現在の<strong>FPS値とElapsedTime値</strong>が表示されています。
+<h5>BaseCrossDx12の構造</h5>
+　<strong>BaseCrossDx12</strong>は以下のような構造を持ちます。<br><br>
+<ul>
+	<li>BaseCrossDx12-Root
+	<ul>
+		<li>docs（ドキュメント）
+		<li>Simple（シンプルバージョンサンプル）
+		<ul>
+			<li>Assets（サンプルで使用する画像、モデルなど）</li>
+			<li>Libs</li>
+			<ul>
+				<li>BaseCrossDx12ライブラリ群</li>
+			</ul>
+			<li>Sample000</li>
+			<li>Sample001</li>
+			<li>Sample002</li>
+			<li>...その他のサンプル</li>
+		</ul>
+		</li>
+		<li>Full（フルバージョンサンプル）
+		<ul>
+			<li>Assets（サンプルで使用する画像、モデルなど）</li>
+			<li>Libs</li>
+			<ul>
+				<li>BaseCrossDx12ライブラリ群</li>
+			</ul>
+			<li>Sample100</li>
+			<li>Sample101</li>
+			<li>Sample102</li>
+			<li>...その他のサンプル</li>
+		</ul>
+		</li>
+
+	</ul>
+	</li>
+</ul>
+<br/>
+　<strong>Simple/Sample000サンプル</strong>は<strong>シンプルバージョン</strong>のサンプルです。
+<h5>シンプルバージョンとフルバージョンの違い</h5>
+　<strong>BaseCross</strong>の前バージョンである<strong>BaseCross64</strong>を扱ったことがある人はわかると思いますが、<strong>フルバージョン</strong>は<strong>BaseCross64</strong>の<strong>フルバージョン</strong>ようにプログラムできるのが特徴です。<strong>コンポーネント</strong>もほぼ同じものがそろっています。また新しい機能として<strong>物理エンジン</strong>は<strong>PhysX</strong>を使用していてこれは<strong>Rigidbodyコンポーネント</strong>。として供給されます。<br>
+　しかしながら、どうしても<strong>ライブラリの機能以上</strong>のことを実装しようとすると、無理が出ます。ですので、どちらかというと初心者が<strong>気軽にゲームを作りたい</strong>時に使うライブラリと言えます。<br>
+　便宜上、<strong>シンプルバージョン</strong>でも<strong>Stage、GameStage</strong>や<strong>GameObject、Component</strong>という概念はありますが、それをすべて取り払い<strong>Scene（シーン）</strong>のみでプログラミングすることも可能です。それらは<strong>シンプルバージョンのサンプル</strong>で紹介します。
+<h5>Emptyプロジェクトの内容</h5>
+　シンプルバージョンの<strong>Emptyプロジェクト</strong>のソリューションは以下の通りです。
+<div class="py-3">
+<img src="img/0000b.png" width="50%" />
+</div>
+　<strong>Libs</strong>の中は、シンプルバージョンのライブラリです。<strong>ソース ファイルおよびヘッダー ファイル</strong>がコンテンツ側の内容ですが、見てみるとほとんど記述がありません。<br>
+　まず一番重要な<strong>Scene.h/cpp</strong>を見てみます
+<h6>Scene.h</h6>
+<pre class="my-3 p-3">
+/*!
+@file Scene.h
+@brief シーンクラス
+*/
+#pragma once
+#include "stdafx.h"
+
+namespace basecross {
+	//--------------------------------------------------------------------------------------
+	// シーン
+	//--------------------------------------------------------------------------------------
+	class Scene : public BaseScene
+	{
+	public:
+		Scene(UINT frameCount, PrimDevice* pPrimDevice);
+		virtual ~Scene();
+	protected:
+		<span class="red">virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)override{}</span>
+		<span class="red">virtual void Update(double elapsedTime)override {}</span>
+		virtual void UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer)override;
+		<span class="red">virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList)override {}
+		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList)override {}</span>
+	};
+}
+//end namespace basecross
+</pre>
+　よく見ると<strong>CreateAssetResources()、Update()、ShadowPass()、ScenePass()</strong>は、実体をもってない（というか何もしない）のがわかります。<br>
+　これらの関数は多重定義しないと、親クラス（<strong>BaseSceneクラス</strong>）のデフォルトの処理が行われるので、それを処理しないようにする役割です。<br>
+　というより、この4つの関数をコンテンツに合った形で記述すれば「フルバージョンのライブラリに縛られることがなく」ゲームを作成することができます。<br>
+　以下は<strong>Scene.cpp</strong>の実装です。
+<h6>Scene.cpp</h6>
+<pre class="my-3 p-3">
+/*!
+@file Scene.cpp
+@brief シーンクラス　実体
+*/
+#include "stdafx.h"
+#include "Project.h"
+
+namespace basecross {
+	//--------------------------------------------------------------------------------------
+	// シーン
+	//--------------------------------------------------------------------------------------
+	Scene::Scene(UINT frameCount, PrimDevice* pPrimDevice) :
+		BaseScene(frameCount, pPrimDevice)
+	{
+	}
+	Scene::~Scene()
+	{
+	}
+	void Scene::UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer) {
+		auto device = BaseDevice::GetBaseDevice();
+		//1秒間に１回更新される安定したfpsを得る
+		auto fps = device->GetStableFps();
+		//1秒間に１回更新される安定したelapsedTimeを得る
+		auto elapsedTime = device->GetStableElapsedTime();
+		std::wstring uiText = L"";
+		wchar_t buff[512];
+		swprintf_s(buff, 500, L"FPS: %.1f\n", fps);
+		uiText = buff;
+		swprintf_s(buff, 500, L"ElapsedTime: %.6f\n", elapsedTime);
+		uiText += buff;
+		uiLayer->UpdateLabels(uiText);
+	}
+}
+// end namespace basecross
+</pre>
+　<strong>BaseCrossDx12</strong>で最低限必要なコンテンツ側の処理はこれだけです。<br>
+　<strong>UpdateUI()関数</strong>は、デバッグ文字列として<strong>FPSとElapsedTime</strong>を表示します。もし何も表示したくなければ
+<pre class="my-3 p-3">
+	void Scene::UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer) {
+		uiLayer->UpdateLabels(L"");
+	}
+</pre>
+　と書けば問題ありません。<br>
+　他のファイル<strong>Project.h</strong>はほぼ何も書かれてないですし、<strong>resource.h、stdafx.h、stdafx.cpp、WinMain.cpp</strong>は、サンプルが変わっても同じ内容です。
 <footer class="py-3 my-4">
 <ul class="nav justify-content-center border-top pb-3 mb-3">
 <li class="nav-item"><a href="readme.html" class="nav-link px-2 text-success">前へ</a></li>

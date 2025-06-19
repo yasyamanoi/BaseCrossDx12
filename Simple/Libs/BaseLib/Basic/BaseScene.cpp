@@ -476,52 +476,6 @@ namespace basecross {
 		scene_desc.cpuDispatcher = m_pDispatcher;
 		m_pScene = m_pPhysics->createScene(scene_desc);
 
-
-		// シャドウマップパイプラインステート
-		//ここであらかじめ作成しておく
-		//{
-		//	ComPtr<ID3D12PipelineState> PNTShadowmapPipelineState
-		//		= PipelineStatePool::GetPipelineState(L"PNTShadowmap");
-		//	auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
-
-		//	// シャドウマップ用
-		//	CD3DX12_DEPTH_STENCIL_DESC depthStencilDesc(D3D12_DEFAULT);
-		//	depthStencilDesc.DepthEnable = TRUE;
-		//	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-		//	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-		//	depthStencilDesc.StencilEnable = FALSE;
-
-		//	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		//	psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };;
-		//	psoDesc.pRootSignature = rootSignature.Get();
-		//	psoDesc.VS =
-		//	{
-		//		reinterpret_cast<UINT8*>(PNTShadowmap::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-		//		PNTShadowmap::GetPtr()->GetShaderComPtr()->GetBufferSize()
-
-		//	};
-		//	psoDesc.PS =
-		//	{
-		//		CD3DX12_SHADER_BYTECODE(0, 0)
-		//	};
-		//	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-		//	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		//	psoDesc.DepthStencilState = depthStencilDesc;
-		//	psoDesc.SampleMask = UINT_MAX;
-		//	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		//	psoDesc.NumRenderTargets = 0;
-		//	psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
-		//	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-		//	psoDesc.SampleDesc.Count = 1;
-		//	if (!PNTShadowmapPipelineState) {
-		//		ThrowIfFailed(pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&PNTShadowmapPipelineState)));
-		//		NAME_D3D12_OBJECT(PNTShadowmapPipelineState);
-		//		PipelineStatePool::AddPipelineState(L"PNTShadowmap", PNTShadowmapPipelineState);
-		//	}
-		//}
-
-
-
 		auto mesh = BaseMesh::CreateCube(pCommandList, 1.0f);
 		RegisterMesh(L"DEFAULT_CUBE", mesh);
 		mesh = BaseMesh::CreateSphere(pCommandList, 1.0f, 18);

@@ -142,7 +142,7 @@ namespace basecross {
 		static std::shared_ptr<BaseMesh> CreateBaseMesh(ID3D12GraphicsCommandList* pCommandList,const std::vector<T>& vertices) {
 			//デバイスの取得
 			auto device = App::GetD3D12Device();
-			shared_ptr<BaseMesh> ptrMesh = shared_ptr<BaseMesh>(new BaseMesh());
+			std::shared_ptr<BaseMesh> ptrMesh = std::shared_ptr<BaseMesh>(new BaseMesh());
 			UINT vertexBufferSize = (UINT)(sizeof(T) * vertices.size());
 			//頂点バッファの作成
 			{
