@@ -11,7 +11,7 @@
 <div class="container bg-light">
 <h2>BaseCrossDx12ドキュメント</h2>
 <h4>【Sample000】Emptyプロジェクト</h4>
-　このサンプルは<strong>Simple/Sample000</strong>ディレクトリ内にあります。VisualStdioで該当ソリューション（VS2022で<strong>BaseCrossDx12VS2022.sln</strong>）を開いてください。ビルド後実行すると、以下の画面が現れます。<strong>Escキーを押す</strong>か<strong>×ボタン</strong>で終了します。<strong>Alt</strong>を押しながら<strong>Enter</strong>で、全画面に変更できます。Windowモードに戻すときは、再び<strong>Alt</strong>を押しながら<strong>Enter</strong>を押します。
+　このサンプルは<strong>Samples/Sample000</strong>ディレクトリ内にあります。VisualStdioで該当ソリューション（VS2022で<strong>BaseCrossDx12VS2022.sln</strong>）を開いてください。ビルド後実行すると、以下の画面が現れます。<strong>Escキーを押す</strong>か<strong>×ボタン</strong>で終了します。<strong>Alt</strong>を押しながら<strong>Enter</strong>で、全画面に変更できます。Windowモードに戻すときは、再び<strong>Alt</strong>を押しながら<strong>Enter</strong>を押します。
 <div class="py-3">
 <img src="img/0000a.png" width="80%" />
 </div>
@@ -25,44 +25,30 @@
 	<li>BaseCrossDx12-Root
 	<ul>
 		<li>docs（ドキュメント）
-		<li>Simple（シンプルバージョンサンプル）
+		<li>Samples（サンプル）
 		<ul>
 			<li>Assets（サンプルで使用する画像、モデルなど）</li>
 			<li>Libs</li>
 			<ul>
-				<li>BaseCrossDx12ライブラリ群</li>
+				<li>BaseCrossDx12基本ライブラリ群</li>
 			</ul>
 			<li>Sample000</li>
 			<li>Sample001</li>
 			<li>Sample002</li>
-			<li>...その他のサンプル</li>
-		</ul>
-		</li>
-		<li>Full（フルバージョンサンプル）
-		<ul>
-			<li>Assets（サンプルで使用する画像、モデルなど）</li>
-			<li>Libs</li>
-			<ul>
-				<li>BaseCrossDx12ライブラリ群</li>
-			</ul>
-			<li>Sample100</li>
 			<li>Sample101</li>
 			<li>Sample102</li>
+			<li>Sample103</li>
 			<li>...その他のサンプル</li>
 		</ul>
 		</li>
-
 	</ul>
 	</li>
 </ul>
 <br/>
-　<strong>Simple/Sample000サンプル</strong>は<strong>シンプルバージョン</strong>のサンプルです。
-<h5>シンプルバージョンとフルバージョンの違い</h5>
-　<strong>BaseCross</strong>の前バージョンである<strong>BaseCross64</strong>を扱ったことがある人はわかると思いますが、<strong>フルバージョン</strong>は<strong>BaseCross64</strong>の<strong>フルバージョン</strong>ようにプログラムできるのが特徴です。<strong>コンポーネント</strong>もほぼ同じものがそろっています。また新しい機能として<strong>物理エンジン</strong>は<strong>PhysX</strong>を使用していてこれは<strong>Rigidbodyコンポーネント</strong>。として供給されます。<br>
-　しかしながら、どうしても<strong>ライブラリの機能以上</strong>のことを実装しようとすると、無理が出ます。ですので、どちらかというと初心者が<strong>気軽にゲームを作りたい</strong>時に使うライブラリと言えます。<br>
-　便宜上、<strong>シンプルバージョン</strong>でも<strong>Stage、GameStage</strong>や<strong>GameObject、Component</strong>という概念はありますが、それをすべて取り払い<strong>Scene（シーン）</strong>のみでプログラミングすることも可能です。それらは<strong>シンプルバージョンのサンプル</strong>で紹介します。
+　<strong>Sample000</strong>のように<strong>Sample0..</strong>で始まるサンプルは、かなりシンプルなサンプルです。<strong>DirectX12オブジェクト</strong>もある程度作らなければいけません。<br>
+　<strong>Sample101</strong>のように<strong>Sample1..</strong>で始まるサンプルは、ゲームステージ、コンポーネントなど、ある程度<strong>個別ライブラリ</strong>の形でそろっています（フルセットサンプル）。BaseCrossの前バージョンである<strong>BaseCross64</strong>を使った時がある人はわかると思いますが、そのままゲーム制作を始められます。
 <h5>Emptyプロジェクトの内容</h5>
-　シンプルバージョンの<strong>Emptyプロジェクト</strong>のソリューションは以下の通りです。
+　<strong>Emptyプロジェクト</strong>のソリューションは以下の通りです。
 <div class="py-3">
 <img src="img/0000b.png" width="50%" />
 </div>
@@ -76,8 +62,10 @@
 */
 #pragma once
 #include "stdafx.h"
+#include "Project.h"
 
 namespace basecross {
+
 	//--------------------------------------------------------------------------------------
 	// シーン
 	//--------------------------------------------------------------------------------------
@@ -87,18 +75,19 @@ namespace basecross {
 		Scene(UINT frameCount, PrimDevice* pPrimDevice);
 		virtual ~Scene();
 	protected:
-		<span class="red">virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)override{}</span>
-		<span class="red">virtual void Update(double elapsedTime)override {}</span>
+		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)override{}
+		virtual void Update(double elapsedTime)override{}
+		virtual void UpdateConstantBuffers()override{}
+		virtual void CommitConstantBuffers()override{}
 		virtual void UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer)override;
-		<span class="red">virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList)override {}
-		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList)override {}</span>
+		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList)override {}
+		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList){}
 	};
 }
 //end namespace basecross
 </pre>
-　よく見ると<strong>CreateAssetResources()、Update()、ShadowPass()、ScenePass()</strong>は、実体をもってない（というか何もしない）のがわかります。<br>
-　これらの関数は多重定義しないと、親クラス（<strong>BaseSceneクラス</strong>）のデフォルトの処理が行われるので、それを処理しないようにする役割です。<br>
-　というより、この4つの関数をコンテンツに合った形で記述すれば「フルバージョンのライブラリに縛られることがなく」ゲームを作成することができます。<br>
+　よく見ると<strong>CreateAssetResources()、Update()、UpdateConstantBuffers()、CommitConstantBuffers()、ShadowPass()、ScenePass()</strong>は、実体をもってない（というか何もしない）のがわかります。<br>
+　この6つの関数をコンテンツに合った形で記述すれば、様々なオブジェクトを管理、表示することができます。<br>
 　以下は<strong>Scene.cpp</strong>の実装です。
 <h6>Scene.cpp</h6>
 <pre class="my-3 p-3">
@@ -110,6 +99,7 @@ namespace basecross {
 #include "Project.h"
 
 namespace basecross {
+
 	//--------------------------------------------------------------------------------------
 	// シーン
 	//--------------------------------------------------------------------------------------
@@ -120,6 +110,8 @@ namespace basecross {
 	Scene::~Scene()
 	{
 	}
+
+
 	void Scene::UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer) {
 		auto device = BaseDevice::GetBaseDevice();
 		//1秒間に１回更新される安定したfpsを得る
@@ -134,6 +126,8 @@ namespace basecross {
 		uiText += buff;
 		uiLayer->UpdateLabels(uiText);
 	}
+
+
 }
 // end namespace basecross
 </pre>

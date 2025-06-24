@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)BasicInclude.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\App.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseCommon.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseDevice.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseHelper.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMath.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMathInc.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseMesh.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseScene.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BaseTexture.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\BlendState.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\d3dx12.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\DxHelper.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\FrameResource.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\InputDevice.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\ObjectInterface.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\PipelineState.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\PrimDevice.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\RootSignature.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\StepTimer.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\targetver.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\UILayer.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Basic\TransHelper.h">
+      <Filter>Basic\Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Basic">
+      <UniqueIdentifier>{3c2a9139-496b-4d63-885a-ebabee9d9c5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Basic\Sources">
+      <UniqueIdentifier>{4af9ea80-6f1f-44f3-98ca-3714e84d28b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Basic\Headers">
+      <UniqueIdentifier>{56d51648-1fb2-4263-a134-09f65ab8257b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\App.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseDevice.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseHelper.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseMesh.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseScene.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BaseTexture.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\BlendState.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\FrameResource.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\MeshHelper.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\PipelineState.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\PrimDevice.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\RootSignature.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\UILayer.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\VertexHelper.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Basic\ObjectInterface.cpp">
+      <Filter>Basic\Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -1,12 +1,9 @@
 Compiled/
 Temp/
 .vs/
-/Simple/Libs/lib/
-/Simple/*/[Dd]ebug/
-/Simple/*/[Rr]elease/
-/Full/Libs/lib/
-/Full/*/[Dd]ebug/
-/Full/*/[Rr]elease/
+/Samples/Libs/lib/
+/Samples/*/[Dd]ebug/
+/Samples/*/[Rr]elease/
 
 # User-specific files
 *.cso
