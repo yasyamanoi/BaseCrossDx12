@@ -1,9 +1,10 @@
 Compiled/
 Temp/
 .vs/
-/Samples/Libs/lib/
+
 /Samples/*/[Dd]ebug/
 /Samples/*/[Rr]elease/
+/Samples/Libs/lib/
 
 # User-specific files
 *.cso
