@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{d8d0d6e2-54ec-4a9e-b10e-f55c1cc21590}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)App.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseCommon.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseDevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseMath.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseMathInc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseMesh.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseScene.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseTexture.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BasicInclude.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BlendState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)d3dx12.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)DxHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FrameResource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InputDevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MeshHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ObjectInterface.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PipelineState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PrimDevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RootSignature.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)StepTimer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)targetver.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TransHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)UILayer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)VertexHelper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)App.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BaseDevice.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BaseHelper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BaseMesh.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BaseScene.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BaseTexture.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BlendState.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FrameResource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MeshHelper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ObjectInterface.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PipelineState.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PrimDevice.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RootSignature.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)UILayer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)VertexHelper.cpp" />
+  </ItemGroup>
+</Project>

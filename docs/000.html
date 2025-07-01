@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BaseCrossDx12ドキュメント</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous"><link href="css/style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<!-- container -->
+<div class="container bg-light">
+<h2>BaseCrossDx12ドキュメント</h2>
+<h4>【Sample000】Emptyプロジェクト</h4>
+　このサンプルは<strong>Samples/Sample000</strong>ディレクトリ内にあります。VisualStdioで該当ソリューション（VS2022で<strong>BaseCrossDx12VS2022.sln</strong>）を開いてください。ビルド後実行すると、以下の画面が現れます。<strong>Escキーを押す</strong>か<strong>×ボタン</strong>で終了します。<strong>Alt</strong>を押しながら<strong>Enter</strong>で、全画面に変更できます。Windowモードに戻すときは、再び<strong>Alt</strong>を押しながら<strong>Enter</strong>を押します。
+<div class="py-3">
+<img src="img/0000a.png" width="80%" />
+</div>
+<h5>Emptyプロジェクトとは</h5>
+　<strong>Emptyプロジェクト</strong>とは、ゲーム制作開始時の<strong>何も表示しない</strong>プロジェクトを指します。<br>
+　何も表示しないと言っても、フレームワークごとの特有の情報や仕組みが実装されているのが通常です。<br>
+　<strong>BaseCrossDx12</strong>も例外ではなく、現在の<strong>FPS値とElapsedTime値</strong>が表示されています。
+　<strong>Sample000</strong>のように<strong>Sample0..</strong>で始まるサンプルは、ベーシックなサンプルです。<strong>DirectX12オブジェクト</strong>もある程度作らなければいけません。<br>
+　<strong>Sample101</strong>のように<strong>Sample1..</strong>で始まるサンプルは、ゲームステージ、コンポーネントなど、ある程度<strong>個別ライブラリ</strong>の形でそろっています（スタンダードサンプル）。BaseCrossの前バージョンである<strong>BaseCross64</strong>を使った時がある人はわかると思いますが、そのままゲーム制作を始められます。
+<h5>Emptyプロジェクトの内容</h5>
+　<strong>Emptyプロジェクト</strong>のソリューションは以下の通りです。
+<div class="py-3">
+<img src="img/0000b.png" width="50%" />
+</div>
+　<strong>Libs</strong>の中は、ベーシックバージョンのライブラリです。<strong>ソース ファイルおよびヘッダー ファイル</strong>がコンテンツ側の内容ですが、見てみるとほとんど記述がありません。<br>
+　まず一番重要な<strong>Scene.h/cpp</strong>を見てみます
+<h6>Scene.h</h6>
+<pre class="my-3 p-3">
+/*!
+@file Scene.h
+@brief シーンクラス
+*/
+#pragma once
+#include "stdafx.h"
+#include "Project.h"
+
+namespace basecross {
+	//--------------------------------------------------------------------------------------
+	// シーン
+	//--------------------------------------------------------------------------------------
+	class Scene : public BaseScene
+	{
+	public:
+		Scene(UINT frameCount, PrimDevice* pPrimDevice);
+		virtual ~Scene();
+	protected:
+		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)override{}
+		virtual void Update(double elapsedTime)override{}
+		virtual void UpdateConstantBuffers()override{}
+		virtual void CommitConstantBuffers()override{}
+		virtual void UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer)override;
+		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList)override {}
+		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList){}
+	};
+}
+//end namespace basecross
+</pre>
+　よく見ると<strong>CreateAssetResources()、Update()、UpdateConstantBuffers()、CommitConstantBuffers()、ShadowPass()、ScenePass()</strong>は、実体をもってない（というか何もしない）のがわかります。<br>
+　この6つの関数をコンテンツに合った形で記述すれば、様々なオブジェクトを管理、表示することができます。<br>
+　以下は<strong>Scene.cpp</strong>の実装です。
+<h6>Scene.cpp</h6>
+<pre class="my-3 p-3">
+/*!
+@file Scene.cpp
+@brief シーンクラス　実体
+*/
+#include "stdafx.h"
+#include "Project.h"
+
+namespace basecross {
+
+	//--------------------------------------------------------------------------------------
+	// シーン
+	//--------------------------------------------------------------------------------------
+	Scene::Scene(UINT frameCount, PrimDevice* pPrimDevice) :
+		BaseScene(frameCount, pPrimDevice)
+	{
+	}
+	Scene::~Scene()
+	{
+	}
+	void Scene::UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer) {
+		auto device = BaseDevice::GetBaseDevice();
+		//1秒間に１回更新される安定したfpsを得る
+		auto fps = device->GetStableFps();
+		//1秒間に１回更新される安定したelapsedTimeを得る
+		auto elapsedTime = device->GetStableElapsedTime();
+		std::wstring uiText = L"";
+		wchar_t buff[512];
+		swprintf_s(buff, 500, L"FPS: %.1f\n", fps);
+		uiText = buff;
+		swprintf_s(buff, 500, L"ElapsedTime: %.6f\n", elapsedTime);
+		uiText += buff;
+		uiLayer->UpdateLabels(uiText);
+	}
+
+
+}
+// end namespace basecross
+</pre>
+　<strong>BaseCrossDx12</strong>で最低限必要なコンテンツ側の処理はこれだけです。<br>
+　<strong>UpdateUI()関数</strong>は、デバッグ文字列として<strong>FPSとElapsedTime</strong>を表示します。もし何も表示したくなければ
+<pre class="my-3 p-3">
+	void Scene::UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer) {
+		uiLayer->UpdateLabels(L"");
+	}
+</pre>
+　と書けば問題ありません。<br>
+　他のファイル<strong>Project.h</strong>はほぼ何も書かれてないですし、<strong>resource.h、stdafx.h、stdafx.cpp、WinMain.cpp</strong>は、サンプルが変わっても同じ内容です。
+<footer class="py-3 my-4">
+<ul class="nav justify-content-center border-top pb-3 mb-3">
+<li class="nav-item"><a href="readme.html" class="nav-link px-2 text-success">前へ</a></li>
+<li class="nav-item"><a href="index.html" class="nav-link px-2 text-primary">目次</a></li>
+<li class="nav-item"><a href="001.html" class="nav-link px-2 text-success">次へ</a></li>
+</ul>
+<p class="text-center text-body-secondary">&copy; WiZ Tamura Hiroki,Yamanoi Yasushi MIT License.</p>
+</footer>
+</div>
+<!-- /container -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
+</body>
+</html>

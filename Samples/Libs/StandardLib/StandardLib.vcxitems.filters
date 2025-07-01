@@ -1,0 +1,239 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Components">
+      <UniqueIdentifier>{ca08752a-8d17-44ad-a83b-128e7aa538a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects">
+      <UniqueIdentifier>{bc11e059-4c34-4066-9718-8955c1bd0cb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{16b2aa4a-efd8-4591-9de6-7b3048042450}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Headers">
+      <UniqueIdentifier>{2dfe31ea-2264-490e-bde5-8a88ed2b5e59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Sources">
+      <UniqueIdentifier>{7733d800-181b-436c-88a4-1624c6e1715f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\Headers">
+      <UniqueIdentifier>{61d7827c-73ca-41e0-a24e-56e9d58c528b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\Sources">
+      <UniqueIdentifier>{f1b1343a-3af9-46b4-83bb-35359266a84b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\BcBoneDraw.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\BcStaticDraw.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Collision.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Component.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Gravity.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Rigidbody.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Shadowmap.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\SpStaticDraw.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Transform.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)StandardInclude.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Behavior.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\BehaviorSteering.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Camera.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Constants.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\GameObject.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Light.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Stage.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\StateMachine.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Steering.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\BcBoneDraw.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\BcStaticDraw.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Collision.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Component.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Gravity.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Rigidbody.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Shadowmap.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\SpStaticDraw.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Transform.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Behavior.cpp">
+      <Filter>Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\BehaviorSteering.cpp">
+      <Filter>Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Camera.cpp">
+      <Filter>Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.cpp">
+      <Filter>Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\GameObject.cpp">
+      <Filter>Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Light.cpp">
+      <Filter>Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Stage.cpp">
+      <Filter>Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Steering.cpp">
+      <Filter>Objects\Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCCommon.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCConstant.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCLighting.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCShadow.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCStructs.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\INCShadowmap.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\SpINC2dConstant.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\SpINCConstant.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\SpINCPixel.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\SpINCStructs.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcPSPNTPL.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcPSPNTPLShadow.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTStaticPL.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTStaticPLShadow.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCTSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCTStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPNStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPNTStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPNTStaticShadow.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPTSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPTStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPCSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPCStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPCTSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPCTStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPNStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPNTStatic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPNTStaticShadow.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPTSprite.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\VSShadowmap.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>

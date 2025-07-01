@@ -1,0 +1,9 @@
+libdir=D:/GithubYas/assimp-master/Assimp/lib
+includedir=D:/GithubYas/assimp-master/Assimp/include
+
+Name: Assimp
+Description: Import various well-known 3D model formats in an uniform manner.
+Version: 6.0.1
+Libs: -L${libdir} -lassimp
+Libs.private:  
+Cflags: -I${includedir}
