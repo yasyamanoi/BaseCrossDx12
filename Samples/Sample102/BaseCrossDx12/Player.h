@@ -28,7 +28,6 @@ namespace basecross {
 		virtual ~Player() {}
 		virtual void OnCreate()override;
 		virtual void OnUpdate(double elapsedTime);
-		virtual void OnUpdate2(double elapsedTime);
 		//Aボタン
 		void OnPushA();
 		//Bボタン

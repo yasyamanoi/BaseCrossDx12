@@ -73,7 +73,7 @@ namespace basecross {
 		/// ライト射影行列
 		Mat4x4 lightProjection;
 		/// Bone配列
-		Vec4 Bones[3 * 72];
+		Vec4 Bones[3 * MAX_BONES];
 		SimpleConstant() {
 			memset(this, 0, sizeof(SimpleConstant));
 			diffuse = Col4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -111,7 +111,7 @@ namespace basecross {
 		Mat4x4 lightView;
 		Mat4x4 lightProjection;
 
-		Vec4 bones[3 * 72];
+		Vec4 Bones[3 * MAX_BONES];
 	};
 
 

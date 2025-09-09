@@ -15,12 +15,18 @@ namespace basecross {
 	//	ライト
 	//--------------------------------------------------------------------------------------
 	struct Light {
-		bsm::Vec3 m_directional;	//ライトの向き
-		bsm::Vec4 m_diffuseColor;	//ディフィーズ色
-		bsm::Vec4 m_specularColor;	//スペキュラー色
-		bsm::Vec3 m_position;	//位置（使用しない場合あり）
-		bsm::Vec3 m_at;		//指している場所（使用しない場合あり）
+		Vec3 m_directional;	//ライトの向き
+		Vec4 m_diffuseColor;	//ディフィーズ色
+		Vec4 m_specularColor;	//スペキュラー色
+		Vec3 m_position;	//位置（使用しない場合あり）
+		Vec3 m_at;		//指している場所（使用しない場合あり）
 
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	デフォルトコンストラクタ
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		Light() :
 			m_directional(0, -1.0f, 0),
 			m_diffuseColor(1.0f, 1.0f, 1.0f, 1.0f),
@@ -29,14 +35,32 @@ namespace basecross {
 			m_at(0.0f, 0.0f, 0.0f)
 		{
 		}
-		Light(const bsm::Vec3& dir, const bsm::Vec4& def, const bsm::Vec4& sp) :
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンストラクタ
+		@param[in]	dir　ディレクショナル
+		@param[in]	def　ディフィーズ色
+		@param[in]	sp スペキュラー色
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		Light(const Vec3& dir, const Vec4& def, const Vec4& sp) :
 			m_directional(dir),
 			m_diffuseColor(def),
 			m_specularColor(sp),
 			m_position(0.0f, 0.0f, 0.0f),
 			m_at(0.0f, 0.0f, 0.0f)
 		{
+			//ライト位置の仮設定
+			m_position = m_at - dir;
 		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コピーコンストラクタ
+		@param[in]	other　コピー元ライト
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
 		Light(const Light& other) :
 			m_directional(other.m_directional),
 			m_diffuseColor(other.m_diffuseColor),
@@ -45,6 +69,13 @@ namespace basecross {
 			m_at(other.m_at)
 		{
 		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	代入
+		@param[in]	other　代入元ライト
+		@return	ライトオブジェクト
+		*/
+		//--------------------------------------------------------------------------------------
 		Light& operator=(const Light& other) {
 			if (this != &other) {
 				m_directional = other.m_directional;
@@ -56,12 +87,20 @@ namespace basecross {
 			return *this;
 		}
 		~Light() {}
-		void SetPositionToDirectional(const bsm::Vec3& pos, const bsm::Vec3& at) {
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	ライトの位置指す位置から、ディレクショナルライトを作る
+		@param[in]	pos　ライト位置
+		@param[in]	at　ライトの指す位置
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetPositionToDirectional(const Vec3& pos, const Vec3& at) {
 			m_position = pos;
 			m_at = at;
 			auto dir = XMVectorSubtract(XMLoadFloat3(&at), XMLoadFloat3(&pos));
 			dir = XMVector3Normalize(dir);
-			m_directional = bsm::Vec3(dir);
+			m_directional = Vec3(dir);
 		}
 	};
 
@@ -71,7 +110,7 @@ namespace basecross {
 	class LightSet :public ObjectInterface {
 		const size_t m_maxLights = 3;
 		std::vector<Light> m_lights;
-		bsm::Vec4 m_ambient;
+		Vec4 m_ambient;
 		size_t m_mainIndex;
 	public:
 		LightSet();
@@ -116,7 +155,7 @@ namespace basecross {
 		@return	アンビエント
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual const bsm::Vec4 GetAmbient() const { return m_ambient; }
+		virtual const Vec4 GetAmbient() const { return m_ambient; }
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief アンビエントの設定
@@ -124,7 +163,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void SetAmbient(const bsm::Vec4& a) { m_ambient = a; }
+		virtual void SetAmbient(const Vec4& a) { m_ambient = a; }
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief メインライトインデックスの取得

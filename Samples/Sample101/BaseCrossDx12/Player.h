@@ -12,8 +12,6 @@ namespace basecross {
 	///	プレイヤー
 	//--------------------------------------------------------------------------------------
 	class Player : public GameObject {
-//		std::shared_ptr<BaseMesh> m_mesh;
-//		std::shared_ptr < BaseTexture> m_texture;
 		//プレイヤーが使用するコントローラとキーボードの入力
 		Vec2 GetInputState() const;
 		// コントローラから方向ベクトルを得る
@@ -27,7 +25,9 @@ namespace basecross {
 	public:
 		Player(const std::shared_ptr<Stage>& StagePtr, const TransParam& param);
 		virtual ~Player() {}
+		//構築時処理
 		virtual void OnCreate()override;
+		//更新時処理
 		virtual void OnUpdate(double elapsedTime);
 		//Aボタン
 		void OnPushA();

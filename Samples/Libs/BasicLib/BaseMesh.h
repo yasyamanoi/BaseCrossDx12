@@ -10,29 +10,181 @@
 
 namespace basecross {
 
-	//--------------------------------------------------------------------------------------
-	///	アニメーション
-	//--------------------------------------------------------------------------------------
-	class Animation {
-		const aiScene* m_pScene;
-		const aiAnimation* m_pAnimation;
-		const std::string m_nodeName;
-		const aiNodeAnim* m_rootNode;
-		bool m_hasAnimation;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief アニメーションを再帰的に作成する
-		@param[in]	AnimationTime	アニメタイム
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const bsm::Mat4x4& ParentTransform);
-	public:
-		Animation(const aiScene* pScene,const aiAnimation* pAnimation, const std::string& nodeName);
-		bool CreateAnimation();
-		bool HasAnimation() const {
-			return m_hasAnimation;
+#define INVALID_MATERIAL 0xFFFFFFFF
+
+
+#define ASSIMP_LOAD_FLAGS (aiProcess_JoinIdenticalVertices |    \
+                           aiProcess_Triangulate |              \
+                           aiProcess_GenSmoothNormals |         \
+                           aiProcess_LimitBoneWeights |         \
+                           aiProcess_SplitLargeMeshes |         \
+                           aiProcess_ImproveCacheLocality |     \
+                           aiProcess_RemoveRedundantMaterials | \
+                           aiProcess_FindDegenerates |          \
+                           aiProcess_FindInvalidData |          \
+                           aiProcess_GenUVCoords |              \
+                           aiProcess_CalcTangentSpace)
+
+#define MAX_NUM_BONES_PER_VERTEX 4
+#define MAX_BONES (200)
+
+	struct BasicMeshEntry {
+		BasicMeshEntry()
+		{
+			NumIndices = 0;
+			BaseVertex = 0;
+			BaseIndex = 0;
+			MaterialIndex = INVALID_MATERIAL;
 		}
+
+		uint32_t NumIndices;
+		uint32_t BaseVertex;
+		uint32_t BaseIndex;
+		uint32_t MaterialIndex;
+	};
+
+	struct Vertex {
+		Vec3 Position;
+		Vec2 TexCoords;
+		Vec3 Normal;
+	};
+
+	struct NodeInfo {
+
+		NodeInfo() {}
+
+		NodeInfo(const aiNode* n) { pNode = n; }
+
+		const aiNode* pNode = NULL;
+		bool isRequired = false;
+	};
+
+
+	struct VertexBoneData
+	{
+		uint32_t BoneIDs[MAX_NUM_BONES_PER_VERTEX] = { 0 };
+		float Weights[MAX_NUM_BONES_PER_VERTEX] = { 0.0f };
+		int index = 0;  // slot for the next update
+
+		VertexBoneData()
+		{
+		}
+
+		void AddBoneData(uint32_t BoneID, float Weight)
+		{
+			for (int i = 0; i < index; i++) {
+				if (BoneIDs[i] == BoneID) {
+					//  printf("bone %d already found at index %d old weight %f new weight %f\n", BoneID, i, Weights[i], Weight);
+					return;
+				}
+			}
+			if (Weight == 0.0f) {
+				return;
+			}
+			// printf("Adding bone %d weight %f at index %i\n", BoneID, Weight, index);
+
+			if (index == MAX_NUM_BONES_PER_VERTEX) {
+				return;
+				assert(0);
+			}
+
+			BoneIDs[index] = BoneID;
+			Weights[index] = Weight;
+
+			index++;
+		}
+	};
+
+
+	struct SkinnedVertex {
+		Vec3 Position;
+		Vec2 TexCoords;
+		Vec3 Normal;
+		VertexBoneData Bones;
+	};
+
+	struct BoneInfo
+	{
+		Mat4x4 OffsetMatrix;
+		Mat4x4 FinalTransformation;
+
+		BoneInfo(const Mat4x4& Offset)
+		{
+			OffsetMatrix = Offset;
+			FinalTransformation.identity();
+		}
+	};
+
+	struct LocalTransform {
+		aiVector3D Scaling;
+		aiQuaternion Rotation;
+		aiVector3D Translation;
+	};
+
+	struct SkinningMeshSet {
+		std::vector<VertexPositionNormalTextureSkinning> vertices;
+		std::vector<uint32_t> indices;
+	};
+
+
+	//--------------------------------------------------------------------------------------
+	///	Assimpローダー
+	//--------------------------------------------------------------------------------------
+	struct BaseAssimp {
+		BaseAssimp(const std::string& modelFile);
+		~BaseAssimp() {}
+
+		std::string m_ModelFile;
+
+		Assimp::Importer m_importer;
+		const aiScene* m_pScene;
+
+		std::vector<BoneInfo> m_BoneInfo;
+		std::map<std::string, NodeInfo> m_requiredNodeMap;
+		std::vector<SkinnedVertex> m_SkinnedVertices;
+
+		std::vector<std::vector<SkinnedVertex>> m_AllSkinnedVertices;
+
+
+		std::vector<BasicMeshEntry> m_Meshes;
+		std::vector<Vertex> m_Vertices;
+		std::vector<uint32_t> m_Indices;
+
+		std::vector<std::vector<uint32_t>> m_AllIndices;
+
+		std::map<std::string, uint32_t> m_BoneNameToIndexMap;
+
+		void MarkRequiredNodesForBone(const aiBone* pBone);
+		int GetBoneId(const aiBone* pBone);
+		void LoadSingleBone(uint32_t MeshIndex, const aiBone* pBone, std::vector<SkinnedVertex>& SkinnedVertices, int BaseVertex);
+		void LoadMeshBones(uint32_t MeshIndex, const aiMesh* paiMesh, std::vector<SkinnedVertex>& SkinnedVertices, int BaseVertex);
+		//シングルメッシュ用
+		bool InitScene(std::vector<VertexPositionNormalTextureSkinning>& vertices,
+				std::vector<uint32_t>& indices);
+
+		//マルチメッシュ用
+		bool InitMuliScene(std::vector <SkinningMeshSet>& meshSetVec);
+
+
+		void CountVerticesAndIndices(uint32_t& NumVertices, uint32_t& NumIndices);
+		void InitFirstMeshe();
+		void InitAllMeshes();
+		void InitializeRequiredNodeMap(const aiNode* pNode);
+		void InitSingleMesh(uint32_t MeshIndex, const aiMesh* paiMesh);
+		void ReserveSpace(uint32_t NumVertices, uint32_t NumIndices);
+
+		void GetBoneTransforms(float AnimationTimeSec, std::vector<Mat4x4>& Transforms, unsigned int AnimationIndex = 0);
+		float CalcAnimationTimeTicks(float TimeInSeconds, unsigned int AnimationIndex);
+		void ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const Mat4x4& ParentTransform, const aiAnimation& Animation);
+		const aiNodeAnim* FindNodeAnim(const aiAnimation& Animation, const std::string& NodeName);
+		void CalcLocalTransform(LocalTransform& Transform, float AnimationTimeTicks, const aiNodeAnim* pNodeAnim);
+		void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+		void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+		void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+		uint32_t FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		uint32_t FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		uint32_t FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		Mat4x4 m_GlobalInverseTransform;
 	};
 
 
@@ -50,11 +202,10 @@ namespace basecross {
 		UINT m_numVertices; //頂点数
 		UINT m_numIndices; //インデックス数
 
-		static Assimp::Importer m_importer;
-		static const aiScene* m_pScene;
-		std::vector<std::shared_ptr<Animation>> m_AnimationVec;
+		std::shared_ptr<BaseAssimp> m_BaseAssimp;
+
 	protected:
-		BaseMesh() {}
+		BaseMesh() :m_BaseAssimp(nullptr){}
 	public:
 		~BaseMesh() {}
 		//--------------------------------------------------------------------------------------
@@ -129,6 +280,18 @@ namespace basecross {
 		const D3D12_INDEX_BUFFER_VIEW& GetIndexBufferView() const {
 			return m_indexBufferView;
 		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	Assimpの取得
+		@return	Assimpのポインタ
+		*/
+		//--------------------------------------------------------------------------------------
+		std::shared_ptr<BaseAssimp> GetBaseAssimp() {
+			return m_BaseAssimp;
+		}
+
+
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief 頂点のみで構成されるメッシュの作成
@@ -311,13 +474,6 @@ namespace basecross {
 		static std::shared_ptr<BaseMesh> CreateBoneModelMesh(
 			ID3D12GraphicsCommandList* pCommandList,
 			const std::wstring& dataDir, const std::wstring& dataFile);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief アニメーションの作成
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void CreateAnimations();
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	頂点の変更.<br />

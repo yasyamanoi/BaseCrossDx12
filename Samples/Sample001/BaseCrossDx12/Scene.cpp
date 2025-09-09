@@ -8,14 +8,14 @@
 namespace basecross {
 
 	IMPLEMENT_DX12SHADER(SpVSPCStatic, App::GetShadersDir() + L"SpVSPCStatic.cso")
-		IMPLEMENT_DX12SHADER(SpPSPCStatic, App::GetShadersDir() + L"SpPSPCStatic.cso")
+	IMPLEMENT_DX12SHADER(SpPSPCStatic, App::GetShadersDir() + L"SpPSPCStatic.cso")
 
-		//--------------------------------------------------------------------------------------
-		// シーン
-		//--------------------------------------------------------------------------------------
-		Scene::Scene(UINT frameCount, PrimDevice* pPrimDevice) :
-		BaseScene(frameCount, pPrimDevice),
-		m_totalTime(0.0)
+	//--------------------------------------------------------------------------------------
+	// シーン
+	//--------------------------------------------------------------------------------------
+	Scene::Scene(UINT frameCount, PrimDevice* pPrimDevice) :
+	BaseScene(frameCount, pPrimDevice),
+	m_totalTime(0.0)
 	{
 	}
 	Scene::~Scene()

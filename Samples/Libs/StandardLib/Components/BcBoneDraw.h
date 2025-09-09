@@ -34,6 +34,8 @@ namespace basecross {
 		//フォグベクトル
 		XMFLOAT3 m_fogVector;
 
+		std::vector<Mat4x4>  m_BoneTransforms;
+
 	public:
 		bool IsOwnShadowActive()const {
 			return m_ownShadowActive;
@@ -56,6 +58,9 @@ namespace basecross {
 		virtual void OnCommitConstantBuffers()override;
 		virtual void OnCreate()override;
 		virtual void OnSceneDraw()override;
+
+		virtual bool UpdateAnimation(double animeTime);
+
 	};
 
 }

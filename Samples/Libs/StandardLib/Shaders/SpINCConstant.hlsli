@@ -17,5 +17,5 @@ cbuffer ParametersBuffer : register(b0)
 	float4 EyePos	: packoffset(c18);
 	float4x4 LightView	: packoffset(c19);
 	float4x4 LightProjection	: packoffset(c23);
-	float4x3 Bones[72] : packoffset(c27);
+    float4x3 Bones[200] : packoffset(c27);
 };

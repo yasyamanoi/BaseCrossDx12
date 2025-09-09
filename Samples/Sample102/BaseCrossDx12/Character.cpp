@@ -14,12 +14,11 @@ namespace basecross {
 	FixedBox::FixedBox(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		GameObject(stage)
 	{
-		m_tempParam = param;
+		m_transParam = param;
 	}
 	FixedBox::~FixedBox() {}
 
 	void FixedBox::OnCreate() {
-		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 
 		//Transformコンポーネントを取り出す
 		auto ptrTrans = GetComponent<Transform>();
@@ -32,7 +31,7 @@ namespace basecross {
 
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
-		auto ptrDraw = AddComponent<BcStaticDraw>();
+		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
 		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
 		ptrDraw->AddBaseTexture(L"SKY_TX");
 		ptrDraw->SetOwnShadowActive(true);
@@ -45,7 +44,7 @@ namespace basecross {
 		GameObject(stage),
 		m_totalTime(0.0)
 	{
-		m_tempParam = param;
+		m_transParam = param;
 	}
 	WallBox::~WallBox() {}
 
@@ -63,7 +62,7 @@ namespace basecross {
 
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
-		auto ptrDraw = AddComponent<BcStaticDraw>();
+		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
 		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
 		ptrDraw->AddBaseTexture(L"WALL_TX");
 		ptrDraw->SetOwnShadowActive(true);
@@ -74,9 +73,6 @@ namespace basecross {
 	}
 
 	void WallBox::OnUpdate(double elapsedTime) {
-		//RigidbodyDynamicコンポーネントを取り出す
-//		auto ptrRigid = GetComponent<RigidbodyDynamic>();
-//		ptrRigid->OnUpdate(elapsedTime);
 	}
 
 

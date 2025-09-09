@@ -7,9 +7,12 @@
 
 namespace basecross {
 
-	IMPLEMENT_DX12SHADER(BcVSPNTBonePL, App::GetShadersDir() + L"BcVSPNTStaticPL.cso")
+	IMPLEMENT_DX12SHADER(BcVSPNTBonePL, App::GetShadersDir() + L"BcVSPNTBonePL.cso")
+	IMPLEMENT_DX12SHADER(BcVSPNTBonePLShadow, App::GetShadersDir() + L"BcVSPNTBonePLShadow.cso")
 
-	IMPLEMENT_DX12SHADER(BcVSPNTBonePLShadow, App::GetShadersDir() + L"BcVSPNTStaticPLShadow.cso")
+//	IMPLEMENT_DX12SHADER(BcVSPNTBonePL, App::GetShadersDir() + L"BcVSPNTStaticPL.cso")
+//	IMPLEMENT_DX12SHADER(BcVSPNTBonePLShadow, App::GetShadersDir() + L"BcVSPNTStaticPLShadow.cso")
+
 
 
 
@@ -117,6 +120,28 @@ namespace basecross {
 
 		}
 	}
+
+	bool BcBoneDraw::UpdateAnimation(double animeTime) {
+
+		//アニメーション
+		auto mesh = GetBaseMesh(0);
+		auto ptrBaseAssimp = mesh->GetBaseAssimp();
+		m_BoneTransforms.clear();
+		ptrBaseAssimp->GetBoneTransforms((float)animeTime, m_BoneTransforms);
+
+
+
+/*
+		//4x3の部分だけ取得
+		for (auto& v : Transforms) {
+			m_BoneTransforms.push_back(v.getMajor(0));
+			m_BoneTransforms.push_back(v.getMajor(1));
+			m_BoneTransforms.push_back(v.getMajor(2));
+		}
+*/
+		return true;
+	}
+
 
 	void BcBoneDraw::OnUpdateConstantBuffers() {
 		auto scene = dynamic_cast<Scene*>(BaseScene::Get());
@@ -244,6 +269,22 @@ namespace basecross {
 					Shadowmap::GetLightNear(), Shadowmap::GetLightFar());
 				m_constantBuffer.lightView = Mat4x4(XMMatrixTranspose(LightView));
 				m_constantBuffer.lightProjection = Mat4x4(XMMatrixTranspose(LightProj));
+
+				//ボーン
+				size_t BoneSz = m_BoneTransforms.size();
+				if (BoneSz > 0) {
+					UINT cb_count = 0;
+					for (size_t b = 0; b < BoneSz; b++) {
+						bsm::Mat4x4 mat = m_BoneTransforms[b];
+					//	mat.transpose();
+						m_constantBuffer.Bones[cb_count] = ((XMMATRIX)mat).r[0];
+						m_constantBuffer.Bones[cb_count + 1] = ((XMMATRIX)mat).r[1];
+						m_constantBuffer.Bones[cb_count + 2] = ((XMMATRIX)mat).r[2];
+						cb_count += 3;
+					}
+				}
+
+
 
 			}
 

@@ -14,7 +14,7 @@ namespace basecross {
 	FixedBox::FixedBox(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		GameObject(stage)
 	{
-		m_tempParam = param;
+		m_transParam = param;
 	}
 	FixedBox::~FixedBox() {}
 
@@ -27,7 +27,7 @@ namespace basecross {
 		AddTag(L"FixedBox");
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
-		auto ptrDraw = AddComponent<BcStaticDraw>();
+		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
 		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
 		ptrDraw->AddBaseTexture(L"SKY_TX");
 		ptrDraw->SetOwnShadowActive(true);
@@ -40,20 +40,19 @@ namespace basecross {
 		GameObject(stage),
 		m_totalTime(0.0)
 	{
-		m_tempParam = param;
+		m_transParam = param;
 	}
 	WallBox::~WallBox() {}
 
 	void WallBox::OnCreate() {
 		//OBBè’ìÀjîªíËÇïtÇØÇÈ
 		auto ptrColl = AddComponent<CollisionObb>();
-	//	ptrColl->SetFixed(true);
 		//èdóÕÇÇ¬ÇØÇÈ
 		auto ptrGra = AddComponent<Gravity>();
 
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
-		auto ptrDraw = AddComponent<BcStaticDraw>();
+		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
 		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
 		ptrDraw->AddBaseTexture(L"WALL_TX");
 		ptrDraw->SetOwnShadowActive(true);
@@ -68,10 +67,6 @@ namespace basecross {
 		if (m_totalTime >= XM_2PI) {
 			m_totalTime = 0.0;
 		}
-		Quat spanQt(Vec3(1.0f, 1.0f, 0.0f), (float)(elapsedTime * 4));
-		Quat quaternion(param.quaternion);
-		quaternion *= spanQt;
-//		param.quaternion = quaternion;
 		param.position.x = (float)sin(m_totalTime) * 2.0f;
 	}
 
@@ -87,7 +82,7 @@ namespace basecross {
 		m_Force(0),
 		m_Velocity(0)
 	{
-		m_tempParam.position = startPos;
+		m_transParam.position = startPos;
 	}
 	SeekObject::~SeekObject() {}
 
@@ -113,7 +108,7 @@ namespace basecross {
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
 
-		auto ptrDraw = AddComponent<BcStaticDraw>();
+		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
 		ptrDraw->SetFogEnabled(true);
 		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
 		ptrDraw->AddBaseTexture(L"TRACE_TX");

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BaseCrossDx12ドキュメント</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous"><link href="css/style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<!-- container -->
+<div class="container bg-light">
+<h2>BaseCrossDx12ドキュメント</h2>
+<h4>【Sample102】物理処理</h4>
+
+　このサンプルは<strong>Samples/Sample102</strong>ディレクトリ内にあります。VisualStdioで該当ソリューション（VS2022で<strong>BaseCrossDx12VS2022.sln</strong>）を開いてください。ビルド後実行すると、以下の画面が現れます。
+<div class="py-3">
+<img src="img/102a.png" width="80%" />
+</div>
+<h5>BaseCrossDx12における物理処理</h5>
+　<strong>BaseCross64</strong>では、物理処理を独自のライブラリ側に入れていましたが、<strong>BaseCrossDx12</strong>では<strong>PhysX</strong>を導入することにしました。それを実装するオブジェクトは<strong>Rigidbodyコンポーネント</strong>です。<br>
+　このサンプルでは起動すると上から立方体が降ってきます。これは<strong>Rigidbodyコンポーネント</strong>が設定されたオブジェクトです。まずこのゲームオブジェクトから説明します
+<h6>FixedBox</h6>
+　このサンプルでの<strong>FixedBox</strong>は<strong>Rigidbodyコンポーネント</strong>が実装されています。<br>
+　その場合、<strong>FixedBox::OnCreate関数</strong>は以下のような記述になります。
+<pre class="my-3 p-3">
+	void FixedBox::OnCreate() {
+
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = GetComponent&lt;Transform>();
+		auto& param = ptrTrans->GetTransParam();
+		//PhysX関連
+		PhysxCreateParam pxParam;
+		physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);
+		pxParam.pGeometry = &scale;
+		AddComponent&lt;RigidbodyStatic>(pxParam);
+
+		auto ptrShadow = AddComponent&lt;Shadowmap>();
+		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->AddBaseTexture(L"SKY_TX");
+		ptrDraw->SetOwnShadowActive(true);
+	}
+</pre>
+　ここでポイントとなるのは
+<pre class="my-3 p-3">
+		physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);
+</pre>
+　とスケーリングを<strong>BaseCrossDx12</strong>から<strong>PhysX</strong>に変換をかける部分です。<br>
+　<strong>x、y、z成分</strong>をすべて半分にしています。これは互換性のために必要な処理です。回転と位置はそのままでかまいません。<br>
+　パラメータを揃えたら
+<pre class="my-3 p-3">
+		AddComponent&lt;RigidbodyStatic>(pxParam);
+</pre>
+　でOKです。これで物理演算処理する台座ができます。
+<h6>WallBox</h6>
+　上から降ってくるオブジェクトは<strong>WallBox</strong>です。<br>
+　以下は<strong>WallBox::OnCreate関数</strong>です
+<pre class="my-3 p-3">
+	void WallBox::OnCreate() {
+		auto ptrGameStage = std::dynamic_pointer_cast&lt;GameStage>(GetStage());
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = GetComponent&lt;Transform>();
+		auto& param = ptrTrans->GetTransParam();
+		//PhysX関連
+		PhysxCreateParam pxParam;
+		physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);
+		pxParam.pGeometry = &scale;
+		auto pRigDynamicComp = AddComponent&lt;RigidbodyDynamic>(pxParam);
+		auto pRigDynamic = pRigDynamicComp->GetRigidDynamic();
+
+		auto ptrShadow = AddComponent&lt;Shadowmap>();
+		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->AddBaseTexture(L"WALL_TX");
+		ptrDraw->SetOwnShadowActive(true);
+
+		//ジャンプさせる
+		pRigDynamic->addForce(physx::PxVec3(0, 10, 0), physx::PxForceMode::eIMPULSE);
+
+	}
+</pre>
+　このオブジェクトは動的に変化するので<strong>RigidbodyDynamicコンポーネント</strong>を設定します。
+<pre class="my-3 p-3">
+		auto pRigDynamicComp = AddComponent&lt;RigidbodyDynamic>(pxParam);
+</pre>
+　の部分がそうです。<br>
+　ほかは<strong>FixedBox::OnCreate関数</strong>と大きく変わるところがないですが、最後に記述される
+<pre class="my-3 p-3">
+		//ジャンプさせる
+		pRigDynamic->addForce(physx::PxVec3(0, 10, 0), physx::PxForceMode::eIMPULSE);
+</pre>
+　が特徴的です。初期状態で上方にジャンプしてるので、実行時は上から降ってくるような見た目になります。<br>
+<h6>Player</h6>
+　プレイヤーも<strong>物理処理</strong>を実装します。<strong>Player::OnCreate関数</strong>です。
+<pre class="my-3 p-3">
+	void Player::OnCreate() {
+		GetStage()->SetSharedGameObject(L"Player", GetThis&lt;Player>());
+
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = GetComponent&lt;Transform>();
+		auto& param = ptrTrans->GetTransParam();
+		//PhysX関連
+		PhysxCreateParam pxParam;
+		physx::PxSphereGeometry scale(param.scale.x * 0.5f);
+		pxParam.pGeometry = &scale;
+		pxParam.staticFriction = 1.0f;
+		pxParam.dynamicFriction = 1.0f;
+		pxParam.restitution = 1.0f;
+		auto pRigDynamicComp = AddComponent&lt;RigidbodyDynamic>(pxParam);
+		auto pRigDynamic = pRigDynamicComp->GetRigidDynamic();
+
+
+		auto ptrShadow = AddComponent&lt;Shadowmap>();
+		ptrShadow->AddBaseMesh(L"DEFAULT_SPHERE");
+
+		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_SPHERE");
+		ptrDraw->AddBaseTexture(L"TRACE_TX");
+		//透明処理
+		SetAlphaActive(true);
+		//カメラを得る
+		auto ptrCamera = std::dynamic_pointer_cast&lt;MyCamera>(GetStage()->GetCamera());
+		if (ptrCamera) {
+			//MyCameraである
+			//MyCameraに注目するオブジェクト（プレイヤー）の設定
+			ptrCamera->SetTargetObject(GetThis&lt;GameObject>());
+			ptrCamera->SetTargetToAt(Vec3(0, 0.25f, 0));
+		}
+
+	}
+</pre>
+　プレイヤーはコントローラーに反応するので、<strong>Player::OnUpdate関数</strong>は以下です。
+<pre class="my-3 p-3">
+	void Player::OnUpdate(double elapsedTime) {
+		//コントローラチェックして入力があればコマンド呼び出し
+		m_InputHandler.PushHandle(GetThis&lt;Player>());
+		MovePlayer();
+	}
+</pre>
+　これではよくわからないのですが、実際に物理演算の処理をしているのは以下です。
+<pre class="my-3 p-3">
+	void Player::MovePlayer() {
+		float elapsedTime = (float)Scene::GetElapsedTime();
+		auto angle = GetMoveVector();
+		//RigidbodyDynamicコンポーネントを取り出す
+		auto ptrRigid = GetComponent&lt;RigidbodyDynamic>();
+		auto pRigDynamic = ptrRigid->GetRigidDynamic();
+		if (angle.length() > 0.0f) {
+			Vec3 tmpVelo = angle * m_Speed;
+			pRigDynamic->setLinearVelocity(bsmUtil::ToPxVec3(tmpVelo));
+		}
+		else {
+			pRigDynamic->setLinearVelocity(bsmUtil::ToPxVec3(Vec3(0)));
+		}
+	}
+</pre>
+　これで単純でありますが、物理演算を<strong>BaseCrossDx12</strong>に実装するための方法を解説しました。
+<footer class="py-3 my-4">
+<ul class="nav justify-content-center border-top pb-3 mb-3">
+<li class="nav-item"><a href="101.html" class="nav-link px-2 text-success">前へ</a></li>
+<li class="nav-item"><a href="index.html" class="nav-link px-2 text-primary">目次</a></li>
+<li class="nav-item"><a href="103.html" class="nav-link px-2 text-success">次へ</a></li>
+</ul>
+<p class="text-center text-body-secondary">&copy; WiZ Tamura Hiroki,Yamanoi Yasushi MIT License.</p>
+</footer>
+</div>
+<!-- /container -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
+</body>
+</html>

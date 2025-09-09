@@ -8,8 +8,6 @@
 
 ////コンテンツ側ライブラリ
 
-using namespace basecross::bsm;
-
 //個別オブジェクト等
 #include "Objects/Constants.h"
 

@@ -74,10 +74,10 @@ namespace basecross {
 			m_BehaviorMap[TypeIndex] = Ptr;
 		}
 	protected:
-		TransParam m_tempParam;
+		TransParam m_transParam;
 		GameObject(const std::shared_ptr<Stage>& stage):
 			m_stage(stage),
-			m_tempParam(),
+			m_transParam(),
 			m_updateActive(true),
 			m_drawActive(true),
 			m_alphaActive(false)

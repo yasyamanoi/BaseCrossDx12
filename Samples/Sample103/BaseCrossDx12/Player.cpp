@@ -15,7 +15,7 @@ namespace basecross {
 		GameObject(stage),
 		m_Speed(6.0f)
 	{
-		m_tempParam = param;
+		m_transParam = param;
 	}
 
 	Vec2 Player::GetInputState() const {
@@ -96,7 +96,7 @@ namespace basecross {
 		//d—Í‚ğ‚Â‚¯‚é
 		auto ptrGra = AddComponent<Gravity>();
 
-		auto ptrDraw = AddComponent<BcStaticDraw>();
+		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
 		ptrDraw->AddBaseMesh(L"DEFAULT_SPHERE");
 		ptrDraw->AddBaseTexture(L"TRACE_TX");
 		//“§–¾ˆ—

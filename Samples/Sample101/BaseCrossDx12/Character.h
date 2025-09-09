@@ -16,7 +16,9 @@ namespace basecross {
 	public:
 		FixedBox(const std::shared_ptr<Stage>& stage, const TransParam& param);
 		virtual ~FixedBox();
+		//構築時
 		virtual void OnCreate()override;
+		//更新時
 		virtual void OnUpdate(double elapsedTime)override {}
 	};
 
@@ -36,7 +38,6 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	//	追いかける配置オブジェクト
 	//--------------------------------------------------------------------------------------
-
 	class SeekObject : public GameObject {
 		//ステートマシーン
 		std::unique_ptr< StateMachine<SeekObject> >  m_StateMachine;

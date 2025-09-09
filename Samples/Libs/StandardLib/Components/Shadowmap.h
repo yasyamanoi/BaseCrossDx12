@@ -21,7 +21,7 @@ namespace basecross {
 		/// éÀâeçsóÒ
 		Mat4x4 projection;
 		/// boneóp
-		Vec4 bones[3 * 72];
+		Vec4 bones[3 * MAX_BONES];
 		ShadowConstantBuffer() {
 			memset(this, 0, sizeof(ShadowConstantBuffer));
 		};

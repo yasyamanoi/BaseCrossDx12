@@ -11,9 +11,686 @@
 <div class="container bg-light">
 <h2>BaseCrossDx12ドキュメント</h2>
 <h4>【Sample101】スタンダードな最初のサンプル</h4>
+
+　このサンプルは<strong>Samples/Sample101</strong>ディレクトリ内にあります。VisualStdioで該当ソリューション（VS2022で<strong>BaseCrossDx12VS2022.sln</strong>）を開いてください。ビルド後実行すると、以下の画面が現れます。
+<div class="py-3">
+<img src="img/101a.png" width="80%" />
+</div>
+　ソリューションエクスプローラーは以下のようになっています。
+<div class="py-3">
+<img src="img/101b.png" width="30%" />
+</div>
+<h5>リソースの登録</h5>
+　まず、このプロジェクトで使用する<strong>リソース</strong>を登録します。<br>
+　<strong>リソース</strong>とはテクスチャやメッシュなど、複数オブジェクトに実装されるデータを使いまわしできるように登録することです。<br>
+　このサンプルでは<strong>Scene.cpp</strong>で行っています。
+<pre class="my-3 p-3">
+	void Scene::CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)
+	{
+		//テクスチャ
+		auto texFile = App::GetRelativeAssetsDir() + L"wall.jpg";
+		auto texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
+		RegisterTexture(L"WALL_TX", texture);
+		texFile = App::GetRelativeAssetsDir() + L"sky.jpg";
+		texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
+		RegisterTexture(L"SKY_TX", texture);
+		texFile = App::GetRelativeAssetsDir() + L"trace.png";
+		texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
+		RegisterTexture(L"TRACE_TX", texture);
+
+		texFile = App::GetRelativeAssetsDir() + L"trace3.png";
+		texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
+		RegisterTexture(L"TRACE3_TX", texture);
+
+		//ステージ作成
+		ResetActiveStage&lt;GameStage>(pDevice);
+	}
+</pre>
+　このようにここではいくつかのテクスチャをリソースとして登録しています。<br>
+　こうすることで今後、例えば<strong>L"WALL_TX"</strong>という名前でこのテクスチャを設定することができます。
+<h5>カメラの定義</h5>
+　このプロジェクトのカメラは<strong>MyCamera.h/cpp</strong>に記述されます。<strong>PerspecCamera（遠近法カメラ）</strong>を継承して作ります。<br>
+<h6>MyCamera.h</h6>
+　以下は宣言です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	//	MyCameraカメラ
+	//--------------------------------------------------------------------------------------
+	class MyCamera : public PerspecCamera {
+		std::weak_ptr&lt;GameObject> m_TargetObject;	//目標となるオブジェクト
+		float m_ToTargetLerp;	//目標を追いかける際の補間値
+		Vec3 m_TargetToAt;	//目標から視点を調整する位置ベクトル
+		float m_RadY;
+		float m_RadXZ;
+		//カメラの上下スピード
+		float m_CameraUpDownSpeed;
+		//カメラを下げる下限角度
+		float m_CameraUnderRot;
+		//腕の長さの設定
+		float m_ArmLen;
+		float m_MaxArm;
+		float m_MinArm;
+		//回転スピード
+		float m_RotSpeed;
+		//ズームスピード
+		float m_ZoomSpeed;
+		//左右スティック変更のモード
+		bool m_LRBaseMode;
+		//上下スティック変更のモード
+		bool m_UDBaseMode;
+	public:
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンストラクタ
+		*/
+		//--------------------------------------------------------------------------------------
+		MyCamera();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンストラクタ
+		@param[in]	ArmLen	最初のArmの長さ
+		*/
+		//--------------------------------------------------------------------------------------
+		MyCamera(float ArmLen);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	デストラクタ
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual ~MyCamera();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief カメラの位置を設定する
+		@param[in]	Eye	カメラ位置
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void SetEye(const Vec3& Eye)override;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief カメラの位置を設定する
+		@param[in]	x	x位置
+		@param[in]	y	y位置
+		@param[in]	z	z位置
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void SetEye(float x, float y, float z)override;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	カメラの目標オブジェクトを得る
+		@return	カメラの目標
+		*/
+		//--------------------------------------------------------------------------------------
+		std::shared_ptr&lt;GameObject> GetTargetObject() const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	カメラの目標オブジェクトを設定する
+		@param[in]	Obj	カメラの目標オブジェクト
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetTargetObject(const std::shared_ptr&lt;GameObject>& Obj);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	オブジェクトを追いかける場合の補間値を得る
+		@return	オブジェクトを追いかける場合の補間値
+		*/
+		//--------------------------------------------------------------------------------------
+		float GetToTargetLerp() const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	オブジェクトを追いかける場合の補間値を設定する
+		@param[in]	f	オブジェクトを追いかける場合の補間値
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetToTargetLerp(float f);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	EyeとAtの距離を得る
+		@return	EyeとAtの距離
+		*/
+		//--------------------------------------------------------------------------------------
+		float GetArmLengh() const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	EyeとAtの距離を更新する（現在のEyeとAtから求める）
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void UpdateArmLengh();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	EyeとAtの距離の最大値を得る
+		@return	EyeとAtの距離の最大値
+		*/
+		//--------------------------------------------------------------------------------------
+		float GetMaxArm() const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	EyeとAtの距離の最大値を設定する
+		@param[in]	f	EyeとAtの距離の最大値
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetMaxArm(float f);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	EyeとAtの距離の最小値を得る
+		@return	EyeとAtの距離の最小値
+		*/
+		//--------------------------------------------------------------------------------------
+		float GetMinArm() const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	EyeとAtの距離の最小値設定する
+		@param[in]	f	EyeとAtの距離の最小値
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetMinArm(float f);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	回転スピードを得る
+		@return	回転スピード（0.0f以上）
+		*/
+		//--------------------------------------------------------------------------------------
+		float GetRotSpeed() const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	回転スピードを設定する
+		@param[in]	f	回転スピード（マイナスを入力してもプラスになる）
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetRotSpeed(float f);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	ターゲットからAtへの調整ベクトルを得る
+		@return	ターゲットからAtへの調整ベクトル
+		*/
+		//--------------------------------------------------------------------------------------
+		Vec3 GetTargetToAt() const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	ターゲットからAtへの調整ベクトルを設定する
+		@param[in]	v	ターゲットからAtへの調整ベクトルを
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetTargetToAt(const Vec3& v);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	Rスティックの左右変更をBaseモードにするかどうかを得る
+		@return	Baseモードならtrue（デフォルト）
+		*/
+		//--------------------------------------------------------------------------------------
+		bool GetLRBaseMode() const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	Rスティックの左右変更をBaseモードにするかどうかを得る
+		@return	Baseモードならtrue（デフォルト）
+		*/
+		//--------------------------------------------------------------------------------------
+		bool IsLRBaseMode() const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	Rスティックの左右変更をBaseモードにするかどうかを設定する
+		@param[in]	b	Baseモードならtrue
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetLRBaseMode(bool b);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	Rスティックの上下変更をBaseモードにするかどうかを得る
+		@return	Baseモードならtrue（デフォルト）
+		*/
+		//--------------------------------------------------------------------------------------
+		bool GetUDBaseMode() const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	Rスティックの上下変更をBaseモードにするかどうかを得る
+		@return	Baseモードならtrue（デフォルト）
+		*/
+		//--------------------------------------------------------------------------------------
+		bool IsUDBaseMode() const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	Rスティックの上下変更をBaseモードにするかどうかを設定する
+		@param[in]	b	Baseモードならtrue
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetUDBaseMode(bool b);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief カメラの視点を設定する
+		@param[in]	At	視点位置
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void SetAt(const Vec3& At)override;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief カメラの視点を設定する
+		@param[in]	x	x位置
+		@param[in]	y	y位置
+		@param[in]	z	z位置
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void SetAt(float x, float y, float z)override;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief 更新処理
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void OnUpdate(double elapsedTime)override;
+	};
+</pre>
+　実装内容はコメントの通りです。これは、プレイヤーをはじめ、他のオブジェクトでも参照されます。
+<h5>配置オブジェクトの定義</h5>
+<h6>Player.h/cpp</h6>
+　このサンプルはコントローラーで操作できます。コントローラーを動かすと、Playerに見立てたボールを動かすことができます。以下は<strong>Playerクラス</strong>です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	///	プレイヤー
+	//--------------------------------------------------------------------------------------
+	class Player : public GameObject {
+		//プレイヤーが使用するコントローラとキーボードの入力
+		Vec2 GetInputState() const;
+		// コントローラから方向ベクトルを得る
+		Vec3 GetMoveVector() const;
+		//プレイヤーの移動
+		void MovePlayer();
+		//入力ハンドラー
+		InputHandler&lt;Player> m_InputHandler;
+		//スピード
+		float m_Speed;
+	public:
+		Player(const std::shared_ptr&lt;Stage>& StagePtr, const TransParam& param);
+		virtual ~Player() {}
+		//構築時処理
+		virtual void OnCreate()override;
+		//更新時処理
+		virtual void OnUpdate(double elapsedTime);
+		//Aボタン
+		void OnPushA();
+		//Bボタン
+		void OnPushB(){}
+	};
+</pre>
+　以下、実体です。<strong>Player.cpp</strong>に記述されます。
+<ul>
+<li>Player::OnCreate関数</li>
+</ul>
+<pre class="my-3 p-3">
+	void Player::OnCreate() {
+		GetStage()->SetSharedGameObject(L"Player",GetThis&lt;Player>());
+
+		auto ptrShadow = AddComponent&lt;Shadowmap>();
+		ptrShadow->AddBaseMesh(L"DEFAULT_SPHERE");
+		//CollisionSphere衝突判定を付ける
+		auto ptrColl = AddComponent&lt;CollisionSphere>();
+		//重力をつける
+		auto ptrGra = AddComponent&lt;Gravity>();
+
+		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_SPHERE");
+		ptrDraw->AddBaseTexture(L"TRACE3_TX");
+		//透明処理
+		SetAlphaActive(true);
+		//カメラを得る
+		auto ptrCamera = std::dynamic_pointer_cast&lt;MyCamera>(GetStage()->GetCamera());
+		if (ptrCamera) {
+			//MyCameraである
+			//MyCameraに注目するオブジェクト（プレイヤー）の設定
+			ptrCamera->SetTargetObject(GetThis&lt;GameObject>());
+			ptrCamera->SetTargetToAt(Vec3(0, 0.25f, 0));
+		}
+
+	}
+</pre>
+　ここで<strong>AddComponent関数</strong>によっていくつかのコンポーネントが設定されています。<br>
+<pre class="my-3 p-3">
+		auto ptrShadow = AddComponent&lt;Shadowmap>();
+		ptrShadow->AddBaseMesh(L"DEFAULT_SPHERE");
+		//CollisionSphere衝突判定を付ける
+		auto ptrColl = AddComponent&lt;CollisionSphere>();
+		//重力をつける
+		auto ptrGra = AddComponent&lt;Gravity>();
+
+		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_SPHERE");
+		ptrDraw->AddBaseTexture(L"TRACE3_TX");
+</pre>
+　がコンポーネント関連の処理です。<br>
+　<strong>CollisionSphere</strong>は球体の衝突判定です。<strong>Gravity</strong>は重力です。以上が更新系のコンポーネントです。<br>
+　<strong>Shadowmap</strong>は影を作成するコンポーネントです。<br>
+　<strong>BcPNTStaticDraw</strong>は描画系のコンポーネントでスタティックなメッシュに適用します。ここでの<strong>PNT</strong>は<strong>ポジション、法線、テクスチャ</strong>を含む頂点フォーマットという意味です。
+<pre class="my-3 p-3">
+		ptrDraw->AddBaseTexture(L"TRACE3_TX");
+</pre>
+　という記述は、<strong>Scene::CreateAssetResources関数</strong>でリソース登録したテクスチャです。<br>
+　また
+<pre class="my-3 p-3">
+		ptrDraw->AddBaseMesh(L"DEFAULT_SPHERE");
+</pre>
+　という記述で<strong>L"DEFAULT_SPHERE"</strong>という名前のメッシュを設定しています。<br>
+　<strong>L"DEFAULT_なんたら"</strong>という記述は、あらかじめ登録されているプリミティブな形状のメッシュを使います。<br>
+　登録されている形状は、ベーシックライブラリ中<strong>BaseScene::CreateDefaultResources関数</strong>で登録されています。
+<ul>
+<li>Player::OnUpdate関数</li>
+</ul>
+　ここでは、プレイヤーの更新処理を行います。
+<pre class="my-3 p-3">
+	void Player::OnUpdate(double elapsedTime) {
+		//コントローラチェックして入力があればコマンド呼び出し
+		m_InputHandler.PushHandle(GetThis&lt;Player>());
+		MovePlayer();
+	}
+</pre>
+　ここでは、コントローラの状態を検証し、もしAボタンが押されたら<strong>Player::OnPushA関数</strong>が呼ばれる処理を書きます。<br>
+　続いて<strong>MovePlayer();</strong>呼び出して、コントローラの状態に合わせ、プレイヤーを動かします。<br>
+<ul>
+<li>Player::MovePlayer関数</li>
+</ul>
+<pre class="my-3 p-3">
+	void Player::MovePlayer() {
+		float elapsedTime = (float)Scene::GetElapsedTime();
+		auto angle = GetMoveVector();
+		if (angle.length() > 0.0f) {
+			auto pos = GetComponent&lt;Transform>()->GetPosition();
+			pos += angle * elapsedTime * m_Speed;
+			GetComponent&lt;Transform>()->SetPosition(pos);
+		}
+		//回転の計算
+		if (angle.length() > 0.0f) {
+			auto utilPtr = GetBehavior&lt;UtilBehavior>();
+			utilPtr->RotToHead(angle, 1.0f);
+		}
+	}
+</pre>
+　ここで呼び出されている<strong>GetMoveVector関数</strong>は以下です。
+<ul>
+<li>Player::GetMoveVector関数</li>
+</ul>
+<pre class="my-3 p-3">
+	Vec3 Player::GetMoveVector() const {
+		Vec3 angle(0, 0, 0);
+		//入力の取得
+		auto inPut = GetInputState();
+		float moveX = inPut.x;
+		float moveZ = inPut.y;
+		if (moveX != 0 || moveZ != 0) {
+			float moveLength = 0;	//動いた時のスピード
+			auto ptrTransform = GetComponent&lt;Transform>();
+			auto ptrCamera = GetStage()->GetCamera();
+			//進行方向の向きを計算
+			auto front = ptrTransform->GetPosition() - ptrCamera->GetEye();
+			front.y = 0;
+			front.normalize();
+			//進行方向向きからの角度を算出
+			float frontAngle = atan2(front.z, front.x);
+			//コントローラの向き計算
+			Vec2 moveVec(moveX, moveZ);
+			float moveSize = moveVec.length();
+			//コントローラの向きから角度を計算
+			float cntlAngle = atan2(-moveX, moveZ);
+			//トータルの角度を算出
+			float totalAngle = frontAngle + cntlAngle;
+			//角度からベクトルを作成
+			angle = Vec3(cos(totalAngle), 0, sin(totalAngle));
+			//正規化する
+			angle.normalize();
+			//移動サイズを設定。
+			angle *= moveSize;
+			//Y軸は変化させない
+			angle.y = 0;
+		}
+		return angle;
+	}
+</pre>
+　ここで呼び出されている<strong>GetInputState関数</strong>は以下です。
+<ul>
+<li>Player::GetInputState関数</li>
+</ul>
+<pre class="my-3 p-3">
+	Vec2 Player::GetInputState() const {
+		Vec2 ret;
+		//コントローラの取得
+		auto cntlVec = App::GetInputDevice().GetControlerVec();
+		ret.x = 0.0f;
+		ret.y = 0.0f;
+		WORD wButtons = 0;
+		if (cntlVec[0].bConnected) {
+			ret.x = cntlVec[0].fThumbLX;
+			ret.y = cntlVec[0].fThumbLY;
+		}
+		return ret;
+	}
+</pre>
+　このように<br>
+<ul>
+<li>コントローラの状態を取得（Player::GetInputState()）</li>
+<li>進行方向を決定（Player::GetMoveVector()）</li>
+<li>プレイヤーを移動（Player::MovePlayer）</li>
+<li>プレイヤーの更新（Player::OnUpdate）</li>
+</ul>
+　と構造的（関数に小分け）にメンバ関数が呼ばれているのが分かります。
+<h6>Character.h/cpp</h6>
+　このサンプルに配置されるオブジェクトは、主に<strong>Character.h/cpp</strong>に記述されます。<br>
+　記述されているオブジェクトは以下の通り。
+<ul>
+<li>FixedBoxクラス</li>
+<li>WallBoxクラス</li>
+<li>SeekObjectクラス</li>
+</ul>
+　この中で<strong>SeekObjectクラス</strong>は<strong>ステートマシン</strong>というAIクラスが含んでいます。
+<ul>
+<li>FixedBoxクラス</li>
+</ul>
+　<strong>FixedBoxクラス</strong>の宣言は以下の通りです。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	// ボックスオブジェクト
+	//--------------------------------------------------------------------------------------
+	class FixedBox : public GameObject {
+	public:
+		FixedBox(const std::shared_ptr&lt;Stage>& stage, const TransParam& param);
+		virtual ~FixedBox();
+		//構築時
+		virtual void OnCreate()override;
+		//更新時
+		virtual void OnUpdate(double elapsedTime)override {}
+	};
+</pre>
+　<strong>FixedBoxクラス</strong>は動くことがない直方体オブジェクトです。<br>
+　初期設定で設定すれば、プレイヤーやその他の動くオブジェクトに影響されることはありません。
+<ul>
+<li>FixedBox::OnCreate関数</li>
+</ul>
+<pre class="my-3 p-3">
+	void FixedBox::OnCreate() {
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+		//OBB衝突j判定を付ける
+		auto ptrColl = AddComponent&lt;CollisionObb>();
+		ptrColl->SetFixed(true);
+		//タグをつける
+		AddTag(L"FixedBox");
+		auto ptrShadow = AddComponent&lt;Shadowmap>();
+		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->AddBaseTexture(L"SKY_TX");
+		ptrDraw->SetOwnShadowActive(true);
+	}
+</pre>
+　ここではコンポーネント関連は、直方体（OBB）の衝突判定の<strong>CollisionObb</strong>と<strong>Shadowmap</strong>、そして<strong>BcPNTStaticDraw</strong>が設定されています。<br>
+　<strong>CollisionObb</strong>の
+<pre class="my-3 p-3">
+		ptrColl->SetFixed(true);
+</pre>
+　は、ほかの影響を受けない設定です。<br>
+　また<strong>OnUpdate関数</strong>は何もしてません。
+<ul>
+<li>WallBoxクラス</li>
+</ul>
+　<strong>WallBoxクラス</strong>の宣言は以下の通りです。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	// 四角のオブジェクト
+	//--------------------------------------------------------------------------------------
+	class WallBox : public  GameObject {
+		double m_totalTime;
+	protected:
+	public:
+		WallBox(const std::shared_ptr&lt;Stage>& stage, const TransParam& param);
+		virtual ~WallBox();
+		virtual void OnCreate();
+		virtual void OnUpdate(double elapsedTime);
+	};
+</pre>
+ <strong>WallBoxクラス</strong>は自分自身も行ったり来たりしながら、プレイヤーなどに衝突すると影響を受けて位置を移動させられます。<br>
+　簡単な敵キャラの動きに応用できると思います。
+<ul>
+<li>WallBox::OnCreate関数</li>
+</ul>
+<pre class="my-3 p-3">
+	void WallBox::OnCreate() {
+		//OBB衝突j判定を付ける
+		auto ptrColl = AddComponent&lt;CollisionObb>();
+		//重力をつける
+		auto ptrGra = AddComponent&lt;Gravity>();
+
+		auto ptrShadow = AddComponent&lt;Shadowmap>();
+		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->AddBaseTexture(L"WALL_TX");
+		ptrDraw->SetOwnShadowActive(true);
+	}
+</pre>
+　コンポーネントは<strong>CollisionObb、Gravity、Shadowmap、BcPNTStaticDraw</strong>が設定されます。<br>
+　このオブジェクトは自分自身も動くので、<strong>WallBox::OnUpdate関数</strong>も実装します。
+<ul>
+<li>WallBox::OnUpdate関数</li>
+</ul>
+<pre class="my-3 p-3">
+	void WallBox::OnUpdate(double elapsedTime) {
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = GetComponent&lt;Transform>();
+		auto& param = ptrTrans->GetTransParam();
+
+		m_totalTime += elapsedTime;
+		if (m_totalTime >= XM_2PI) {
+			m_totalTime = 0.0;
+		}
+		param.position.x = (float)sin(m_totalTime) * 2.0f;
+	}
+</pre>
+　ここではメンバ変数<strong>m_totalTime</strong>に<strong>elapsedTime</strong>を足してそれをもとに<strong>sinカーブ</strong>を作り出し、それをx座標に代入します。簡単なAI処理と言えます。
+<ul>
+<li>SeekObjectクラス</li>
+</ul>
+　このサンプルでは、起動直後からプレイヤーを追いかけまわすオブジェクトがあります。<br>
+　これは<strong>SeekObjectクラス</strong>です。以下宣言です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	//	追いかける配置オブジェクト
+	//--------------------------------------------------------------------------------------
+	class SeekObject : public GameObject {
+		//ステートマシーン
+		std::unique_ptr&lt; StateMachine&lt;SeekObject> >  m_StateMachine;
+		Vec3 m_StartPos;
+		float m_StateChangeSize;
+		//フォース
+		Vec3 m_Force;
+		//速度
+		Vec3 m_Velocity;
+	public:
+		//構築と破棄
+		SeekObject(const std::shared_ptr&lt;Stage>& StagePtr, const Vec3& startPos);
+		virtual ~SeekObject();
+		//初期化
+		virtual void OnCreate() override;
+		//アクセサ
+		const std::unique_ptr&lt;StateMachine&lt;SeekObject>>& GetStateMachine() {
+			return m_StateMachine;
+		}
+		float GetStateChangeSize() const {
+			return m_StateChangeSize;
+		}
+		const Vec3& GetForce()const {
+			return m_Force;
+		}
+		void SetForce(const Vec3& f) {
+			m_Force = f;
+		}
+		void AddForce(const Vec3& f) {
+			m_Force += f;
+		}
+		const Vec3& GetVelocity()const {
+			return m_Velocity;
+		}
+		void SetVelocity(const Vec3& v) {
+			m_Velocity = v;
+		}
+		void ApplyForce();
+		Vec3 GetTargetPos()const;
+		//操作
+		virtual void OnUpdate(double elapsedTime) override;
+	};
+</pre>
+　このオブジェクトは<strong>ステートマシン</strong>という仕組みが実装されています。<br>
+　例えば<strong>OnUpdate処理</strong>で、いろんな条件次第で動きを変えたいときがあります。簡単な分岐であれば<strong>if else 文</strong>や、<strong>switch 文</strong>などで分岐できますが、複雑な処理になると不具合が出やすくなります。<br>
+　そんなときは、オブジェクトに、複数の<strong>ステート（状態）</strong>というクラスを用意して、何かの条件でそれらのステートを適応して更新処理を記述します。そうすることで可読性が高くなるばかりでなく、不具合も少なくなります。<br>
+　ステートマシンを実装するには、まず、メンバ変数に
+<pre class="my-3 p-3">
+		//ステートマシーン
+		std::unique_ptr&lt; StateMachine&lt;SeekObject> >  m_StateMachine;
+</pre>
+　のような変数を用意します。<br>
+　そのうえで、必要なステートクラスを実装します。<br>
+　以下は、その中の<strong>SeekFarState</strong>です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	//	class SeekFarState : public ObjState&lt;SeekObject>;
+	//	用途: プレイヤーから遠いときの移動
+	//--------------------------------------------------------------------------------------
+	class SeekFarState : public ObjState&lt;SeekObject>
+	{
+		SeekFarState() {}
+	public:
+		static std::shared_ptr&lt;SeekFarState> Instance();
+		virtual void Enter(const std::shared_ptr&lt;SeekObject>& Obj)override;
+		virtual void Execute(const std::shared_ptr&lt;SeekObject>& Obj)override;
+		virtual void Exit(const std::shared_ptr&lt;SeekObject>& Obj)override;
+	};
+</pre>
+　コンストラクタはprivateにしておきます。オブジェクトの生成は、staticなInstance関数で行います。<br>
+　ステートは<strong>Enter、Execute、Exit</strong>関数を用意します
+<ul>
+<li>Enter関数</li>
+</ul>
+　この関数はこのステートに入った時に、一度だけ呼ばれます。
+<ul>
+<li>Execute関数</li>
+</ul>
+　この関数はEnter関数が呼ばれた次のターンから、毎ターン呼ばれます。
+<ul>
+<li>Exit関数</li>
+</ul>
+　この関数はこのステートから抜けるときに一度だけばれます。
+
 <footer class="py-3 my-4">
 <ul class="nav justify-content-center border-top pb-3 mb-3">
+<li class="nav-item"><a href="100.html" class="nav-link px-2 text-success">前へ</a></li>
 <li class="nav-item"><a href="index.html" class="nav-link px-2 text-primary">目次</a></li>
+<li class="nav-item"><a href="102.html" class="nav-link px-2 text-success">次へ</a></li>
 </ul>
 <p class="text-center text-body-secondary">&copy; WiZ Tamura Hiroki,Yamanoi Yasushi MIT License.</p>
 </footer>

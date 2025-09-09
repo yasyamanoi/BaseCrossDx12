@@ -71,6 +71,8 @@ using namespace DirectX;
 //BaseLib
 //シンプルオブジェクト
 #include "BaseMath.h"
+using namespace basecross::bsm;
+
 #include "BaseCommon.h"
 #include "DxHelper.h"
 #include "BaseHelper.h"

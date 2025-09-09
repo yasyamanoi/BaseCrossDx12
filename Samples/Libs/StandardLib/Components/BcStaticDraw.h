@@ -19,9 +19,9 @@ namespace basecross {
 
 
 	//--------------------------------------------------------------------------------------
-	///	BcStaticDrawコンポーネント
+	///	BcPNTStaticDrawコンポーネント
 	//--------------------------------------------------------------------------------------
-	class BcStaticDraw : public Component {
+	class BcPNTStaticDraw : public Component {
 	protected:
 		BasicConstant m_constantBuffer;
 		size_t m_constantBufferIndex;
@@ -54,8 +54,8 @@ namespace basecross {
 
 		
 
-		BcStaticDraw(const std::shared_ptr<GameObject>& gameObjectPtr);
-		virtual ~BcStaticDraw() {}
+		BcPNTStaticDraw(const std::shared_ptr<GameObject>& gameObjectPtr);
+		virtual ~BcPNTStaticDraw() {}
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;
 		virtual void OnCreate()override;

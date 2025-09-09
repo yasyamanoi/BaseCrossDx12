@@ -26,8 +26,8 @@ namespace basecross {
 	}
 
 	//アクセサ
-	const bsm::Vec3& Camera::GetEye() const { return m_eye; }
-	void Camera::SetEye(const bsm::Vec3& eye) {
+	const Vec3& Camera::GetEye() const { return m_eye; }
+	void Camera::SetEye(const Vec3& eye) {
 		m_eye = eye;
 		CalculateMatrix();
 	}
@@ -36,8 +36,8 @@ namespace basecross {
 		CalculateMatrix();
 	}
 
-	const bsm::Vec3& Camera::GetAt() const { return m_at; }
-	void Camera::SetAt(const bsm::Vec3& at) {
+	const Vec3& Camera::GetAt() const { return m_at; }
+	void Camera::SetAt(const Vec3& at) {
 		m_at = at;
 		CalculateMatrix();
 	}
@@ -46,8 +46,8 @@ namespace basecross {
 		CalculateMatrix();
 	}
 
-	const bsm::Vec3& Camera::GetUp() const { return m_up; }
-	void Camera::SetUp(const bsm::Vec3& Up) {
+	const Vec3& Camera::GetUp() const { return m_up; }
+	void Camera::SetUp(const Vec3& Up) {
 		m_up = Up;
 		CalculateMatrix();
 	}
@@ -68,8 +68,8 @@ namespace basecross {
 		CalculateMatrix();
 	}
 
-	const bsm::Mat4x4& Camera::GetViewMatrix() const { return m_viewMatrix; }
-	const bsm::Mat4x4& Camera::GetProjMatrix() const { return m_projMatrix; }
+	const Mat4x4& Camera::GetViewMatrix() const { return m_viewMatrix; }
+	const Mat4x4& Camera::GetProjMatrix() const { return m_projMatrix; }
 
 	void Camera::OnCreate() {
 		CalculateMatrix();
@@ -108,9 +108,9 @@ namespace basecross {
 		float height = (float)device->GetHeight();
 		m_aspect = width / height;
 		m_viewMatrix 
-			= bsm::Mat4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
+			= Mat4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
 		m_projMatrix 
-			= bsm::Mat4x4(XMMatrixPerspectiveFovLH(m_fovY, m_aspect, m_near, m_far));
+			= Mat4x4(XMMatrixPerspectiveFovLH(m_fovY, m_aspect, m_near, m_far));
 	}
 
 	//--------------------------------------------------------------------------------------
@@ -140,9 +140,9 @@ namespace basecross {
 
 	void OrthoCamera::CalculateMatrix() {
 		m_viewMatrix
-			= bsm::Mat4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
+			= Mat4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
 		m_projMatrix
-			= bsm::Mat4x4(XMMatrixOrthographicLH(m_width, m_height, m_near, m_far));
+			= Mat4x4(XMMatrixOrthographicLH(m_width, m_height, m_near, m_far));
 	}
 
 }

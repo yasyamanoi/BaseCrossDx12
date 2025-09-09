@@ -25,11 +25,12 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class FixedModel : public GameObject {
 		std::shared_ptr<BaseMesh> m_baseMesh;
+		double m_totalTime;
 	public:
 		FixedModel(const std::shared_ptr<Stage>& stage, const TransParam& param);
 		virtual ~FixedModel();
 		virtual void OnCreate()override;
-		virtual void OnUpdate(double elapsedTime)override {}
+		virtual void OnUpdate(double elapsedTime)override;
 	};
 
 

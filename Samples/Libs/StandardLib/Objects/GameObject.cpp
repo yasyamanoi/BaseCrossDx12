@@ -37,7 +37,7 @@ namespace basecross {
 
 	void GameObject::OnPreCreate() {
 		//TransformïKê{
-		AddComponent<Transform>(m_tempParam);
+		AddComponent<Transform>(m_transParam);
 	}
 
 	void GameObject::SetToBefore() {

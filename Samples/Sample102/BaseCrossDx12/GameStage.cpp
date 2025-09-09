@@ -57,6 +57,7 @@ namespace basecross {
 
 
 		param.scale = Vec3(0.25f, 0.25f, 0.25f);
+		param.quaternion = Quat();
 		param.position = Vec3(0.0f, 0.125f, 0.0f);
 		AddGameObject<Player>(param);
 	}

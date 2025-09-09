@@ -49,27 +49,27 @@ namespace basecross {
 
 	void LightSet::OnCreate() {
 		//デフォルトのライトを作成する
-		const bsm::Vec3 defaultDirections[3] =
+		const Vec3 defaultDirections[3] =
 		{
 			{ -0.5265408f, -0.5735765f, -0.6275069f },
 			{ 0.7198464f,  0.3420201f,  0.6040227f },
 			{ 0.4545195f, -0.7660444f,  0.4545195f },
 		};
 
-		const bsm::Vec4 defaultDiffuse[3] =
+		const Vec4 defaultDiffuse[3] =
 		{
 			{ 0.3231373f, 0.3607844f, 0.3937255f,0.0f },
 			{ 0.9647059f, 0.7607844f, 0.4078432f,0.0f },
 			{ 1.0000000f, 0.9607844f, 0.8078432f,0.0f },
 		};
 
-		const bsm::Vec4 defaultSpecular[3] =
+		const Vec4 defaultSpecular[3] =
 		{
 			{ 0.3231373f, 0.3607844f, 0.3937255f,0.0f },
 			{ 0.0000000f, 0.0000000f, 0.0000000f,0.0f },
 			{ 1.0000000f, 0.9607844f, 0.8078432f,0.0f },
 		};
-		const bsm::Vec4 defaultAmbient = { 0.05333332f, 0.09882354f, 0.1819608f ,0.0f };
+		const Vec4 defaultAmbient = { 0.05333332f, 0.09882354f, 0.1819608f ,0.0f };
 		m_lights.resize(3);
 		for (UINT i = 0; i < 3; i++) {
 			m_lights[i].m_directional = defaultDirections[i];

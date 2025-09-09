@@ -15,7 +15,7 @@ namespace basecross {
 		GameObject(stage),
 		m_Speed(6.0f)
 	{
-		m_tempParam = param;
+		m_transParam = param;
 	}
 
 	Vec2 Player::GetInputState() const {
@@ -77,9 +77,6 @@ namespace basecross {
 		if (angle.length() > 0.0f) {
 			Vec3 tmpVelo = angle * m_Speed;
 			pRigDynamic->setLinearVelocity(bsmUtil::ToPxVec3(tmpVelo));
-			//auto pos = GetComponent<Transform>()->GetPosition();
-			//pos += angle * (float)elapsedTime * m_Speed;
-			//GetComponent<Transform>()->SetPosition(pos);
 		}
 		else {
 			pRigDynamic->setLinearVelocity(bsmUtil::ToPxVec3(Vec3(0)));
@@ -109,7 +106,7 @@ namespace basecross {
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_SPHERE");
 
-		auto ptrDraw = AddComponent<BcStaticDraw>();
+		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
 		ptrDraw->AddBaseMesh(L"DEFAULT_SPHERE");
 		ptrDraw->AddBaseTexture(L"TRACE_TX");
 		//透明処理
@@ -129,14 +126,6 @@ namespace basecross {
 		//コントローラチェックして入力があればコマンド呼び出し
 		m_InputHandler.PushHandle(GetThis<Player>());
 		MovePlayer();
-	}
-
-	void Player::OnUpdate2(double elapsedTime) {
-		//回転の計算
-		//if (m_angle.length() > 0.0f) {
-		//	auto utilPtr = GetBehavior<UtilBehavior>();
-		//	utilPtr->RotToHead(m_angle, 1.0f);
-		//}
 	}
 
 
