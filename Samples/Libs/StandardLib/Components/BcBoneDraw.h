@@ -1,6 +1,6 @@
 /*!
 @file BcBoneDraw.h
-@brief ベイシックスタティック描画コンポーネント
+@brief ベイシック描画コンポーネント
 */
 
 
@@ -15,9 +15,9 @@ namespace basecross {
 
 
 	//--------------------------------------------------------------------------------------
-	///	BcBoneDrawコンポーネント
+	///	BcPNTBoneDrawコンポーネント
 	//--------------------------------------------------------------------------------------
-	class BcBoneDraw : public Component {
+	class BcPNTBoneDraw : public Component {
 	protected:
 		BasicConstant m_constantBuffer;
 		size_t m_constantBufferIndex;
@@ -52,8 +52,8 @@ namespace basecross {
 
 
 
-		BcBoneDraw(const std::shared_ptr<GameObject>& gameObjectPtr);
-		virtual ~BcBoneDraw() {}
+		BcPNTBoneDraw(const std::shared_ptr<GameObject>& gameObjectPtr);
+		virtual ~BcPNTBoneDraw() {}
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;
 		virtual void OnCreate()override;

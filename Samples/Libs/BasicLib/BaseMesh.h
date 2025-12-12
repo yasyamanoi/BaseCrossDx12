@@ -159,7 +159,7 @@ namespace basecross {
 		void LoadSingleBone(uint32_t MeshIndex, const aiBone* pBone, std::vector<SkinnedVertex>& SkinnedVertices, int BaseVertex);
 		void LoadMeshBones(uint32_t MeshIndex, const aiMesh* paiMesh, std::vector<SkinnedVertex>& SkinnedVertices, int BaseVertex);
 		//シングルメッシュ用
-		bool InitScene(std::vector<VertexPositionNormalTextureSkinning>& vertices,
+		bool InitSingleScene(UINT meshIndex,std::vector<VertexPositionNormalTextureSkinning>& vertices,
 				std::vector<uint32_t>& indices);
 
 		//マルチメッシュ用
@@ -167,7 +167,7 @@ namespace basecross {
 
 
 		void CountVerticesAndIndices(uint32_t& NumVertices, uint32_t& NumIndices);
-		void InitFirstMeshe();
+		void InitSingleMeshBase(UINT meshIndex);
 		void InitAllMeshes();
 		void InitializeRequiredNodeMap(const aiNode* pNode);
 		void InitSingleMesh(uint32_t MeshIndex, const aiMesh* paiMesh);
@@ -464,16 +464,18 @@ namespace basecross {
 		}
 		//--------------------------------------------------------------------------------------
 		/*!
-		@brief 頂点とインデックスで構成されるボーンモデルメッシュの作成
+		@brief 頂点とインデックスで構成されるシングルボーンモデルメッシュの作成
 		@param[in]	pCommandList	コマンドリスト
 		@param[in]	dataDir	データディレクトリ
 		@param[in]	dataFile　データファイル名
+		@param[in]	dataFile　メッシュのインデックス
 		@return	BaseMeshのshared_ptr
 		*/
 		//--------------------------------------------------------------------------------------
-		static std::shared_ptr<BaseMesh> CreateBoneModelMesh(
+		static std::shared_ptr<BaseMesh> CreateSingleBoneModelMesh(
 			ID3D12GraphicsCommandList* pCommandList,
-			const std::wstring& dataDir, const std::wstring& dataFile);
+			const std::wstring& dataDir, const std::wstring& dataFile,
+			UINT modelIndex = 0);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	頂点の変更.<br />

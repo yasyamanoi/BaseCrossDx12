@@ -20,18 +20,20 @@ namespace basecross {
 		virtual void OnUpdate(double elapsedTime)override {}
 	};
 
+
 	//--------------------------------------------------------------------------------------
 	// モデルオブジェクト
 	//--------------------------------------------------------------------------------------
-	class FixedModel : public GameObject {
+	class BoneModel : public GameObject {
 		std::shared_ptr<BaseMesh> m_baseMesh;
 		double m_totalTime;
 	public:
-		FixedModel(const std::shared_ptr<Stage>& stage, const TransParam& param);
-		virtual ~FixedModel();
+		BoneModel(const std::shared_ptr<Stage>& stage, const TransParam& param);
+		virtual ~BoneModel();
 		virtual void OnCreate()override;
 		virtual void OnUpdate(double elapsedTime)override;
 	};
+
 
 
 }

@@ -16,7 +16,7 @@ namespace basecross {
 
 
 
-	BcBoneDraw::BcBoneDraw(const std::shared_ptr<GameObject>& gameObjectPtr) :
+	BcPNTBoneDraw::BcPNTBoneDraw(const std::shared_ptr<GameObject>& gameObjectPtr) :
 	Component(gameObjectPtr),
 	m_ownShadowActive(false),
 	m_fogEnabled(true),
@@ -28,7 +28,7 @@ namespace basecross {
 	{
 	}
 
-	void BcBoneDraw::OnCreate() {
+	void BcPNTBoneDraw::OnCreate() {
 		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
@@ -121,7 +121,7 @@ namespace basecross {
 		}
 	}
 
-	bool BcBoneDraw::UpdateAnimation(double animeTime) {
+	bool BcPNTBoneDraw::UpdateAnimation(double animeTime) {
 
 		//アニメーション
 		auto mesh = GetBaseMesh(0);
@@ -143,7 +143,7 @@ namespace basecross {
 	}
 
 
-	void BcBoneDraw::OnUpdateConstantBuffers() {
+	void BcPNTBoneDraw::OnUpdateConstantBuffers() {
 		auto scene = dynamic_cast<Scene*>(BaseScene::Get());
 		auto stage = std::dynamic_pointer_cast<Stage>(scene->GetActiveStage(true));
 		auto& frameResources = scene->GetFrameResources();
@@ -291,7 +291,7 @@ namespace basecross {
 		}
 	}
 
-	void BcBoneDraw::OnCommitConstantBuffers() {
+	void BcPNTBoneDraw::OnCommitConstantBuffers() {
 		auto scene = dynamic_cast<Scene*>(BaseScene::Get());
 		auto pCurrentFrameResource = scene->GetCurrentFrameResource();
 		//シーン
@@ -301,7 +301,7 @@ namespace basecross {
 
 
 
-	void BcBoneDraw::OnSceneDraw() {
+	void BcPNTBoneDraw::OnSceneDraw() {
 		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();

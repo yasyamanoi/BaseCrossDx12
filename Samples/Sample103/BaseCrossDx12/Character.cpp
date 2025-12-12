@@ -33,46 +33,59 @@ namespace basecross {
 		ptrDraw->SetOwnShadowActive(true);
 	}
 
+
 	//--------------------------------------------------------------------------------------
 	// モデルオブジェクト
 	//--------------------------------------------------------------------------------------
-	FixedModel::FixedModel(const std::shared_ptr<Stage>& stage, const TransParam& param) :
+	BoneModel::BoneModel(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		GameObject(stage),
 		m_totalTime(0.0)
 	{
 		m_transParam = param;
 	}
-	FixedModel::~FixedModel() {}
+	BoneModel::~BoneModel() {}
 
 
-	void FixedModel::OnCreate() {
+	void BoneModel::OnCreate() {
 
 
 		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
-//		App::GetRelativeAssetsDir(), L"Chara_R\\Chara_R.fbx"
+		//		App::GetRelativeAssetsDir(), L"Chara_R\\Chara_R.fbx"
 
-//		App::GetRelativeAssetsDir(), L"SeaLife_Rigged\\Green_Sea_Turtle_Maya_2018.fbx"
+		//		App::GetRelativeAssetsDir(), L"SeaLife_Rigged\\Green_Sea_Turtle_Maya_2018.fbx"
 
-//		std::shared_ptr<AssimpLoader> ptrAssimpLoader = std::shared_ptr<AssimpLoader>(new AssimpLoader());
+		//		std::shared_ptr<AssimpLoader> ptrAssimpLoader = std::shared_ptr<AssimpLoader>(new AssimpLoader());
 
 
-		m_baseMesh = BaseMesh::CreateBoneModelMesh(
+		m_baseMesh = BaseMesh::CreateSingleBoneModelMesh(
 			pCommandList,
 			App::GetRelativeAssetsDir(), L"SeaLife_Rigged\\Green_Sea_Turtle_Maya_2018.fbx"
 		);
+
+		//m_baseMesh = BaseMesh::CreateSingleBoneModelMesh(
+		//	pCommandList,
+		//	App::GetRelativeAssetsDir(), L"MurtiMesh\\FBX 2013\\Object_WalkAnimation.fbx"
+		//);
+
+
+		//App::GetRelativeAssetsDir(), L"MurtiMesh\\FBX 2013\\ObjectOnly.fbx"
+
+
+		//ObjectOnly
+		//Object_WalkAnimation
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(m_baseMesh);
-		auto ptrDraw = AddComponent<BcBoneDraw>();
+		auto ptrDraw = AddComponent<BcPNTBoneDraw>();
 		ptrDraw->AddBaseMesh(m_baseMesh);
 
 	}
 
-	void FixedModel::OnUpdate(double elapsedTime) {
+	void BoneModel::OnUpdate(double elapsedTime) {
 		m_totalTime += elapsedTime;
-		if (m_totalTime >= 6.0) {
+		if (m_totalTime >= 2.0) {
 			m_totalTime = 0.0;
 		}
-		auto ptrDraw = GetComponent<BcBoneDraw>();
+		auto ptrDraw = GetComponent<BcPNTBoneDraw>();
 		ptrDraw->UpdateAnimation(m_totalTime);
 
 	}

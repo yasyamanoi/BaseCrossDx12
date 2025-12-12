@@ -59,7 +59,7 @@ Assimp::Importer importer;
 		}
 	}
 
-	bool BaseAssimp::InitScene(std::vector<VertexPositionNormalTextureSkinning>& vertices,
+	bool BaseAssimp::InitSingleScene(UINT meshIndex, std::vector<VertexPositionNormalTextureSkinning>& vertices,
 		std::vector<uint32_t>& indices) {
 
 		m_Meshes.resize(m_pScene->mNumMeshes);
@@ -71,8 +71,8 @@ Assimp::Importer importer;
 		CountVerticesAndIndices(NumVertices, NumIndices);
 
 		ReserveSpace(NumVertices, NumIndices);
-		//最初のメッシュを読み込む
-		InitFirstMeshe();
+		//メッシュを読み込む
+		InitSingleMeshBase(meshIndex);
 
 		//if (!InitMaterials(pScene, Filename)) {
 		//	return false;
@@ -174,17 +174,17 @@ Assimp::Importer importer;
 
 	}
 
-	void BaseAssimp::InitFirstMeshe() {
+	void BaseAssimp::InitSingleMeshBase(UINT meshIndex) {
 		if (m_Meshes.size() == 0) {
 			throw BaseException(
 				L"メッシュが見つかりません",
-				L"BaseAssimp::InitFirstMeshe()"
+				L"BaseAssimp::InitSingleMeshBase()"
 			);
 		}
-		const aiMesh* paiMesh = m_pScene->mMeshes[0];
+		const aiMesh* paiMesh = m_pScene->mMeshes[meshIndex];
 		m_SkinnedVertices.clear();
 		m_Indices.clear();
-		InitSingleMesh(0, paiMesh);
+		InitSingleMesh(meshIndex, paiMesh);
 	}
 
 
@@ -683,9 +683,11 @@ Assimp::Importer importer;
 	}
 
 
-	std::shared_ptr<BaseMesh> BaseMesh::CreateBoneModelMesh(
+	std::shared_ptr<BaseMesh> BaseMesh::CreateSingleBoneModelMesh(
 		ID3D12GraphicsCommandList* pCommandList,
-		const std::wstring& dataDir, const std::wstring& dataFile)
+		const std::wstring& dataDir, 
+		const std::wstring& dataFile,
+		UINT modelIndex)
 	{
 		try {
 			std::wstring modelFile = dataDir + dataFile;
@@ -697,7 +699,7 @@ Assimp::Importer importer;
 
 				std::vector<VertexPositionNormalTextureSkinning> vertices;
 				std::vector<uint32_t> indices;
-				ptrBaseAssimp->InitScene(vertices, indices);
+				ptrBaseAssimp->InitSingleScene(modelIndex,vertices, indices);
 
 				//std::vector < SkinningMeshSet> meshVec;
 				//ptrBaseAssimp->InitMuliScene(meshVec);
