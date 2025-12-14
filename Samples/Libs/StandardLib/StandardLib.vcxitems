@@ -25,11 +25,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\Transform.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Behavior.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\BehaviorSteering.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Camera.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Constants.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\GameObject.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Light.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Stage.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\StateMachine.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Steering.h" />
@@ -47,10 +45,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Transform.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Behavior.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\BehaviorSteering.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Camera.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\GameObject.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Light.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Stage.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Steering.cpp" />
   </ItemGroup>

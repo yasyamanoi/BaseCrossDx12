@@ -8,7 +8,12 @@
 
 ////コンテンツ側ライブラリ
 
+#include "StandardInclude.h"
+
 //個別オブジェクト等
-#include "Constants.h"
+#include "ProjectUtil.h"
+#include "Character.h"
+#include "Player.h"
+#include "GameStage.h"
 
 

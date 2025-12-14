@@ -104,9 +104,7 @@ xcopy /y /d "$(SolutionDir)..\Libs\Assimp\dlls\" "$(SolutionDir)$(Configuration)
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h" />
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="Light.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Scene.h" />
@@ -119,8 +117,6 @@ xcopy /y /d "$(SolutionDir)..\Libs\Assimp\dlls\" "$(SolutionDir)$(Configuration)
     <Image Include="icon1.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Light.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="WinMain.cpp" />
     <ClCompile Include="stdafx.cpp">

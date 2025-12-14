@@ -11,8 +11,6 @@
 //個別オブジェクト等
 #include "Objects/Constants.h"
 
-#include "Objects/Camera.h"
-#include "Objects/Light.h"
 #include "Components/Component.h"
 #include "Objects/GameObject.h"
 #include "Components/Transform.h"

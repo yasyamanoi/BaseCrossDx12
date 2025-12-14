@@ -81,6 +81,8 @@ using namespace basecross::bsm;
 #include "MeshHelper.h"
 #include "TransHelper.h"
 #include "InputDevice.h"
+#include "Camera.h"
+#include "Light.h"
 #include "BaseMesh.h"
 #include "BaseTexture.h"
 #include "App.h"

@@ -58,9 +58,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\BehaviorSteering.h">
       <Filter>Objects\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Camera.h">
-      <Filter>Objects\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.h">
       <Filter>Objects\Headers</Filter>
     </ClInclude>
@@ -68,9 +65,6 @@
       <Filter>Objects\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\GameObject.h">
-      <Filter>Objects\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Light.h">
       <Filter>Objects\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Stage.h">
@@ -117,16 +111,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\BehaviorSteering.cpp">
       <Filter>Objects\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Camera.cpp">
-      <Filter>Objects\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.cpp">
       <Filter>Objects\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\GameObject.cpp">
-      <Filter>Objects\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Light.cpp">
       <Filter>Objects\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Stage.cpp">

@@ -10,43 +10,16 @@
 <!-- container -->
 <div class="container bg-light">
 <h2>BaseCrossDx12ドキュメント</h2>
-<h4>スタンダードサンプルとは</h4>
-<h5>BaseCross64との関係</h5>
-　<strong>BaseCrossDx12</strong>における<strong>スタンダードサンプル</strong>は、<strong>前バージョン（BaseCross64）</strong>の仕様にできるだけ近づけたサンプルです。<br>
-　すなわち、<strong>Scene、Stage、GemaObject</strong>を持ち<strong>コンポーネント</strong>というオブジェクトで、必要な部品を追加できる仕様です。<br>
- もちろん、低いレイヤーにあるライブラリは<strong>ベーシックサンプル</strong>にあるような<strong>むき出しのDirectX12</strong>です。これをハイレベルで<strong>BaseCross64</strong>の機能をできるだけ追加しています。
-<h6>ベーシックサンプルとスタンダードサンプルの違い</h6>
-　<strong>ベーシックサンプルとスタンダードサンプルの違い</strong>はソリューションエクスプローラを見ると明らかです。<br>
-　<strong>ベーシックサンプルのソリューションエクスプローラ</strong>を見ると以下のようになってます。
+<h4>【Sample100】Emptyプロジェクト</h4>
+　このサンプルは<strong>Samples/Sample100</strong>ディレクトリ内にあります。スタンダードサンプルのEmptyプロジェクトです。VisualStdioで該当ソリューション（VS2022で<strong>BaseCrossDx12VS2022.sln</strong>）を開いてください。ビルド後実行すると、以下の画面が現れます。<strong>Escキーを押す</strong>か<strong>×ボタン</strong>で終了します。<strong>Alt</strong>を押しながら<strong>Enter</strong>で、全画面に変更できます。Windowモードに戻すときは、再び<strong>Alt</strong>を押しながら<strong>Enter</strong>を押します。
 <div class="py-3">
-<img src="img/100a.png" width="30%" />
+<img src="img/100a.png" width="80%" />
 </div>
-　それに対して<strong>スタンダードサンプルのソリューションエクスプローラ</strong>は以下のようになってます。
-<div class="py-3">
-<img src="img/100b.png" width="30%" />
-</div>
-　このように<strong>Libs</strong>フォルダに<strong>StandardLib</strong>というフォルダが追加されています。この中を開いてみるとわかりますが、<strong>Components、Objects、Shaders</strong>というサブフォルダがあり、その中に<strong>スタンダードサンプル</strong>用のライブラリが設置されています。これらが<strong>BaseCross64</strong>に近づけるためのライブラリ群になっています。
-<h6>オブジェクトの構成</h6>
-<ul>
-<li>Scene</li>
-</ul>
-　<strong>ベーシックサンプル</strong>にある<strong>Scene</strong>と同じものです。アプリケーションに1つだけ存在し、<strong>BaseScene</strong>を継承して作られます。<strong>BaseScene</strong>はDx12オブジェクト（ディスクプリタジープなど）に直接アクセス可能です。
-<ul>
-<li>Stage</li>
-</ul>
-　Scene内に1つだけ構築できます。通常は継承して<strong>GameStage</strong>や<strong>TitleStage</strong>などを作り、<strong>ResetActiveStage関数</strong>で表示するStageを決定します。
-<ul>
-<li>GameObject</li>
-</ul>
-　<strong>Stage</strong>は<strong>GameObjectの配列</strong>を持ちます。各ステージへのオブジェクトの配置は、<strong>GameObject</strong>を継承して作られた<strong>Player</strong>や<strong>Enemy</strong>などのオブジェクトを<strong>Stage::AddGameObject関数</strong>によって追加します。
-<ul>
-<li>Component</li>
-</ul>
-　各GameObjectは、そのプロパティのような機能として<strong>Component</strong>を持つことができます。<br>
-　<strong>Component</strong>は<strong>Transform、Collision、Regitbody</strong>のような<strong>Update計コンポーネント</strong>と<strong>DrawComponennt</strong>として<strong>Draw系コンポーネント</strong>があります。
-<br>
-<br>
-　他機能につきましては、各サンプルを参照ください。
+
+
+
+
+
 <footer class="py-3 my-4">
 <ul class="nav justify-content-center border-top pb-3 mb-3">
 <li class="nav-item"><a href="index.html" class="nav-link px-2 text-primary">目次</a></li>

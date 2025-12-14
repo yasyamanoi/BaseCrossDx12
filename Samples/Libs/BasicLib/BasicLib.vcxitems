@@ -25,10 +25,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)BaseTexture.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BasicInclude.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BlendState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Camera.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)d3dx12.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)DxHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FrameResource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InputDevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Light.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MeshHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ObjectInterface.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PipelineState.h" />
@@ -48,7 +50,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)BaseScene.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BaseTexture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BlendState.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Camera.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FrameResource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Light.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MeshHelper.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ObjectInterface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)PipelineState.cpp" />
