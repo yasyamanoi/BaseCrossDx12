@@ -374,8 +374,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnShadowDraw()override{}
-		virtual void OnSceneDraw()override{}
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override{}
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override{}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief 破棄処理。デフォルトは何も行わない
@@ -581,8 +581,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnShadowDraw()override{}
-		virtual void OnSceneDraw()override{}
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override{}
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override{}
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -780,8 +780,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnShadowDraw()override {}
-		virtual void OnSceneDraw()override {}
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override {}
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override {}
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -947,8 +947,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnShadowDraw()override {}
-		virtual void OnSceneDraw()override {}
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override {}
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override {}
 	};
 
 	//--------------------------------------------------------------------------------------
@@ -1057,8 +1057,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnShadowDraw()override {}
-		virtual void OnSceneDraw()override {}
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override {}
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override {}
 	};
 
 }

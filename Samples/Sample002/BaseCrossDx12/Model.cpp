@@ -16,122 +16,95 @@ namespace basecross {
 
 	void Model::OnCreate() {
 		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
-		m_baseMesh = BaseMesh::CreateSingleBoneModelMesh(
+		m_mesh = BaseMesh::CreateSingleBoneModelMesh(
 			pCommandList,
 			App::GetRelativeAssetsDir(), L"SeaLife_Rigged\\Green_Sea_Turtle_Maya_2018.fbx"
 		);
-
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pBaseDevice = BaseDevice::GetBaseDevice();
-		//ベイシックコンスタントバッファ
+		//ベイシックコンスタントバッファ作成
 		for (size_t i = 0; i < BaseDevice::FrameCount; i++) {
 			m_constantBufferIndex = frameResources[i]->AddBaseConstantBufferSet<BasicConstant>(pBaseDevice->GetD3D12Device());
 		}
-
+		//CPU側コンスタントバッファの作成
+		CreateConstantBuffer();
 		ComPtr<ID3D12PipelineState> defaultPipelineState
 			= PipelineStatePool::GetPipelineState(L"BcPNTBone");
-		CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
-		//カリング
-		rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
-
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		ZeroMemory(&psoDesc, sizeof(psoDesc));
-
-		psoDesc.InputLayout = { VertexPositionNormalTextureSkinning::GetVertexElement(), VertexPositionNormalTextureSkinning::GetNumElements() };
-		//			psoDesc.InputLayout = { VertexPositionNormalTexture::GetVertexElement(), VertexPositionNormalTexture::GetNumElements() };
-		psoDesc.pRootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault").Get();
-		psoDesc.VS =
-		{
-			reinterpret_cast<UINT8*>(BcVSPNTBonePL::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-			BcVSPNTBonePL::GetPtr()->GetShaderComPtr()->GetBufferSize()
-		};
-		psoDesc.PS =
-		{
-			reinterpret_cast<UINT8*>(BcPSPNTPL::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-			BcPSPNTPL::GetPtr()->GetShaderComPtr()->GetBufferSize()
-		};
-		psoDesc.RasterizerState = rasterizerStateDesc;
-		psoDesc.BlendState = BlendState::GetOpaqueBlend();
-		psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-		psoDesc.SampleMask = UINT_MAX;
-		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		psoDesc.NumRenderTargets = 1;
-		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-		psoDesc.SampleDesc.Count = 1;
-		//デフォルト影無し
 		if (!defaultPipelineState) {
-			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&defaultPipelineState)));
-			NAME_D3D12_OBJECT(defaultPipelineState);
-			PipelineStatePool::AddPipelineState(L"BcPNTBone", defaultPipelineState);
+			//defaultPipelineStateが見つからなければ作成
+			//ラスタライザステート
+			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
+			//カリング（裏側は描画しない）
+			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_BACK;
+			//パイプラインステートの定義
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+			ZeroMemory(&psoDesc, sizeof(psoDesc));
+			//VertexPositionNormalTextureSkinningで作成
+			psoDesc.InputLayout = { VertexPositionNormalTextureSkinning::GetVertexElement(), VertexPositionNormalTextureSkinning::GetNumElements() };
+			//ルート認証はデフォルト
+			psoDesc.pRootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault").Get();
+			//頂点シェーダ
+			psoDesc.VS =
+			{
+				reinterpret_cast<UINT8*>(BcVSPNTBonePL::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				BcVSPNTBonePL::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+			//ピクセルシェーダ
+			psoDesc.PS =
+			{
+				reinterpret_cast<UINT8*>(BcPSPNTPL::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				BcPSPNTPL::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+			//ラスタライズステート
+			psoDesc.RasterizerState = rasterizerStateDesc;
+			//ブレンドステートは塗りつぶし
+			psoDesc.BlendState = BlendState::GetOpaqueBlend();
+			//デプスステンシルはデフォルト
+			psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+			psoDesc.SampleMask = UINT_MAX;
+			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+			psoDesc.SampleDesc.Count = 1;
+			//デフォルト影無しのボーン描画
+			if (!defaultPipelineState) {
+				ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&defaultPipelineState)));
+				NAME_D3D12_OBJECT(defaultPipelineState);
+				PipelineStatePool::AddPipelineState(L"BcPNTBone", defaultPipelineState);
+			}
 		}
-		//デフォルト影なし
-		psoDesc.BlendState = BlendState::GetOpaqueBlend();
-		//頂点シェーダー
-		psoDesc.VS =
-		{
-			reinterpret_cast<UINT8*>(BcVSPNTBonePL::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-			BcVSPNTBonePL::GetPtr()->GetShaderComPtr()->GetBufferSize()
-		};
-		//ピクセルシェーダー
-		psoDesc.PS =
-		{
-			reinterpret_cast<UINT8*>(BcPSPNTPL::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
-			BcPSPNTPL::GetPtr()->GetShaderComPtr()->GetBufferSize()
-		};
-
-
-
-
-	}
-
-	void Model::OnUpdate(double elapsedTime) {
-		m_totalTime += elapsedTime;
-		if (m_totalTime >= 2.0) {
-			m_totalTime = 0.0;
-		}
-		UpdateAnimation(m_totalTime);
-
-
-	}
-
-	bool Model::UpdateAnimation(double animeTime) {
-
-		//アニメーション
-		auto ptrBaseAssimp = m_baseMesh->GetBaseAssimp();
-		m_BoneTransforms.clear();
-		ptrBaseAssimp->GetBoneTransforms((float)animeTime, m_BoneTransforms);
-		return true;
 	}
 
 
-	void Model::OnUpdateConstantBuffers() {
+	void Model::CreateConstantBuffer() {
 		auto scene = dynamic_cast<Scene*>(BaseScene::Get());
 		auto& frameResources = scene->GetFrameResources();
 		auto pBaseDevice = BaseDevice::GetBaseDevice();
 		auto& viewport = scene->GetViewport();
 		std::shared_ptr<PerspecCamera> myCamera;
 		std::shared_ptr<LightSet> myLightSet;
-
-		myCamera =  std::dynamic_pointer_cast<PerspecCamera>(scene->GetCamera());
+		//カメラとライト
+		myCamera = std::dynamic_pointer_cast<PerspecCamera>(scene->GetCamera());
 		myLightSet = scene->GetLightSet();
-
-		auto scale = Vec3(0.1f);
-		auto quaternion = Quat(Vec3(0, 1, 0), -XM_PI);
-		auto position = Vec3(0.0f, 0.0f, 0.0f);
+		//パラメータの初期化
+		m_param.scale = Vec3(0.1f);
+		m_param.quaternion = Quat(Vec3(0, 1, 0), -XM_PI);
+		m_param.position = Vec3(0.0f, 0.0f, 0.0f);
 
 		//初期化
 		m_constantBuffer = {};
 		m_constantBuffer.activeFlg.y = 0;
+		//ライトは３つ
 		m_constantBuffer.activeFlg.x = 3;
 
 		//ワールド行列の設定
 		auto world = XMMatrixAffineTransformation(
-			scale,
+			m_param.scale,
 			Vec3(0),
-			quaternion,
-			position
+			m_param.quaternion,
+			m_param.position
 		);
 
 		auto view = (XMMATRIX)((Mat4x4)myCamera->GetViewMatrix());
@@ -209,13 +182,45 @@ namespace basecross {
 				cb_count += 3;
 			}
 		}
-
 	}
 
-	void Model::CommitConstantBuffers() {
+	void Model::OnUpdate(double elapsedTime) {
+		m_totalTime += elapsedTime;
+		if (m_totalTime >= 2.0) {
+			//2秒間のアニメーションなので2秒を超えたら0にする
+			m_totalTime = 0.0;
+		}
+		UpdateAnimation(m_totalTime);
+	}
+
+	void Model::UpdateAnimation(double animeTime) {
+		//BaseAssimpの取り出し
+		auto ptrBaseAssimp = m_mesh->GetBaseAssimp();
+		m_BoneTransforms.clear();
+		//m_BoneTransformsにアニメーション情報の行列を代入
+		ptrBaseAssimp->GetBoneTransforms((float)animeTime, m_BoneTransforms);
+	}
+
+
+	void Model::OnUpdateConstantBuffers() {
+		//ボーンの更新
+		size_t BoneSz = m_BoneTransforms.size();
+		if (BoneSz > 0) {
+			UINT cb_count = 0;
+			for (size_t b = 0; b < BoneSz; b++) {
+				bsm::Mat4x4 mat = m_BoneTransforms[b];
+				m_constantBuffer.Bones[cb_count] = ((XMMATRIX)mat).r[0];
+				m_constantBuffer.Bones[cb_count + 1] = ((XMMATRIX)mat).r[1];
+				m_constantBuffer.Bones[cb_count + 2] = ((XMMATRIX)mat).r[2];
+				cb_count += 3;
+			}
+		}
+	}
+
+	void Model::OnCommitConstantBuffers() {
 		auto scene = dynamic_cast<Scene*>(BaseScene::Get());
 		auto pCurrentFrameResource = scene->GetCurrentFrameResource();
-		//シーン
+		//コンスタントバッファのコピー
 		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_pBaseConstantBufferWO,
 			&m_constantBuffer, sizeof(m_constantBuffer));
 	}
@@ -223,68 +228,64 @@ namespace basecross {
 	void Model::ScenePass(ID3D12GraphicsCommandList* pCommandList)
 	{
 		auto pBaseScene = BaseScene::Get();
-		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
-		auto pBaseDevice = BaseDevice::GetBaseDevice();
-		auto& viewport = pBaseScene->GetViewport();
-		auto& scissorRect = pBaseScene->GetScissorRect();
-		auto depthDsvs = pBaseScene->GetDepthDsvs();
-		auto depthGPUDsvs = pBaseScene->GetDepthSrvGpuHandles();
-
 		auto CbvSrvUavDescriptorHeap = pBaseScene->GetCbvSrvUavDescriptorHeap();
-		auto mesh = m_baseMesh;
-		if (mesh) {
+		if (m_mesh) {
 			ComPtr<ID3D12PipelineState> defaultPipelineState
 				= PipelineStatePool::GetPipelineState(L"BcPNTBone", true);
-			//null rv
+			//nullのハンドルを取得
 			CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvGpuNullHandle(CbvSrvUavDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-
-			// set PipelineState and GetGpuSlotID(L"t0")
+			//L"t0"（シャドウテクスチャ）にnullを設定
+			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), cbvSrvGpuNullHandle);
+			//パイプラインステートの設定
 			pCommandList->SetPipelineState(defaultPipelineState.Get());
-			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), cbvSrvGpuNullHandle);        // Set the shadow texture as an SRV.
-
-			//Sampler
+			//サンプラー1
 			UINT index = pBaseScene->GetSamplerIndex(L"LinearClamp");
 			if (index == UINT_MAX) {
 				throw BaseException(
 					L"LinearClampサンプラーが特定できません。",
-					L"Scene::ScenePass()"
+					L"Model::ScenePass()"
 				);
 			}
-			CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle(
+			//サンプラー1のハンドルを作成
+			CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle1(
 				pBaseScene->GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
 				index,
 				pBaseScene->GetSamplerDescriptorHandleIncrementSize()
 			);
-			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"s0"), samplerHandle);
-
+			//L"s0"にサンプラー1のハンドルを設定
+			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"s0"), samplerHandle1);
+			//サンプラー2
 			index = pBaseScene->GetSamplerIndex(L"ComparisonLinear");
 			if (index == UINT_MAX) {
 				throw BaseException(
 					L"ComparisonLinearサンプラーが特定できません。",
-					L"Scene::ScenePass()"
+					L"SModel::ScenePass()"
 				);
 			}
+			//サンプラー2のハンドルを作成
 			CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle2(
 				pBaseScene->GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
 				index,
 				pBaseScene->GetSamplerDescriptorHandleIncrementSize()
 			);
+			//L"s1"にサンプラー2のハンドルを設定
 			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"s1"), samplerHandle2);
-			//シェーダリソース（テクスチャ）のハンドルの設定
+			//シェーダリソース（テクスチャ）のハンドルの設定(null)
 			CD3DX12_GPU_DESCRIPTOR_HANDLE srvNullHandle(
 				pBaseScene->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart()
 			);
+			//テクスチャは使わないのでL"t1"にnullを設定
 			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t1"), srvNullHandle);
-			//Cbv
-			// Set scene constant buffer.
+			//コンスタントバッファビュー
+			//L"b0"に現在のフレームのコンスタントバッファを設定
 			pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
 				pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress());
-			//Draw
+			//描画
 			pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			pCommandList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-			pCommandList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-			pCommandList->DrawIndexedInstanced(mesh->GetNumIndices(), 1, 0, 0, 0);
+			pCommandList->IASetVertexBuffers(0, 1, &m_mesh->GetVertexBufferView());
+			pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
+			pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
 		}
 
 	}

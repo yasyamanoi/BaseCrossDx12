@@ -24,11 +24,103 @@
 <h5>Emptyプロジェクトの内容</h5>
 　<strong>Emptyプロジェクト</strong>のソリューションは以下の通りです。
 <div class="py-3">
-<img src="img/0000b.png" width="50%" />
+<img src="img/0000b.png" width="30%" />
 </div>
 　<strong>Libs</strong>の中は、ベーシックバージョンのライブラリです。<strong>ソース ファイルおよびヘッダー ファイル</strong>がコンテンツ側の内容ですが、見てみるとほとんど記述がありません。<br>
-　まず一番重要な<strong>Scene.h/cpp</strong>を見てみます
-<h6>Scene.h</h6>
+<h5>WinMain.cpp</h5>
+　<strong>WinMain.cpp</strong>には、このアプリケーションのエントリポイントである<strong>WinMain関数</strong>があります。<br>
+　内容は以下の通りです。
+<pre class="my-3 p-3">
+_Use_decl_annotations_
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
+{
+	// このプロセスを高DPI対応として宣言し、自動スケーリングを防止します。
+	HINSTANCE hUser32 = LoadLibrary(L"user32.dll");
+	if (hUser32)
+	{
+		typedef BOOL(WINAPI * LPSetProcessDPIAware)(void);
+		LPSetProcessDPIAware pSetProcessDPIAware = (LPSetProcessDPIAware)GetProcAddress(hUser32, "SetProcessDPIAware");
+		if (pSetProcessDPIAware)
+		{
+			pSetProcessDPIAware();
+		}
+		FreeLibrary(hUser32);
+	}
+
+	basecross::BaseDevice device(1280, 800, L"BaseCrossDx12");
+	return basecross::App::Run(&device, hInstance, nCmdShow);
+}
+</pre>
+　<strong>BaseCrossDx12</strong>は<strong>はじめに</strong>に述べたように、ハイパフォーマンスのサンプルをもとに作成されます。<br>
+　ですので<strong>高DPI対応として</strong>作成します。<br>
+　そのあとは
+<pre class="my-3 p-3">
+	<span class="red">basecross::BaseDevice device</span>(1280, 800, L"BaseCrossDx12");
+	return <span class="red">basecross::App::Run</span>(&device, hInstance, nCmdShow);
+</pre>
+　と、ローカル上に<strong>BaseDevice deviceオブジェクト</strong>を構築して、<strong>basecross::App::Run関数</strong>に<strong>device</strong>を渡します。<br>
+<h5>basecrossネームスペース</h5>
+　<strong>BaseCrossDx12</strong>は、基本的に<strong>basecrossネームスペース</strong>に含まれます。各ソースファイルは
+<pre class="my-3 p-3">
+namespace basecross {
+
+//ソースの内容
+
+}
+//end namespace basecross
+</pre>
+　というように<strong>basecrossネームスペース</strong>に囲まれており、これによって名前の衝突等を避けています。
+<h5>BaseDeviceクラス</h5>
+　<strong>BaseDeviceクラス</strong>は<strong>Libs/BasicLib</strong>内の<strong>BaseDevice.h/cpp</strong>に記述があり<strong>PrimDevice</strong>を継承してます。<br>
+　主に<strong>DirectX12デバイス</strong>を管理しています。<br>
+　管理しているDx12リソースは以下です。
+<table class="table table-bordered">
+<tr>
+<th>リソース名</th>
+<th>用途</th>
+</tr>
+
+<tr>
+<td>IDXGIFactory6</td>
+<td>IDXGISwapChain4を作成するためのオブジェクト</td>
+</tr>
+
+<tr>
+<td>ID3D12Device</td>
+<td>DirectX12デバイス、すべてのDireectX12リソースのベースとなる</td>
+</tr>
+<tr>
+<td>IDXGISwapChain4</td>
+<td>RTVの、バックバッファ、フロントバッファを管理するオブジェクト</td>
+</tr>
+<tr>
+<td>ID3D12CommandQueue</td>
+<td>コマンドリストを実行するオブジェクト</td>
+</tr>
+
+<tr>
+<td>レンダーターゲット</td>
+<td>実際にオブジェクト群が書き込まれる、キャンバスみたいなもの。バックバッファとフロントバッファがあり、ちらつきがないように、バックバッファに書き込んだ後、フロントバッファと入れ替える。<strong>BaseCrossDx12</strong>では3つのレンダーターゲットを扱う。</td>
+</tr>
+<tr>
+<td>ID3D12Fence</td>
+<td>フェンス。CPUとGPUの同期に使用される。</td>
+</tr>
+<tr>
+<td>UILayer</td>
+<td>デバッグ文字列（左上の文字列）を表示させるオブジェクト。表示したり消したりできます。</td>
+</tr>
+</table>
+　他にも細かなものはありますが、ゲームプログラマが意識しなければいけないのは、これくらいと思います。<br>
+<br>
+　<strong>BaseDeviceクラス</strong>はこれらのオブジェクト（リソース）を作成し、<strong>シーン(Scene)</strong>を作成します。
+<h5>Sceneクラス</h5>
+　<strong>Sceneクラス</strong>は描画されるオブジェクトをまとめるクラスです。コンテンツ側<strong>BaseCrossDx12フィルタ</strong>側に実装され、ライブラリ側からも見える仕様になっています。<br>
+　<strong>Sceneクラス</strong>のインスタンスは<strong>BaseDevice::LoadAssets()関数</strong>内で行われます。<strong>unique_ptr</strong>として作成します。<br>
+　<strong>Sceneクラス</strong>自体は、<strong>BasicLib</strong>内の<strong>BaseScene</strong>を継承して作られ、<strong>BaseScene</strong>は多くの仮想関数を含んでいます。<br>
+　<strong>Sceneクラス</strong>はそれらを多重定義することで多くの機能を（キャラクターなどのオブジェクトを）実装します。<br>
+　このサンプル<strong>Emptyプロジェクト</strong>は何もしないサンプルなので、何もしない多重定義がほとんどですが、次ページの<strong>【Sample001】三角形の描画</strong>では、多重定義の例を見ることができます。詳細は次ページで説明します。<br>
+　以下は<strong>Emptyプロジェクト</strong>の<strong>Scene.h</strong>です。
 <pre class="my-3 p-3">
 /*!
 @file Scene.h
@@ -94,7 +186,7 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void UpdateUI(std::unique_ptr<UILayer>& uiLayer)override;
+		virtual void UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer)override;
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	シャドウマップの描画
@@ -115,30 +207,22 @@ namespace basecross {
 }
 //end namespace basecross
 </pre>
-　よく見ると<strong>CreateAssetResources()、Update()、UpdateConstantBuffers()、CommitConstantBuffers()、ShadowPass()、ScenePass()</strong>は、実体をもってない（というか何もしない）のがわかります。<br>
-　この6つの関数をコンテンツに合った形で記述すれば、様々なオブジェクトを管理、表示することができます。<br>
-　以下は<strong>Scene.cpp</strong>の実装です。
-<h6>Scene.cpp</h6>
+　このように、以下の仮想関数が<strong>何もしない</strong>形で実装されています。
 <pre class="my-3 p-3">
-/*!
-@file Scene.cpp
-@brief シーンクラス　実体
-*/
-#include "stdafx.h"
-#include "Project.h"
-
-namespace basecross {
-
-	//--------------------------------------------------------------------------------------
-	// シーン
-	//--------------------------------------------------------------------------------------
-	Scene::Scene(UINT frameCount, PrimDevice* pPrimDevice) :
-		BaseScene(frameCount, pPrimDevice)
-	{
-	}
-	Scene::~Scene()
-	{
-	}
+		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)override {}
+		virtual void Update(double elapsedTime)override {}
+		virtual void UpdateConstantBuffers()override {}
+		virtual void CommitConstantBuffers()override {}
+		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList)override {}
+		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList) {}
+</pre>
+　実装されているのは
+<pre class="my-3 p-3">
+		virtual void UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer)override;
+</pre>
+　のみです。これは左上のデバッグ文字列の表示を行っています。<br>
+　内容は以下です。<strong>Scene.cpp</strong>に実装されています。
+<pre class="my-3 p-3">
 	void Scene::UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer) {
 		auto device = BaseDevice::GetBaseDevice();
 		//1秒間に１回更新される安定したfpsを得る
@@ -153,20 +237,18 @@ namespace basecross {
 		uiText += buff;
 		uiLayer->UpdateLabels(uiText);
 	}
-
-
-}
-// end namespace basecross
 </pre>
-　<strong>BaseCrossDx12</strong>で最低限必要なコンテンツ側の処理はこれだけです。<br>
-　<strong>UpdateUI()関数</strong>は、デバッグ文字列として<strong>FPSとElapsedTime</strong>を表示します。もし何も表示したくなければ
+　もしデバッグ表示を消したければ
 <pre class="my-3 p-3">
-	void Scene::UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer) {
-		uiLayer->UpdateLabels(L"");
-	}
+		uiLayer->UpdateLabels(uiText);
 </pre>
-　と書けば問題ありません。<br>
-　他のファイル<strong>Project.h</strong>はほぼ何も書かれてないですし、<strong>resource.h、stdafx.h、stdafx.cpp、WinMain.cpp</strong>は、サンプルが変わっても同じ内容です。
+を
+<pre class="my-3 p-3">
+		uiLayer->UpdateLabels(L"");
+</pre>
+　に変更してください。<br>
+　<strong>uiLayer->UpdateLabels()関数</strong>をコメントにすると固まってしまうので気を付けましょう。<br>
+　サンプルでは<strong>FPS値</strong>と<strong>ElapsedTime</strong>を表示してますが、もちろんゲーム制作時に表示させたいデータを表示させられます。
 <footer class="py-3 my-4">
 <ul class="nav justify-content-center border-top pb-3 mb-3">
 <li class="nav-item"><a href="index.html" class="nav-link px-2 text-primary">目次</a></li>

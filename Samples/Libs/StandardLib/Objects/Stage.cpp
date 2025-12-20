@@ -79,12 +79,12 @@ namespace basecross {
 		m_collisionManager = ObjectFactory::Create<CollisionManager>(GetThis<Stage>());
 	}
 
-	void Stage::OnShadowDraw() {
+	void Stage::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
 		for (auto& v : m_gameObjectVec) {
-			v->OnShadowDraw();
+			v->OnShadowDraw(pCommandList);
 		}
 	}
-	void Stage::OnSceneDraw() {
+	void Stage::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
 		std::vector<std::shared_ptr<GameObject>> alphaVec;
 		std::vector<std::shared_ptr<GameObject>> normalVec;
 		for (auto& v : m_gameObjectVec) {
@@ -114,10 +114,10 @@ namespace basecross {
 			};
 		std::sort(alphaVec.begin(), alphaVec.end(), func);
 		for (auto& v : normalVec) {
-			v->OnSceneDraw();
+			v->OnSceneDraw(pCommandList);
 		}
 		for (auto& v : alphaVec) {
-			v->OnSceneDraw();
+			v->OnSceneDraw(pCommandList);
 		}
 	}
 

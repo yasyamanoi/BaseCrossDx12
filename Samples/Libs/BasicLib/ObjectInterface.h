@@ -105,8 +105,8 @@ namespace basecross {
 		@return	Ç»Çµ
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void OnShadowDraw(){}
-		virtual void OnSceneDraw() {}
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList){}
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	îjä¸éûèàóù

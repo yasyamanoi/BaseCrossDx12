@@ -71,7 +71,7 @@ namespace basecross {
 	void Scene::ShadowPass(ID3D12GraphicsCommandList* pCommandList) {
 		if (m_activeStage) {
 			m_pTgtCommandList = pCommandList;
-			m_activeStage->OnShadowDraw();
+			m_activeStage->OnShadowDraw(pCommandList);
 		}
 	}
 
@@ -79,7 +79,7 @@ namespace basecross {
 	{
 		if (m_activeStage) {
 			m_pTgtCommandList = pCommandList;
-			m_activeStage->OnSceneDraw();
+			m_activeStage->OnSceneDraw(pCommandList);
 		}
 	}
 

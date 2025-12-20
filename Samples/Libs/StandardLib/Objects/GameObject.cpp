@@ -122,7 +122,7 @@ namespace basecross {
 		}
 	}
 
-	void GameObject::OnShadowDraw() {
+	void GameObject::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
 		//マップを検証してOnUpdateConstantBuffers
 		std::list<std::type_index>::iterator it = m_compOrder.begin();
 		while (it != m_compOrder.end()) {
@@ -130,13 +130,13 @@ namespace basecross {
 			it2 = m_compMap.find(*it);
 			if (it2 != m_compMap.end()) {
 				//指定の型のコンポーネントが見つかった
-				it2->second->OnShadowDraw();
+				it2->second->OnShadowDraw(pCommandList);
 			}
 			it++;
 		}
 	}
 
-	void GameObject::OnSceneDraw() {
+	void GameObject::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
 		//マップを検証してOnUpdateConstantBuffers
 		std::list<std::type_index>::iterator it = m_compOrder.begin();
 		while (it != m_compOrder.end()) {
@@ -144,7 +144,7 @@ namespace basecross {
 			it2 = m_compMap.find(*it);
 			if (it2 != m_compMap.end()) {
 				//指定の型のコンポーネントが見つかった
-				it2->second->OnSceneDraw();
+				it2->second->OnSceneDraw(pCommandList);
 			}
 			it++;
 		}

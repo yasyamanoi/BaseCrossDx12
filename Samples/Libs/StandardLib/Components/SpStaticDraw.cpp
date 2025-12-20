@@ -232,8 +232,8 @@ namespace basecross {
 			&m_simpleConstant, sizeof(m_simpleConstant));
 	}
 
-	void SpPNTStaticDraw::OnSceneDraw() {
-		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+	void SpPNTStaticDraw::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
+//		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();

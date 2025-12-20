@@ -101,7 +101,7 @@ namespace basecross {
 
 		if (m_activeStage) {
 			m_pTgtCommandList = pCommandList;
-			m_activeStage->OnShadowDraw();
+			m_activeStage->OnShadowDraw(pCommandList);
 		}
 	}
 
@@ -120,7 +120,7 @@ namespace basecross {
 		pCommandList->OMSetRenderTargets(1, &GetCurrentBackBufferRtvCpuHandle(), FALSE, &depthDsvs[DepthGenPass::Scene]);
 		if (m_activeStage) {
 			m_pTgtCommandList = pCommandList;
-			m_activeStage->OnSceneDraw();
+			m_activeStage->OnSceneDraw(pCommandList);
 		}
 	}
 

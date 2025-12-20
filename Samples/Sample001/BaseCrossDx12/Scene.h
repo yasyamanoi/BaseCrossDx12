@@ -8,26 +8,18 @@
 
 namespace basecross {
 
-
-	DECLARE_DX12SHADER(SpVSPCStatic)
-	DECLARE_DX12SHADER(SpPSPCStatic)
-
 	//--------------------------------------------------------------------------------------
 	// シーン
 	//--------------------------------------------------------------------------------------
 	class Scene : public BaseScene
 	{
-		SimpleConstant m_constantBuffer;
-		size_t m_constantBufferIndex;
-		std::shared_ptr<BaseMesh> m_mesh;
-		double m_totalTime;
-		TransParam m_param;
-		std::shared_ptr<Camera> m_camera;
+		std::shared_ptr<PerspecCamera> m_camera;
 		std::shared_ptr<LightSet> m_lightSet;
+		std::shared_ptr<Triangle> m_triangle;
 	public:
 		//--------------------------------------------------------------------------------------
 		/*!
-		@brief	コンストラクタ
+		@brief	コンストラクタ、デストラクタ
 		@param[in]	frameCount	フレーム数
 		@param[in]	pPrimDevice	デバイス
 		@return	なし
@@ -35,6 +27,24 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		Scene(UINT frameCount, PrimDevice* pPrimDevice);
 		virtual ~Scene();
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	カメラの取得
+		@return	カメラのポインタ
+		*/
+		//--------------------------------------------------------------------------------------
+		std::shared_ptr<Camera> GetCamera() {
+			return m_camera;
+		}
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	ライトセットの取得
+		@return	ライトセットのポインタ
+		*/
+		//--------------------------------------------------------------------------------------
+		std::shared_ptr<LightSet> GetLightSet() {
+			return m_lightSet;
+		}
 	protected:
 		//--------------------------------------------------------------------------------------
 		/*!

@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BaseCrossDx12ドキュメント</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous"><link href="css/style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<!-- container -->
+<div class="container bg-light">
+<h2>BaseCrossDx12ドキュメント</h2>
+<h4>【Sample002】シングルモデルの描画</h4>
+　このサンプルは<strong>Samples/Sample002</strong>ディレクトリ内にあります。VisualStdioで該当ソリューション（VS2022で<strong>BaseCrossDx12VS2022.sln</strong>）を開いてください。ビルド後実行すると、以下の画面が現れます。<strong>Escキーを押す</strong>か<strong>×ボタン</strong>で終了します。<strong>Alt</strong>を押しながら<strong>Enter</strong>で、全画面に変更できます。Windowモードに戻すときは、再び<strong>Alt</strong>を押しながら<strong>Enter</strong>を押します。
+<div class="py-3">
+<img src="img/0002a.png" width="80%" />
+</div>
+<h5>このサンプルの構造</h5>
+　<strong>BaseCrossDx12</strong>では<strong>はじめに</strong>に述べたように<strong>Open Asset Import Library (assimp)</strong>を使って<strong>モデル</strong>を読み込みます。<br>
+　サンプル化されているのは<strong>FBXフォーマット</strong>だけですが、他のフォーマットでも同様に読み込めます。<br>
+　このサンプルでは、<strong>モデル</strong>の中でも<strong>シングルモデル（つまりFBXの中に一つのメッシュしかない）</strong>データの読み込み方法をサンプル化しています。<br>
+　ソリューションエクスプローラを開くと以下のような構造が見られます。
+<div class="py-3">
+<img src="img/0002b.png" width="30%" />
+</div>
+　この中の<strong>Model.h/cpp</strong>が今回のテーマです。<strong>Scene.h/cpp</strong>は前サンプルと同様です。
+<h5>モデルの読み込み（構築処理）</h5>
+　<strong>Scene::CreateAssetResources()関数</strong>では
+<pre class="my-3 p-3">
+		//モデルの作成
+		m_model = ObjectFactory::Create&lt;Model>();
+</pre>
+　という形で<strong>Modelクラス</strong>のインスタンスを作成します。<strong>ObjectFactory::Create()関数</strong>では該当クラスの<strong>OnCreate()関数</strong>を呼び出しますので<strong>Model.cpp</strong>にある<strong>Model::OnCreate()関数</strong>が構築処理になります。ソースは以下です。
+<pre class="my-3 p-3">
+	void Model::OnCreate() {
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+		m_mesh = BaseMesh::CreateSingleBoneModelMesh(
+			pCommandList,
+			App::GetRelativeAssetsDir(), L"SeaLife_Rigged\\Green_Sea_Turtle_Maya_2018.fbx"
+		);
+		auto pBaseScene = BaseScene::Get();
+		auto& frameResources = pBaseScene->GetFrameResources();
+		auto pBaseDevice = BaseDevice::GetBaseDevice();
+		//ベイシックコンスタントバッファ作成
+		for (size_t i = 0; i &lt; BaseDevice::FrameCount; i++) {
+			m_constantBufferIndex = frameResources[i]->AddBaseConstantBufferSet&lt;BasicConstant>(pBaseDevice->GetD3D12Device());
+		}
+		//CPU側コンスタントバッファの作成
+		CreateConstantBuffer();
+		ComPtr&lt;ID3D12PipelineState> defaultPipelineState
+			= PipelineStatePool::GetPipelineState(L"BcPNTBone");
+		if (!defaultPipelineState) {
+			//defaultPipelineStateが見つからなければ作成
+			//ラスタライザステート
+			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
+			//カリング（裏側は描画しない）
+			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_BACK;
+			//パイプラインステートの定義
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+			ZeroMemory(&psoDesc, sizeof(psoDesc));
+			//VertexPositionNormalTextureSkinningで作成
+			psoDesc.InputLayout = { VertexPositionNormalTextureSkinning::GetVertexElement(), VertexPositionNormalTextureSkinning::GetNumElements() };
+			//ルート認証はデフォルト
+			psoDesc.pRootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault").Get();
+			//頂点シェーダ
+			psoDesc.VS =
+			{
+				reinterpret_cast&lt;UINT8*>(BcVSPNTBonePL::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				BcVSPNTBonePL::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+			//ピクセルシェーダ
+			psoDesc.PS =
+			{
+				reinterpret_cast&lt;UINT8*>(BcPSPNTPL::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				BcPSPNTPL::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+			//ラスタライズステート
+			psoDesc.RasterizerState = rasterizerStateDesc;
+			//ブレンドステートは塗りつぶし
+			psoDesc.BlendState = BlendState::GetOpaqueBlend();
+			//デプスステンシルはデフォルト
+			psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+			psoDesc.SampleMask = UINT_MAX;
+			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+			psoDesc.SampleDesc.Count = 1;
+			//デフォルト影無しのボーン描画
+			if (!defaultPipelineState) {
+				ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&defaultPipelineState)));
+				NAME_D3D12_OBJECT(defaultPipelineState);
+				PipelineStatePool::AddPipelineState(L"BcPNTBone", defaultPipelineState);
+			}
+		}
+	}
+</pre>
+　ひとつづつ見ていきましょう。<br>
+　まず
+<pre class="my-3 p-3">
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+</pre>
+　で現在のコマンドリスト（構築用）を取得します。<br>
+　続いて
+<pre class="my-3 p-3">
+		m_mesh = BaseMesh::CreateSingleBoneModelMesh(
+			pCommandList,
+			App::GetRelativeAssetsDir(), L"SeaLife_Rigged\\Green_Sea_Turtle_Maya_2018.fbx"
+		);
+</pre>
+　1つのメッシュで構成されるボーンモデル<strong>SingleBoneModelMesh</strong>を読み込みます。<br>
+　引数は最初のは<strong>コマンドリスト</strong>で<strong>App::GetRelativeAssetsDir()</strong>はアセットのディレクトリ<strong>L"SeaLife_Rigged\\Green_Sea_Turtle_Maya_2018.fbx"</strong>はFBXファイル名です。<br>
+　読み込みが成功すれば、<strong>m_mesh</strong>にメッシュが代入されれます。
+　そのあとは、必要なリソースを取得して<strong>フレームごとのコンスタントバッファ</strong>及びCPU側コンスタントバッファを作成します。
+<pre class="my-3 p-3">
+		auto pBaseScene = BaseScene::Get();
+		auto& frameResources = pBaseScene->GetFrameResources();
+		auto pBaseDevice = BaseDevice::GetBaseDevice();
+		//ベイシックコンスタントバッファ作成
+		for (size_t i = 0; i &lt; BaseDevice::FrameCount; i++) {
+			m_constantBufferIndex = frameResources[i]->AddBaseConstantBufferSet&lt;BasicConstant>(pBaseDevice->GetD3D12Device());
+		}
+		//CPU側コンスタントバッファの作成
+		CreateConstantBuffer();
+</pre>
+　ここで呼んでいる<strong>CreateConstantBuffer()関数</strong>は以下です。
+<pre class="my-3 p-3">
+	void Model::CreateConstantBuffer() {
+		auto scene = dynamic_cast&lt;Scene*>(BaseScene::Get());
+		auto& frameResources = scene->GetFrameResources();
+		auto pBaseDevice = BaseDevice::GetBaseDevice();
+		auto& viewport = scene->GetViewport();
+		std::shared_ptr&lt;PerspecCamera> myCamera;
+		std::shared_ptr&lt;LightSet> myLightSet;
+		//カメラとライト
+		myCamera = std::dynamic_pointer_cast&lt;PerspecCamera>(scene->GetCamera());
+		myLightSet = scene->GetLightSet();
+		//パラメータの初期化
+		m_param.scale = Vec3(0.1f);
+		m_param.quaternion = Quat(Vec3(0, 1, 0), -XM_PI);
+		m_param.position = Vec3(0.0f, 0.0f, 0.0f);
+
+		//初期化
+		m_constantBuffer = {};
+		m_constantBuffer.activeFlg.y = 0;
+		//ライトは３つ
+		m_constantBuffer.activeFlg.x = 3;
+
+		//ワールド行列の設定
+		auto world = XMMatrixAffineTransformation(
+			m_param.scale,
+			Vec3(0),
+			m_param.quaternion,
+			m_param.position
+		);
+
+		auto view = (XMMATRIX)((Mat4x4)myCamera->GetViewMatrix());
+		auto proj = (XMMATRIX)((Mat4x4)myCamera->GetProjMatrix());
+		auto worldView = world * view;
+		m_constantBuffer.worldViewProj = Mat4x4(XMMatrixTranspose(XMMatrixMultiply(worldView, proj)));
+
+		m_constantBuffer.fogVector = Vec4(g_XMZero);
+		m_constantBuffer.fogColor = Vec4(g_XMZero);
+		//ライトの決定
+		for (int i = 0; i &lt; myLightSet->GetNumLights(); i++) {
+			m_constantBuffer.lightDirection[i] = (Vec4)myLightSet->GetLight(i).m_directional;
+			m_constantBuffer.lightDiffuseColor[i] = (Vec4)myLightSet->GetLight(i).m_diffuseColor;
+			m_constantBuffer.lightSpecularColor[i] = (Vec4)myLightSet->GetLight(i).m_specularColor;
+		}
+		//ワールド行列
+		m_constantBuffer.world = Mat4x4(world);
+		m_constantBuffer.world.transpose();
+
+		XMMATRIX worldInverse = XMMatrixInverse(nullptr, world);
+		m_constantBuffer.worldInverseTranspose[0] = Vec4(worldInverse.r[0]);
+		m_constantBuffer.worldInverseTranspose[1] = Vec4(worldInverse.r[1]);
+		m_constantBuffer.worldInverseTranspose[2] = Vec4(worldInverse.r[2]);
+
+		XMMATRIX viewInverse = XMMatrixInverse(nullptr, view);
+		m_constantBuffer.eyePosition = Vec4(viewInverse.r[3]);
+
+		Col4 diffuse = Col4(1.0f);
+		Col4 alphaVector = (Col4)XMVectorReplicate(1.0f);
+		Col4 emissiveColor = Col4(0.0f);
+		Col4 ambientLightColor = (Col4)myLightSet->GetAmbient();
+
+		// emissive と ambientとライトをマージする
+		m_constantBuffer.emissiveColor = (emissiveColor + (ambientLightColor * diffuse)) * alphaVector;
+		m_constantBuffer.specularColorAndPower = Col4(0, 0, 0, 1);
+
+		// xyz = diffuse * alpha, w = alpha.
+		m_constantBuffer.diffuseColor = Col4(XMVectorSelect(alphaVector, diffuse * alphaVector, g_XMSelect1110));
+
+		auto mainLight = myLightSet->GetMainBaseLight();
+		Vec3 calcLightDir = Vec3(mainLight.m_directional) * Vec3(-1.0f);
+
+		Vec3 lightAt(myCamera->GetAt());
+
+		Vec3 lightEye(calcLightDir);
+
+
+		Vec4 LightEye4 = Vec4(lightEye, 1.0f);
+		m_constantBuffer.lightPos = LightEye4;
+
+		Vec4 eyePos4 = Vec4((Vec3)myCamera->GetEye(), 1.0f);
+		m_constantBuffer.eyePos = eyePos4;
+		XMMATRIX LightView, LightProj;
+		//ライトのビューと射影を計算
+		LightView = XMMatrixLookAtLH(
+			Vec3(lightEye),
+			Vec3(lightAt),
+			Vec3(0, 1.0f, 0)
+		);
+		LightProj = XMMatrixOrthographicLH(1024, 1024,
+			0.1f, 100);
+		m_constantBuffer.lightView = Mat4x4(XMMatrixTranspose(LightView));
+		m_constantBuffer.lightProjection = Mat4x4(XMMatrixTranspose(LightProj));
+
+		//ボーン
+		size_t BoneSz = m_BoneTransforms.size();
+		if (BoneSz > 0) {
+			UINT cb_count = 0;
+			for (size_t b = 0; b &lt; BoneSz; b++) {
+				bsm::Mat4x4 mat = m_BoneTransforms[b];
+				//	mat.transpose();
+				m_constantBuffer.Bones[cb_count] = ((XMMATRIX)mat).r[0];
+				m_constantBuffer.Bones[cb_count + 1] = ((XMMATRIX)mat).r[1];
+				m_constantBuffer.Bones[cb_count + 2] = ((XMMATRIX)mat).r[2];
+				cb_count += 3;
+			}
+		}
+	}
+</pre>
+　ずいぶん設定の多いコンスタントバッファと感じるでしょう。<br>
+　このサンプルのコンスタントバッファは<strong>BasicConstant型</strong>で<strong>Bc</strong>で始まるシェーダで使用するものです。<br>
+　以下はその宣言です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	///	Basicシェーダー用コンスタントバッファ
+	//--------------------------------------------------------------------------------------
+	struct BasicConstant
+	{
+		Col4 diffuseColor;
+		Col4 emissiveColor;
+		Col4 specularColorAndPower;
+
+		Vec4 lightDirection[3];
+		Vec4 lightDiffuseColor[3];
+		Vec4 lightSpecularColor[3];
+
+		Vec4 eyePosition;
+
+		Col4 fogColor;
+		Vec4 fogVector;
+
+		Mat4x4 world;
+		Vec4 worldInverseTranspose[3];
+		Mat4x4 worldViewProj;
+		//汎用フラグ
+		XMUINT4 activeFlg;
+		//以下影
+		Vec4 lightPos;
+		Vec4 eyePos;
+		Mat4x4 lightView;
+		Mat4x4 lightProjection;
+
+		Vec4 Bones[3 * MAX_BONES];
+	};
+</pre>
+　MAX_BONESは200です。<br>
+　続いてパイプラインステートですが、前項のように<strong>L"BcPNTBone"</strong>として登録されているパイプラインがなければ、作成するという構図になります。
+<pre class="my-3 p-3">
+		ComPtr&lt;ID3D12PipelineState> defaultPipelineState
+			= PipelineStatePool::GetPipelineState(L"BcPNTBone");
+		if (!defaultPipelineState) {
+			//defaultPipelineStateが見つからなければ作成
+		}
+</pre>
+　まず、ラスタライザですが
+<pre class="my-3 p-3">
+			//ラスタライザステート
+			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
+			//カリング（裏側は描画しない）
+			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_BACK;
+</pre>
+　とします。内側は描画しなくていいですね。<br>
+　続いてパイプラインを用意して、ルート認証を設定します。
+<pre class="my-3 p-3">
+			//パイプラインステートの定義
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+			ZeroMemory(&psoDesc, sizeof(psoDesc));
+			//VertexPositionNormalTextureSkinningで作成
+			psoDesc.InputLayout = { VertexPositionNormalTextureSkinning::GetVertexElement(), VertexPositionNormalTextureSkinning::GetNumElements() };
+			//ルート認証はデフォルト
+			psoDesc.pRootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault").Get();
+</pre>
+　そのあとシェーダですが、<strong>Model.h</strong>に
+<pre class="my-3 p-3">
+	DECLARE_DX12SHADER(BcVSPNTBonePL)
+	DECLARE_DX12SHADER(BcPSPNTPL)
+</pre>
+　という記述があり、<strong>Model.cpp</strong>に
+<pre class="my-3 p-3">
+	IMPLEMENT_DX12SHADER(BcVSPNTBonePL, App::GetShadersDir() + L"BcVSPNTBonePL.cso")
+	IMPLEMENT_DX12SHADER(BcPSPNTPL, App::GetShadersDir() + L"BcPSPNTPL.cso")
+</pre>
+　という記述があります。これは<strong>頂点シェーダ</strong>は<strong>L"BcVSPNTBonePL.cso"</strong>を読み込んで<strong>BcVSPNTBonePL</strong>という名前（実際にはクラス名）、<strong>ピクセルシェーダ</strong>は<strong>L"BcPSPNTPL.cso"</strong>を読み込んで、<strong>BcPSPNTPL</strong>という名前（クラス名）に指定します。<br>
+　ですので
+<pre class="my-3 p-3">
+			//頂点シェーダ
+			psoDesc.VS =
+			{
+				reinterpret_cast&lt;UINT8*>(BcVSPNTBonePL::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				BcVSPNTBonePL::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+			//ピクセルシェーダ
+			psoDesc.PS =
+			{
+				reinterpret_cast&lt;UINT8*>(BcPSPNTPL::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				BcPSPNTPL::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+</pre>
+　のような記述で、頂点シェーダ、ピクセルシェーダの情報をパイプラインに設定できます。<br>
+　残りの設定は、
+<pre class="my-3 p-3">
+			//ラスタライズステート
+			psoDesc.RasterizerState = rasterizerStateDesc;
+			//ブレンドステートは塗りつぶし
+			psoDesc.BlendState = BlendState::GetOpaqueBlend();
+			//デプスステンシルはデフォルト
+			psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+			psoDesc.SampleMask = UINT_MAX;
+			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+			psoDesc.SampleDesc.Count = 1;
+</pre>
+　のようにし、最後に
+<pre class="my-3 p-3">
+			//デフォルト影無しのボーン描画
+			if (!defaultPipelineState) {
+				ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&defaultPipelineState)));
+				NAME_D3D12_OBJECT(defaultPipelineState);
+				PipelineStatePool::AddPipelineState(L"BcPNTBone", defaultPipelineState);
+			}
+</pre>
+　と、<strong>L"BcPNTBone"</strong>という名前で判別可能なパイプラインを登録することができます。
+<h5>モデルの更新</h5>
+　モデルの更新は、まず、シーン側での
+<pre class="my-3 p-3">
+	void Scene::Update(double elapsedTime) {
+		m_model->OnUpdate(elapsedTime);
+		UpdateConstantBuffers();
+		CommitConstantBuffers();
+	}
+
+	void Scene::UpdateConstantBuffers() {
+		m_model->OnUpdateConstantBuffers();
+	}
+
+	void Scene::CommitConstantBuffers() {
+		m_model->OnCommitConstantBuffers();
+
+	}
+</pre>
+　から始まります。<br>
+　<strong>Scene::Update()関数</strong>には<strong>double elapsedTime</strong>が渡されますので、そのままモデルの
+<pre class="my-3 p-3">
+		m_model->OnUpdate(elapsedTime);
+</pre>
+　と呼び出します。モデル側では
+<pre class="my-3 p-3">
+	void Model::OnUpdate(double elapsedTime) {
+		m_totalTime += elapsedTime;
+		if (m_totalTime >= 2.0) {
+			//2秒間のアニメーションなので2秒を超えたら0にする
+			m_totalTime = 0.0;
+		}
+		UpdateAnimation(m_totalTime);
+	}
+</pre>
+　となります。<strong>m_totalTime</strong>に<strong>elapsedTime</strong>を加え、2秒になったら0にするという処理をしています。<br>
+　その後、ボーンアニメーション処理ですが<strong>UpdateAnimation()関数</strong>で行います。実装は以下です。
+<pre class="my-3 p-3">
+	void Model::UpdateAnimation(double animeTime) {
+		//BaseAssimpの取り出し
+		auto ptrBaseAssimp = m_mesh->GetBaseAssimp();
+		m_BoneTransforms.clear();
+		//m_BoneTransformsにアニメーション情報の行列を代入
+		ptrBaseAssimp->GetBoneTransforms((float)animeTime, m_BoneTransforms);
+	}
+</pre>
+　コメントにあるように、<strong>BaseAssimp</strong>を取り出し<strong>m_BoneTransforms変数（ボーン情報が入る変数）</strong>に展開します。<br>
+　それで、<strong>m_model->OnUpdateConstantBuffers()</strong>では<strong>m_BoneTransforms</strong>をコンスタントバッファンコピーします。
+<pre class="my-3 p-3">
+	void Model::OnUpdateConstantBuffers() {
+		//ボーンの更新
+		size_t BoneSz = m_BoneTransforms.size();
+		if (BoneSz > 0) {
+			UINT cb_count = 0;
+			for (size_t b = 0; b &lt; BoneSz; b++) {
+				bsm::Mat4x4 mat = m_BoneTransforms[b];
+				m_constantBuffer.Bones[cb_count] = ((XMMATRIX)mat).r[0];
+				m_constantBuffer.Bones[cb_count + 1] = ((XMMATRIX)mat).r[1];
+				m_constantBuffer.Bones[cb_count + 2] = ((XMMATRIX)mat).r[2];
+				cb_count += 3;
+			}
+		}
+	}
+</pre>
+　このように、ボーンの数だけコンスタントバッファのボーン領域にコピーします。<br>
+　<strong>m_model->OnCommitConstantBuffers()関数</strong>ではその情報を該当するフレームにコピーします。
+<pre class="my-3 p-3">
+	void Model::OnCommitConstantBuffers() {
+		auto scene = dynamic_cast&lt;Scene*>(BaseScene::Get());
+		auto pCurrentFrameResource = scene->GetCurrentFrameResource();
+		//コンスタントバッファのコピー
+		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_pBaseConstantBufferWO,
+			&m_constantBuffer, sizeof(m_constantBuffer));
+	}
+</pre>
+<h5>モデルの描画</h5>
+　モデルの描画は、<strong>Scene::ScenePass()関数</strong>から始まります。
+<pre class="my-3 p-3">
+	void Scene::ScenePass(ID3D12GraphicsCommandList* pCommandList)
+	{
+		//ViewportsとScissorRectsの設定
+		auto& viewport = GetViewport();
+		auto& scissorRect = GetScissorRect();
+		pCommandList->RSSetViewports(1, &viewport);
+		pCommandList->RSSetScissorRects(1, &scissorRect);
+		//RootSignatureの設定
+		auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
+		pCommandList->SetGraphicsRootSignature(rootSignature.Get());
+		//RenderTargetsの設定
+		auto depthDsvs = GetDepthDsvs();
+		pCommandList->OMSetRenderTargets(1, &GetCurrentBackBufferRtvCpuHandle(), FALSE, &depthDsvs[SceneEnums::DepthGenPass::Scene]);
+		m_model->ScenePass(pCommandList);
+	}
+</pre>
+　このように<strong>viewport、scissorRect、rootSignature</strong>を設定し<strong>レンダーターゲット</strong>を設定します。<br>
+　その後<strong>m_model->ScenePass()関数</strong>を呼び出します。その内容は以下です。
+<pre class="my-3 p-3">
+	void Model::ScenePass(ID3D12GraphicsCommandList* pCommandList)
+	{
+		auto pBaseScene = BaseScene::Get();
+		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
+		auto CbvSrvUavDescriptorHeap = pBaseScene->GetCbvSrvUavDescriptorHeap();
+		if (m_mesh) {
+			ComPtr&lt;ID3D12PipelineState> defaultPipelineState
+				= PipelineStatePool::GetPipelineState(L"BcPNTBone", true);
+			//nullのハンドルを取得
+			CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvGpuNullHandle(CbvSrvUavDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+			//L"t0"（シャドウテクスチャ）にnullを設定
+			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), cbvSrvGpuNullHandle);
+			//パイプラインステートの設定
+			pCommandList->SetPipelineState(defaultPipelineState.Get());
+			//サンプラー1
+			UINT index = pBaseScene->GetSamplerIndex(L"LinearClamp");
+			if (index == UINT_MAX) {
+				throw BaseException(
+					L"LinearClampサンプラーが特定できません。",
+					L"Model::ScenePass()"
+				);
+			}
+			//サンプラー1のハンドルを作成
+			CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle1(
+				pBaseScene->GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
+				index,
+				pBaseScene->GetSamplerDescriptorHandleIncrementSize()
+			);
+			//L"s0"にサンプラー1のハンドルを設定
+			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"s0"), samplerHandle1);
+			//サンプラー2
+			index = pBaseScene->GetSamplerIndex(L"ComparisonLinear");
+			if (index == UINT_MAX) {
+				throw BaseException(
+					L"ComparisonLinearサンプラーが特定できません。",
+					L"SModel::ScenePass()"
+				);
+			}
+			//サンプラー2のハンドルを作成
+			CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle2(
+				pBaseScene->GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
+				index,
+				pBaseScene->GetSamplerDescriptorHandleIncrementSize()
+			);
+			//L"s1"にサンプラー2のハンドルを設定
+			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"s1"), samplerHandle2);
+			//シェーダリソース（テクスチャ）のハンドルの設定(null)
+			CD3DX12_GPU_DESCRIPTOR_HANDLE srvNullHandle(
+				pBaseScene->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart()
+			);
+			//テクスチャは使わないのでL"t1"にnullを設定
+			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t1"), srvNullHandle);
+			//コンスタントバッファビュー
+			//L"b0"に現在のフレームのコンスタントバッファを設定
+			pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
+				pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress());
+			//描画
+			pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			pCommandList->IASetVertexBuffers(0, 1, &m_mesh->GetVertexBufferView());
+			pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
+			pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
+		}
+	}
+</pre>
+　複雑に見えますが、各シェーダのスロットに<strong>どういうオブジェクトを入れるか</strong>が分かれば比較的簡単です。<br>
+　<strong>シャドウマップは使わないのでnull、テクスチャは使わないのでnull</strong>を入れ<strong>サンプラー1（L"s0"スロット）</strong>には<strong>L"LinearClamp"</strong>を設定し、<strong>サンプラー2（L"s1"スロット）</strong>には<strong>L"ComparisonLinear"</strong>を設定します。<br>
+　最後に<strong>L"b0"スロット（コンスタントバッファ）</strong>に該当フレームのコンスタントバッファを設定し、
+<pre class="my-3 p-3">
+			//描画
+			pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			pCommandList->IASetVertexBuffers(0, 1, &m_mesh->GetVertexBufferView());
+			pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
+			pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
+</pre>
+　と描画します。ここで行うパラメータ設定は、もっぱら<strong>シェーダーへの入力</strong>です。<strong>BcVSPNTBonePL.hlsl（頂点シェーダ）</strong>と<strong>BcPSPNTPL.hlsl（ピクセルシェーダ）</strong>が必要とするデータを<strong>スロット</strong>という形で設定してます。<br>
+　もっと単純なシェーダ、前項で紹介した<strong>Spで始まるシェーダ</strong>や、簡単なシェーダーを自作した場合は、スロットの数も少ないでしょうから、単純化することは可能です。
+<h5>まとめ</h5>
+　このサンプルでは<strong>ボーンモデルの描画</strong>を紹介しました。しかし実際には<strong>テクスチャの設定</strong>や<strong>影の設定</strong>などもっと設定すべく項目があります。<br>
+　そちらのサンプルは後述します。まずここでは<strong>ボーンモデルのメカニズム</strong>を知っていただければと思います。
+<footer class="py-3 my-4">
+<ul class="nav justify-content-center border-top pb-3 mb-3">
+<li class="nav-item"><a href="001.html" class="nav-link px-2 text-success">前へ</a></li>
+<li class="nav-item"><a href="index.html" class="nav-link px-2 text-primary">目次</a></li>
+</ul>
+<p class="text-center text-body-secondary">&copy; WiZ Tamura Hiroki,Yamanoi Yasushi MIT License.</p>
+</footer>
+</div>
+<!-- /container -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
+</body>
+</html>

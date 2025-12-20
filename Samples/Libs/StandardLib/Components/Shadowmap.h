@@ -175,7 +175,7 @@ namespace basecross {
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;
 		virtual void OnCreate()override;
-		virtual void OnShadowDraw()override;
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override;
 	};
 
 }

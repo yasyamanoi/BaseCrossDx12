@@ -39,7 +39,7 @@ namespace basecross {
 	}
 
 	void Scene::CommitConstantBuffers() {
-		m_model->CommitConstantBuffers();
+		m_model->OnCommitConstantBuffers();
 
 	}
 
@@ -60,18 +60,16 @@ namespace basecross {
 
 	void Scene::ScenePass(ID3D12GraphicsCommandList* pCommandList)
 	{
+		//Viewports‚ÆScissorRects‚ÌÝ’è
 		auto& viewport = GetViewport();
 		auto& scissorRect = GetScissorRect();
-		auto depthDsvs = GetDepthDsvs();
-		auto pBaseScene = BaseScene::Get();
-		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
+		pCommandList->RSSetViewports(1, &viewport);
+		pCommandList->RSSetScissorRects(1, &scissorRect);
 		//RootSignature‚ÌÝ’è
 		auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
 		pCommandList->SetGraphicsRootSignature(rootSignature.Get());
-		//Viewports‚ÆScissorRects‚ÌÝ’è
-		pCommandList->RSSetViewports(1, &viewport);
-		pCommandList->RSSetScissorRects(1, &scissorRect);
 		//RenderTargets‚ÌÝ’è
+		auto depthDsvs = GetDepthDsvs();
 		pCommandList->OMSetRenderTargets(1, &GetCurrentBackBufferRtvCpuHandle(), FALSE, &depthDsvs[SceneEnums::DepthGenPass::Scene]);
 		m_model->ScenePass(pCommandList);
 	}

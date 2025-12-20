@@ -199,8 +199,8 @@ namespace basecross {
 		virtual void OnPreCreate() override{}
 		virtual void OnCreate()override {}
 		virtual void OnUpdate(double elapsedTime)override {}
-		virtual void OnShadowDraw()override {}
-		virtual void OnSceneDraw()override {}
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override {}
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override {}
 		virtual void OnDestroy()override {}
 
 	};

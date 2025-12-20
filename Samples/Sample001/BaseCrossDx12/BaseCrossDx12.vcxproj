@@ -109,6 +109,7 @@ xcopy /y /d "$(SolutionDir)..\Libs\Assimp\dlls\" "$(SolutionDir)$(Configuration)
     <ClInclude Include="resource.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Triangle.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BaseCrossDx12.rc" />
@@ -118,6 +119,7 @@ xcopy /y /d "$(SolutionDir)..\Libs\Assimp\dlls\" "$(SolutionDir)$(Configuration)
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="WinMain.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

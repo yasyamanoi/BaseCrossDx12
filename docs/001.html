@@ -15,687 +15,48 @@
 <div class="py-3">
 <img src="img/0001a.png" width="80%" />
 </div>
-<h5>オブジェクトを表示するのに必要な記述</h5>
+<h5>オブジェクトを表示する</h5>
 　ソリューションエクスプローラを見ると以下のようになってます。
 <div class="py-3">
-<img src="img/0001b.png" width="30%" />
+<img src="img/0001b.png" width="20%" />
 </div>
 　これで分かる通り、EmptyProjectから、いくつかのファイルが増えているのが分かります。<br>
 　<strong>Shaders</strong>フォルダに含まれるのは<strong>シェーダー</strong>です。このサンプルでは<strong>頂点とカラー</strong>データの頂点フォーマットが扱われますので、そのシェーダーが記述されます。<br>
-　<strong>ヘッダーフィル、ソースファイル</strong>には三角形を描画するためのコードが書かれるわけですが<strong>Camera.h/cpp</strong>は<strong>カメラ</strong>、<strong>Light.h/cpp</strong>は<strong>ライト</strong>が記述されます。このサンプルではライトは関係ないですが、一応用意しておきます。<br>
-　<strong>Constants.h</strong>はコンスタントバッファなどを記述します。<strong>コンスタントバッファ</strong>は比較的汎用的に作られてますがこのサンプルのような<strong>三角形の描画</strong>には必要のないパラメータが含まれます。もしもっとシンプルな実装を試してみるなら、コンスタントバッファをもっとシンプルにすることができます。その場合シェーダーも書き換える必要があります。<br>
-　さてそれでは<strong>Camera.h/cpp</strong>から解説します。
-<h6>Camera.h/cpp</h6>
+　<strong>ヘッダーフィル、ソースファイル</strong>には三角形を描画するためのコードが書かれます。<br>
+　まず<strong>Constants.h</strong>はコンスタントバッファ（定数バッファ）などを記述します。<strong>コンスタントバッファ</strong>は比較的汎用的に作られてますがこのサンプルのような<strong>三角形の描画</strong>には必要のないパラメータが含まれます。もしもっとシンプルな実装を試してみるなら、コンスタントバッファをもっとシンプルにすることができます。その場合シェーダーも書き換える必要があります。<br>
+<h5>シーンの記述</h5>
+　前ページの<strong>Emptyプロジェクト</strong>では<strong>Scene.h/cpp</strong>の仮想関数は、ほとんど<strong>何もしない</strong>という記述でしたが、このサンプルでは具体的な記述があります。<br>
+　まず、<strong>Sceneクラスのメンバ</strong>に以下があります。
 <pre class="my-3 p-3">
-/*!
-@file BaseCamera.h
-@brief カメラクラス
-@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
- MIT License URL: https://opensource.org/license/mit
-*/
-
-
-#pragma once
-#include "stdafx.h"
-
-namespace basecross {
-
-	//--------------------------------------------------------------------------------------
-	//	カメラ親クラス
-	//--------------------------------------------------------------------------------------
-	class Camera : public ObjectInterface {
-	protected:
-		Vec3 m_eye;	//カメラ位置　
-		Vec3 m_at;	//注目点
-		Vec3 m_up;   //カメラの傾き（アップ）
-
-		float m_near;	//手前の最小距離
-		float m_far;	//奥の最大距離
-		Mat4x4 m_viewMatrix;
-		Mat4x4 m_projMatrix;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	プロテクトコンストラクタ
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		Camera();
-		virtual ~Camera() {}
-	public:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ位置の取得
-		@return	カメラ位置
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual const Vec3& GetEye() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ位置の設定
-		@param[in]	eye	カメラ位置
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetEye(const Vec3& eye);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ位置の設定
-		@param[in]	x.y,z カメラ位置
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetEye(float x, float y, float z);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ視点の取得
-		@return	カメラ視点
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual const Vec3& GetAt() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ視点の設定
-		@param[in]	at	カメラ視点
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetAt(const Vec3& at);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ視点の設定
-		@param[in]	x,y,z	カメラ視点
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetAt(float x, float y, float z);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ角度の取得
-		@return	カメラ角度
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual const Vec3& GetUp() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ角度の設定
-		@param[in]	up	カメラ角度（正規化済みのもの）
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetUp(const Vec3& up);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ角度の設定
-		@param[in]	x,y,z	カメラ角度（正規化済みのもの）
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetUp(float x, float y, float z);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ最近表示距離の取得
-		@return	カメラ最近距離
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual float GetNear() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ最近表示距離の設定
-		@param[in]	f	カメラ最近表示距離
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetNear(float f);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ最遠表示距離の取得
-		@return	カメラ最遠距離
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual float GetFar() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ最遠表示距離の設定
-		@param[in]	f	カメラ最遠表示距離
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetFar(float f);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ行列の計算
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void CalculateMatrix() = 0;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	ビュー行列の取得
-		@return	ビュー行列
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual const Mat4x4& GetViewMatrix() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	射影行列の取得
-		@return	射影行列
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual const Mat4x4& GetProjMatrix() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	作成時の処理
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnCreate();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	更新時の処理
-		@param[in]	elapsedTime	全ターンからの経過時間
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnUpdate(double elapsedTime);
-	};
-
-	//--------------------------------------------------------------------------------------
-	//	遠近法カメラ
-	//--------------------------------------------------------------------------------------
-	class PerspecCamera : public Camera {
-		float m_fovY;   //射影角度
-		float m_aspect;	//アスペクト比
-	public:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	コンストラクタ
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		PerspecCamera();
-		virtual ~PerspecCamera() {}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	射影角度の取得
-		@return	射影角度
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual float GetFovY() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	射影角度の設定
-		@param[in]	f	射影角度
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetFovY(float f);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	アスペクト比の取得
-		@return	アスペクト比
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual float GetAspect() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	アスペクト比の設定
-		@param[in]	f	アスペクト比
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetAspect(float f);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ行列の計算
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void CalculateMatrix()override;
-	};
-
-	//--------------------------------------------------------------------------------------
-	//	正射影法カメラ
-	//--------------------------------------------------------------------------------------
-	class OrthoCamera : public Camera {
-		float m_width;	//遠近法を使わない場合（正射影）の幅
-		float m_height;	//遠近法を使わない場合（正射影）の高さ
-	public:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	コンストラクタ
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		OrthoCamera();
-		virtual ~OrthoCamera() {}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	幅の取得
-		@return	幅
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual float GetWidth() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	幅の設定
-		@param[in]	f	幅
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetWidth(float f);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	高さの取得
-		@return	高さ
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual float GetHeight() const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	高さの設定
-		@param[in]	f	高さ
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetHeight(float f);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	カメラ行列の計算
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void CalculateMatrix()override;
-	};
-}
-// end namespace basecross
-</pre>
-　このように<strong>Cameraクラス</strong>のコンストラクタは<strong>protected</strong>になっており、実際の実装は<strong>PerspecCameraクラス</strong>もしくは<strong>OrthoCameraクラス</strong>で行います。メンバ関数は大部分がアクセサですが、<strong>CalculateMatrix関数</strong>がカメラタイプごとに別になってます。以下は<strong>PerspecCameraクラス</strong>の<strong>CalculateMatrix関数</strong>です。<strong>Camera.cpp</strong>に記述があります。
-<pre class="my-3 p-3">
-	void PerspecCamera::CalculateMatrix() {
-		auto device = BaseDevice::GetBaseDevice();
-		float width = (float)device->GetWidth();
-		float height = (float)device->GetHeight();
-		m_aspect = width / height;
-		m_viewMatrix 
-			= Mat4x4(XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
-		m_projMatrix 
-			= Mat4x4(XMMatrixPerspectiveFovLH(m_fovY, m_aspect, m_near, m_far));
-	}
-</pre>
-　このように<strong>XMMatrixLookAtLH関数</strong>および<strong>XMMatrixPerspectiveFovLH関数</strong>でビュー行列及び射影行列を作り出しています。
-<h6>Light.h/cpp</h6>
-　続いて<strong>Light.h/cpp</strong>です。<br>
-　ライトはこのサンプルでは必要ありませんが、コンスタントバッファに入力があり、一応作っておきます。こうすることで今後このサンプルをもとにあらたなプロジェクトを作る指針になります。<br>
-　以下は<strong>Light.h</strong>です。
-<pre class="my-3 p-3">
-/*!
-@file Light.h
-@brief ライトクラス
-@copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
- MIT License URL: https://opensource.org/license/mit
-*/
-
-
-#pragma once
-#include "stdafx.h"
-
-namespace basecross {
-
-	//--------------------------------------------------------------------------------------
-	//	ライト
-	//--------------------------------------------------------------------------------------
-	struct Light {
-		Vec3 m_directional;	//ライトの向き
-		Vec4 m_diffuseColor;	//ディフィーズ色
-		Vec4 m_specularColor;	//スペキュラー色
-		Vec3 m_position;	//位置（使用しない場合あり）
-		Vec3 m_at;		//指している場所（使用しない場合あり）
-
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	デフォルトコンストラクタ
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		Light() :
-			m_directional(0, -1.0f, 0),
-			m_diffuseColor(1.0f, 1.0f, 1.0f, 1.0f),
-			m_specularColor(0.2f, 0.2f, 0.2f, 1.0f),
-			m_position(0.0f, 0.0f, 0.0f),
-			m_at(0.0f, 0.0f, 0.0f)
-		{
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	コンストラクタ
-		@param[in]	dir　ディレクショナル
-		@param[in]	def　ディフィーズ色
-		@param[in]	sp スペキュラー色
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		Light(const Vec3& dir, const Vec4& def, const Vec4& sp) :
-			m_directional(dir),
-			m_diffuseColor(def),
-			m_specularColor(sp),
-			m_position(0.0f, 0.0f, 0.0f),
-			m_at(0.0f, 0.0f, 0.0f)
-		{
-			//ライト位置の仮設定
-			m_position = m_at - dir;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	コピーコンストラクタ
-		@param[in]	other　コピー元ライト
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		Light(const Light& other) :
-			m_directional(other.m_directional),
-			m_diffuseColor(other.m_diffuseColor),
-			m_specularColor(other.m_specularColor),
-			m_position(other.m_position),
-			m_at(other.m_at)
-		{
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	代入
-		@param[in]	other　代入元ライト
-		@return	ライトオブジェクト
-		*/
-		//--------------------------------------------------------------------------------------
-		Light& operator=(const Light& other) {
-			if (this != &other) {
-				m_directional = other.m_directional;
-				m_diffuseColor = other.m_diffuseColor;
-				m_specularColor = other.m_specularColor;
-				m_position = other.m_position;
-				m_at = other.m_at;
-			}
-			return *this;
-		}
-		~Light() {}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	ライトの位置指す位置から、ディレクショナルライトを作る
-		@param[in]	pos　ライト位置
-		@param[in]	at　ライトの指す位置
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		void SetPositionToDirectional(const Vec3& pos, const Vec3& at) {
-			m_position = pos;
-			m_at = at;
-			auto dir = XMVectorSubtract(XMLoadFloat3(&at), XMLoadFloat3(&pos));
-			dir = XMVector3Normalize(dir);
-			m_directional = Vec3(dir);
-		}
-	};
-
-	//--------------------------------------------------------------------------------------
-	//	ライトのセット
-	//--------------------------------------------------------------------------------------
-	class LightSet :public ObjectInterface {
-		const size_t m_maxLights = 3;
-		std::vector&lt;Light> m_lights;
-		Vec4 m_ambient;
-		size_t m_mainIndex;
-	public:
-		LightSet();
-		virtual ~LightSet() {}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief ライトの取得
-		@param[in]	index	インデックス
-		@return	指定のインデックスのライトを返す
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual Light GetLight(size_t index) const;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief ライト数の取得
-		@return	ライト数
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual size_t GetNumLights() const {
-			return m_lights.size();
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief ライトの設定
-		@param[in]	index	インデックス
-		@param[in]	light	設定するライト
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetLight(size_t index, const Light& light);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief ライトの追加
-		@param[in]	light	追加するライト
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void AddLight(const Light& light);
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief アンビエントの取得
-		@return	アンビエント
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual const Vec4 GetAmbient() const { return m_ambient; }
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief アンビエントの設定
-		@param[in]	a	設定するアンビエント
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetAmbient(const Vec4& a) { m_ambient = a; }
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief メインライトインデックスの取得
-		@return	メインライトインデックス
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual size_t GetMainIndex() const { return m_mainIndex; }
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief メインライトインデックスの設定
-		@param[in]	index	設定するインデックス
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void SetMainIndex(size_t index) { m_mainIndex = index; }
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief メインライトの取得
-		@return	メインライト
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual Light GetMainBaseLight() const {
-			return GetLight(GetMainIndex());
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief 初期化を行う（デフォルトのライトを作成する）
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnCreate();
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief 更新処理
-		@param[in]	elapsedTime 前のターンからの時間
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void OnUpdate(double elapsedTime) {}
-	};
-
-
-
-
-}
-// end namespace basecross
-</pre>
-　このように<strong>LightSetクラス</strong>は<strong>Light構造体</strong>の集合です。3つまで設定できます。<br>
-　<strong>OnCreate関数</strong>で、デフォルトのライティングを設定します。<strong>SetLight関数</strong>で、それぞれのライトの内容を修正できます。<br>
-　動的に修正する場合は<strong>LightSetクラス</strong>を継承して<strong>MyLightSetクラス</strong>などを作り、<strong>OnUpdate関数</strong>を多重定義することもできます。
-<h6>Scene.h/cpp</h6>
-　続いて<strong>Scene.h/cpp</strong>を解説します。以下は<strong>Scene.h</strong>です。
-<pre class="my-3 p-3">
-/*!
-@file Scene.h
-@brief シーンクラス
-*/
-#pragma once
-#include "stdafx.h"
-#include "Project.h"
-
-namespace basecross {
-
-
-	DECLARE_DX12SHADER(SpVSPCStatic)
-	DECLARE_DX12SHADER(SpPSPCStatic)
-
-	//--------------------------------------------------------------------------------------
-	// シーン
-	//--------------------------------------------------------------------------------------
-	class Scene : public BaseScene
-	{
-		SimpleConstant m_constantBuffer;
-		size_t m_constantBufferIndex;
-		std::shared_ptr&lt;BaseMesh> m_mesh;
-		double m_totalTime;
-		TransParam m_param;
-		std::shared_ptr&lt;Camera> m_camera;
+		std::shared_ptr&lt;PerspecCamera> m_camera;
 		std::shared_ptr&lt;LightSet> m_lightSet;
-	public:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	コンストラクタ
-		@param[in]	frameCount	フレーム数
-		@param[in]	pPrimDevice	デバイス
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		Scene(UINT frameCount, PrimDevice* pPrimDevice);
-		virtual ~Scene();
-	protected:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	コンテンツの作成
-		@param[in]	pDevice	デバイス
-		@param[in]	pCommandList	コマンドリスト
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)override;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	更新処理
-		@param[in]	elapsedTime	前のターンからの時間
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void Update(double elapsedTime)override;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	コンスタントバッファの更新
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void UpdateConstantBuffers()override;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	コンスタントバッファのコミット
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void CommitConstantBuffers()override;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	UIの更新
-		@param[in]	uiLayer	UIレイヤー
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer)override;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	シャドウマップの描画
-		@param[in]	コマンドリスト
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList)override {}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	シーンの描画
-		@param[in]	コマンドリスト
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList);
-	};
-}
-//end namespace basecross
+		std::shared_ptr&lt;Triangle> m_triangle;
 </pre>
-　EmptyProjectでは未定義だった関数が定義されています。<br>
-　冒頭の
-<pre class="my-3 p-3">
-	DECLARE_DX12SHADER(SpVSPCStatic)
-	DECLARE_DX12SHADER(SpPSPCStatic)
-</pre>
-　はシェーダークラスの宣言です。この記述はマクロで、以下のような宣言です。
-<pre class="my-3 p-3">
-#define DECLARE_DX12SHADER(ShaderName) class ShaderName : public Dx12Shader&lt;ShaderName>{ \
-	public: \
-		ShaderName(); \
-	};
-</pre>
-　すなわち
-<pre class="my-3 p-3">
-class SpVSPCStatic : public Dx12Shader&lt;SpVSPCStatic>{ 
-	public: 
-		SpVSPCStatic(); 
-	};
-</pre>
-　のように展開されます。<br>
-　以下は<strong>Scene.cpp</strong>です。<strong>Scene.cpp</strong>は<strong>Scene.h</strong>に宣言された関数の実体が書かれます。<br>
-　まずマクロですが
-<pre class="my-3 p-3">
-	IMPLEMENT_DX12SHADER(SpVSPCStatic, App::GetShadersDir() + L"SpVSPCStatic.cso")
-	IMPLEMENT_DX12SHADER(SpPSPCStatic, App::GetShadersDir() + L"SpPSPCStatic.cso")
-</pre>
-　はシェーダークラスの実体です。このマクロは
-<pre class="my-3 p-3">
-#define IMPLEMENT_DX12SHADER(ShaderName,CsoFilename) std::unique_ptr&lt;ShaderName, ShaderName::Deleter> ShaderName::m_ptr; \
-	ShaderName::ShaderName() : \
-	Dx12Shader(CsoFilename){}
-</pre>
-　となっており、
-<pre class="my-3 p-3">
-	IMPLEMENT_DX12SHADER(SpVSPCStatic, App::GetShadersDir() + L"SpVSPCStatic.cso")
-</pre>
-　は
-<pre class="my-3 p-3">
-std::unique_ptr&lt;SpVSPCStatic, SpVSPCStatic::Deleter> SpVSPCStatic::m_ptr;
-	SpVSPCStatic::SpVSPCStatic() :
-	Dx12Shader(L"../media/Shaders/SpVSPCStatic.cso"){}
-</pre>
-　となります。<br>
-　続いて<strong>Scene::CreateAssetResources関数</strong>は
+<h5>シーンの構築</h5>
+　名前から予想されるとおり、<strong>カメラ、ライト、三角形オブジェクト</strong>です。これらは<strong>std::shared_ptr</strong>として宣言され、<strong>Scene::CreateAssetResources()関数</strong>で構築されます。
 <pre class="my-3 p-3">
 	void Scene::CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList) {
-		//カメラとライトの設定
+		//カメラとライトの作成
 		m_camera = ObjectFactory::Create&lt;PerspecCamera>();
 		m_camera->SetEye(Vec3(0, 5.0f, -10.0f));
 		m_camera->SetAt(Vec3(0, 0, 0));
 		m_lightSet = ObjectFactory::Create&lt;LightSet>();
+		//三角形の作成
+		m_triangle = ObjectFactory::Create&lt;Triangle>();
+	}
+</pre>
+　<strong>PerspecCamera</strong>というのは<strong>Cameraクラス</strong>を継承する<strong>遠近法カメラ</strong>です。このほかに<strong>正射投影</strong>を実装する<strong>OrthoCamera</strong>があります。<br>
+<h5>三角形の構築</h5>
+　三角形は以下の呼び出しで構築されます。
+<pre class="my-3 p-3">
+		//三角形の作成
+		m_triangle = ObjectFactory::Create&lt;Triangle>();
+</pre>
+　<strong>ObjectFactory::Create&lt;Triangle>()</strong>は、内部で<strong>Triangle::OnCreate()関数</strong>を呼び出します。<br>
+　内容は以下です。
+<pre class="my-3 p-3">
+	void Triangle::OnCreate() {
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		//パラメータの初期化
 		m_param.scale = Vec3(5.0f, 5.0f, 1.0f);
 		auto quat = XMQuaternionIdentity();
@@ -715,18 +76,20 @@ std::unique_ptr&lt;SpVSPCStatic, SpVSPCStatic::Deleter> SpVSPCStatic::m_ptr;
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pBaseDevice = BaseDevice::GetBaseDevice();
-		//デフォルトのコンスタントバッファ
 		for (size_t i = 0; i &lt; BaseDevice::FrameCount; i++) {
 			m_constantBufferIndex =
 				frameResources[i]->AddBaseConstantBufferSet&lt;SimpleConstant>(pBaseDevice->GetD3D12Device());
 		}
+		//CPU側コンスタントバッファの作成
+		CreateConstantBuffer();
 		// シーン描画のパイプラインステートの作成
+		ComPtr&lt;ID3D12PipelineState> spPCPipelineState
+			= PipelineStatePool::GetPipelineState(L"SpPCStatic");
+		if(!spPCPipelineState)
 		{
-			ComPtr&lt;ID3D12PipelineState> spPCPipelineState
-				= PipelineStatePool::GetPipelineState(L"SpPCStatic");
 
 			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
-			//カリング
+			//カリングしない
 			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
 
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
@@ -753,36 +116,105 @@ std::unique_ptr&lt;SpVSPCStatic, SpVSPCStatic::Deleter> SpVSPCStatic::m_ptr;
 			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 			psoDesc.SampleDesc.Count = 1;
 			//spPCPipelineStateパイプラインステート作成
-			if (!spPCPipelineState) {
-				ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&spPCPipelineState)));
-				NAME_D3D12_OBJECT(spPCPipelineState);
-				PipelineStatePool::AddPipelineState(L"SpPCStatic", spPCPipelineState);
-			}
+			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&spPCPipelineState)));
+			NAME_D3D12_OBJECT(spPCPipelineState);
+			PipelineStatePool::AddPipelineState(L"SpPCStatic", spPCPipelineState);
 		}
 	}
+</pre>
+　結構大量のコードが記述されてますが、一つ一つ見ていきましょう。<br>
+<pre class="my-3 p-3">
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+</pre>
+　は、現在のコマンドリストが取得できます。コマンドリストは<strong>構築時、シャドウマップ描画時、シーン描画時</strong>ごとに別のコマンドリストが存在し、上記命令で適切なコマンドリストを取得できます。<br>
+　続いて頂点等の作成です。
+<pre class="my-3 p-3">
+		//パラメータの初期化
+		m_param.scale = Vec3(5.0f, 5.0f, 1.0f);
+		auto quat = XMQuaternionIdentity();
+		m_param.quaternion = Quat(quat);
+		m_param.position = Vec3(0.0f, 0.0f, 0.0f);
+</pre>
+　で初期のスケーリング、回転、位置を設定します。
+<pre class="my-3 p-3">
+		//頂点の作成
+		std::vector&lt;VertexPositionColor> vertices = {
+			{ VertexPositionColor(Vec3(-0.5f, -0.5f, 0.0f),Col4(1.0f, 0.0f, 0.0f,1.0f)) },
+			{ VertexPositionColor(Vec3(0.0f, 0.5f, 0.0f), Col4(0.0f, 1.0f, 0.0f,1.0f)) },
+			{ VertexPositionColor(Vec3(0.5f, -0.5f, 0.0f), Col4(0.0f, 0.0f, 1.0f,1.0f)) }
+		};
+		//インデックス配列
+		std::vector&lt;uint32_t> indices = { 0, 1, 2 };
+		//メッシュの作成
+		m_mesh = BaseMesh::CreateBaseMesh&lt;VertexPositionColor>(pCommandList, vertices, indices);
+</pre>
+　で頂点及びインデックスを作成し<strong>メッシュ</strong>を構築します。<br>
+　続いてコンスタントバッファですが
+<pre class="my-3 p-3">
+		//コンスタントバッファの作成
+		auto pBaseScene = BaseScene::Get();
+		auto& frameResources = pBaseScene->GetFrameResources();
+		auto pBaseDevice = BaseDevice::GetBaseDevice();
+		for (size_t i = 0; i &lt; BaseDevice::FrameCount; i++) {
+			m_constantBufferIndex =
+				frameResources[i]->AddBaseConstantBufferSet&lt;SimpleConstant>(pBaseDevice->GetD3D12Device());
+		}
+		//コンスタントバッファの作成
+		CreateConstantBuffer();
+</pre>
+　ここでは<strong>BaseScene::Get()</strong>で<strong>シーンの親クラス</strong>を取得し、そこから<strong>pBaseScene->GetFrameResources()</strong>で<strong>フレームリソース</strong>を取り出します。<strong>フレームリソース</strong>とは<strong>RTV（レンダリングターゲットビュー）</strong>をクラス化したもので<strong>BaseCrossDx12</strong>では3つあります。そのフレームごとに<strong>AddBaseConstantBufferSet()関数</strong>を呼び出すことで、フレームごとのコンスタントバッファを追加します。フレームごとに3回呼び出されるわけですが<strong>m_constantBufferIndex</strong>はその都度上書きされます。<br>
+　しかしこれは<strong>フレーム内</strong>のコンスタントバッファのインデックスなので、3つとも同じ値で問題ありません（というか、変わってたほうが問題）です。<br>
+　その後<strong>CreateConstantBuffer()関数</strong>を呼び出し、コンスタントバッファを作成します。<br>
+　作成される<strong>コンスタントバッファ</strong>は以下のような構造です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	///	SimpleConstantコンスタントバッファ構造体
+	//--------------------------------------------------------------------------------------
+	struct SimpleConstant
+	{
+		/// ワールド行列
+		Mat4x4 world;
+		/// ビュー行列
+		Mat4x4 view;
+		/// 射影行列
+		Mat4x4 projection;
+		/// エミッシブ色
+		Col4 emissive;
+		/// デフューズ色
+		Col4 diffuse;
+		/// スペキュラー
+		Col4 specular;
+		/// テクスチャ=xがアクティブかどうか
+		XMUINT4 activeFlg;
+		/// ライイト方向
+		Vec4 lightDir;
+		/// ライト位置
+		Vec4 lightPos;
+		/// eyeの位置
+		Vec4 eyePos;
+		/// ライトビュー行列
+		Mat4x4 lightView;
+		/// ライト射影行列
+		Mat4x4 lightProjection;
+		/// Bone配列
+		Vec4 Bones[3 * 72];
+		SimpleConstant() {
+			memset(this, 0, sizeof(SimpleConstant));
+			diffuse = Col4(1.0f, 1.0f, 1.0f, 1.0f);
+		};
+	};
+</pre>
+　これは<strong>Shaders</strong>フィルタにある<strong>Sp</strong>ではじまるシェーダに使用するためのコンスタントバッファで、これを別のコンスタントバッファとシェーダに差し替えれば、独自の描画を実装できます。<br>
+　構築内容は以下です。
+<pre class="my-3 p-3">
+	void Triangle::CreateConstantBuffer() {
+		auto scene = dynamic_cast&lt;Scene*>(BaseScene::Get());
+		auto pBaseDevice = BaseDevice::GetBaseDevice();
+		auto& viewport = scene->GetViewport();
 
-</pre>
-　となります。<br>
-　ここでは、頂点やインデックスを作成し、パイプラインステートも作成します。<br>
-　続いて<strong>Scene::Update</strong>関数です。
-<pre class="my-3 p-3">
-	void Scene::Update(double elapsedTime) {
-		m_totalTime += elapsedTime;
-		if (m_totalTime >= XM_2PI) {
-			m_totalTime = 0.0;
-		}
-		Quat spanQt(Vec3(0.0f, 1.0f, 0.0f), (float)(elapsedTime * 2));
-		Quat quaternion(m_param.quaternion);
-		quaternion *= spanQt;
-		m_param.quaternion = quaternion;
-		UpdateConstantBuffers();
-		CommitConstantBuffers();
-	}
-</pre>
-　ここでは、回転するパラメータを修正して、<strong>UpdateConstantBuffers関数</strong>および<strong>CommitConstantBuffers関数</strong>を呼び出します。<br>
-　続いて<strong>Scene::UpdateConstantBuffers</strong>関数です。コンスタントバッファの更新です。
-<pre class="my-3 p-3">
-	void Scene::UpdateConstantBuffers() {
+		auto camera = std::dynamic_pointer_cast&lt;PerspecCamera>(scene->GetCamera());
+		auto lightSet = scene->GetLightSet();
+
 		//初期化
 		m_constantBuffer = {};
 		Mat4x4 world;
@@ -795,10 +227,10 @@ std::unique_ptr&lt;SpVSPCStatic, SpVSPCStatic::Deleter> SpVSPCStatic::m_ptr;
 		//転置する
 		world.transpose();
 		//ビューと射影行列を得る
-		Mat4x4 viewMat = m_camera->GetViewMatrix();
+		Mat4x4 viewMat = camera->GetViewMatrix();
 		//転置する
 		viewMat.transpose();
-		Mat4x4 projMat = m_camera->GetProjMatrix();
+		Mat4x4 projMat = camera->GetProjMatrix();
 		//転置する
 		projMat.transpose();
 		m_constantBuffer.world = world;
@@ -811,30 +243,281 @@ std::unique_ptr&lt;SpVSPCStatic, SpVSPCStatic::Deleter> SpVSPCStatic::m_ptr;
 		//スペキュラー
 		m_constantBuffer.specular = Col4(0.5f, 0.5f, 0.5f, 1.0f);
 		//ライティング
-		auto index = m_lightSet->GetMainIndex();
-		auto light = m_lightSet->GetLight(index);
+		auto index = lightSet->GetMainIndex();
+		auto light = lightSet->GetLight(index);
 		m_constantBuffer.lightDir = light.m_directional;
 		m_constantBuffer.lightDir.w = 1.0f;
-		m_constantBuffer.eyePos = m_camera->GetEye();
+		m_constantBuffer.eyePos = camera->GetEye();
 		m_constantBuffer.eyePos.w = 1.0f;
 		m_constantBuffer.activeFlg.x = 0;
 	}
 </pre>
-　続いて<strong>Scene::CommitConstantBuffers</strong>関数です。コンスタントバッファのコミットです。<br>
-　<strong>BaseCrossDx12</strong>は、フレームを3つ持ってます。これらはターン毎に入れ替えられます。<br>
-　<strong>Scene::CommitConstantBuffers</strong>は、ターゲットとなるフレームのGPUに直結するコンスタンとバッファを更新します。
-<h6>この先どうするか</h6>
+　ここではシーンからカメラ及びライトを取り出し、<strong>m_param</strong>から<strong>ワールド行列</strong>を作成し、コンスタントバッファに設定します。<br>
+　続いて<strong>パイプラインステートの構築</strong>ですが、<strong>パイプラインステート</strong>は使いまわしができるように<strong>PipelineStatePool</strong>というオブジェクトに保存しておきます。ですのでまず
+<pre class="my-3 p-3">
+		// シーン描画のパイプラインステートの作成
+		ComPtr&lt;ID3D12PipelineState> spPCPipelineState
+			= PipelineStatePool::GetPipelineState(L"SpPCStatic");
+		if(!spPCPipelineState){
+			//
+</pre>
+　のように<strong>L"SpPCStatic"</strong>という名前のパイプラインステートを探します。そしてなかった時だけ構築します。<br>
+　構築は、まず<strong>ラスタライザステート</strong>を定義します。回転させて両面見せるので
+<pre class="my-3 p-3">
+			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
+			//カリングしない
+			rasterizerStateDesc.CullMode = D3D12_CULL_MODE_NONE;
+</pre>
+　となります。続くパイプラインステートは
+<pre class="my-3 p-3">
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+			ZeroMemory(&psoDesc, sizeof(psoDesc));
+</pre>
+　と0初期化し
+<pre class="my-3 p-3">
+			psoDesc.InputLayout = { VertexPositionColor::GetVertexElement(), VertexPositionColor::GetNumElements() };
+</pre>
+　と<strong>VertexPositionColor型（頂点と色）</strong>のレイアウトを指定します。
+<pre class="my-3 p-3">
+			psoDesc.pRootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault").Get();
+</pre>
+　は<strong>ルートシグネチャ（ルート認証）</strong>を指定します。ここでは<strong>BaseCrossDx12</strong>があらかじめ作成した<strong>ルートシグネチャ</strong>を指定してます。独自の<strong>ルートシグネチャ</strong>を作成することも可能ですが、<strong>BaseCrossDx12デフォルト</strong>のものを使用することをお勧めします。動的な<strong>ルートシグネチャ</strong>の変更は可能ではありますが、コストがかかります。<br>
+　続いて<strong>頂点シェーダとピクセルシェーダ</strong>です。<br>
+　<strong>頂点シェーダとピクセルシェーダ</strong>は、<strong>csoファイルから構築するマクロ</strong>があり、それを利用すると便利です。<br>
+　まず<strong>Triangle.h</strong>に以下を記述します。
+<pre class="my-3 p-3">
+	DECLARE_DX12SHADER(SpVSPCStatic)
+	DECLARE_DX12SHADER(SpPSPCStatic)
+</pre>
+　これで<strong>SpVSPCStatic、SpPSPCStatic</strong>という名前のシェーダが宣言されます。<br>
+　そして<strong>Triangle.cpp</strong>に
+<pre class="my-3 p-3">
+	IMPLEMENT_DX12SHADER(SpVSPCStatic, App::GetShadersDir() + L"SpVSPCStatic.cso")
+	IMPLEMENT_DX12SHADER(SpPSPCStatic, App::GetShadersDir() + L"SpPSPCStatic.cso")
+</pre>
+　と書きます。シェーダはビルド時に、ソリューションディレクトリ内の<strong>media\Shaders</strong>に保存されているので、それを読み込みます。するとパイプライン設定時に
+<pre class="my-3 p-3">
+			psoDesc.VS =
+			{
+				reinterpret_cast&lt;UINT8*>(SpVSPCStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				SpVSPCStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+			psoDesc.PS =
+			{
+				reinterpret_cast&lt;UINT8*>(SpPSPCStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				SpPSPCStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+</pre>
+　のように設定することが可能になります。<br>
+　続くパイプラインステートの設定は
+<pre class="my-3 p-3">
+			psoDesc.RasterizerState = rasterizerStateDesc;
+			psoDesc.BlendState = BlendState::GetOpaqueBlend();
+			psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+			psoDesc.SampleMask = UINT_MAX;
+			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+			psoDesc.SampleDesc.Count = 1;
+</pre>
+　のようになります。<br>
+　そして最後に
+<pre class="my-3 p-3">
+			//spPCPipelineStateパイプラインステート作成
+			ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&spPCPipelineState)));
+			NAME_D3D12_OBJECT(spPCPipelineState);
+			PipelineStatePool::AddPipelineState(L"SpPCStatic", spPCPipelineState);
+</pre>
+　と作成します。<br>
+<h5>シーンの更新</h5>
+　シーンの更新である<strong>Scene::Update()関数</strong>には<strong>elapsedTime（前回のターンからの経過時間）</strong>が渡されます。<strong>m_triangleオブジェクト</strong>にはそのまま渡します。その後<strong>UpdateConstantBuffers()関数、CommitConstantBuffers()関数</strong>を呼び出します。
+<pre class="my-3 p-3">
+	void Scene::Update(double elapsedTime) {
+		m_triangle->OnUpdate(elapsedTime);
+		UpdateConstantBuffers();
+		CommitConstantBuffers();
+	}
+</pre>
+　以下は<strong>Triangle::OnUpdate()関数</strong>です。回転処理をしています。
+<pre class="my-3 p-3">
+	void Triangle::OnUpdate(double elapsedTime) {
+		m_totalTime += elapsedTime;
+		if (m_totalTime >= XM_2PI) {
+			m_totalTime = 0.0;
+		}
+		Quat spanQt(Vec3(0.0f, 1.0f, 0.0f), (float)(elapsedTime * 2));
+		Quat quaternion(m_param.quaternion);
+		quaternion *= spanQt;
+		m_param.quaternion = quaternion;
+	}
+</pre>
+　<strong>Scene::UpdateConstantBuffers()関数</strong>では、<strong>m_triangleオブジェクト</strong>の<strong>OnUpdateConstantBuffers()関数</strong>を呼び出します。<br>
+　同様に<strong>Scene::CommitConstantBuffers()関数</strong>では<strong>m_triangle->OnCommitConstantBuffers()関数</strong>を呼び出します。内容は以下です。
+<pre class="my-3 p-3">
+	void Triangle::OnUpdateConstantBuffers() {
+		Mat4x4 world;
+		world.affineTransformation(
+			m_param.scale,
+			m_param.rotOrigin,
+			m_param.quaternion,
+			m_param.position
+		);
+		//転置する
+		world.transpose();
+		m_constantBuffer.world = world;
+	}
+
+	void Triangle::OnCommitConstantBuffers() {
+		auto scene = dynamic_cast&lt;Scene*>(BaseScene::Get());
+		auto pCurrentFrameResource = scene->GetCurrentFrameResource();
+		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_pBaseConstantBufferWO,
+			&m_constantBuffer, sizeof(m_constantBuffer));
+	}
+</pre>
+　<strong>Triangle::OnUpdateConstantBuffers()関数</strong>では、<strong>Triangle::OnUpdate()関数</strong>で加えられた回転をワールド行列を書き換え、転置した後<strong>m_constantBuffer.world</strong>に設定します。<br>
+　<strong>Triangle::OnCommitConstantBuffers()</strong>は、更新されたコンスタントバッファを<strong>ターゲットとなるフレーム</strong>にコピーします。<br>
+　ですので<strong>Triangle::CommitConstantBuffers()関数における</strong>
+<pre class="my-3 p-3">
+		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_pBaseConstantBufferWO,
+			&m_constantBuffer, sizeof(m_constantBuffer));
+</pre>
+　は、現在書き込み用になっている<strong>フレーム（バックバッファ）</strong>にコピーする作業です。<strong>pCurrentFrameResource</strong>は毎ターン入れ替わります。
+<h5>シーンの描画処理</h5>
+　<strong>シーンの描画処理</strong>は<strong>Scene::ScenePass()関数</strong>で行います。このほかに<strong>Scene::ShadowPass()関数</strong>も呼ばれますが、このサンプルは<strong>影</strong>は必要ないので<strong>Scene.h</strong>で
+<pre class="my-3 p-3">
+		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList)override {}
+</pre>
+　のように<strong>何もしない処理</strong>になってます。<br>
+　以下は<strong>Scene::ScenePass()関数</strong>です。ここでは描画のための前準備を行ってます。
+<pre class="my-3 p-3">
+	void Scene::ScenePass(ID3D12GraphicsCommandList* pCommandList)
+	{
+		//ViewportsとScissorRectsの設定
+		auto& viewport = GetViewport();
+		auto& scissorRect = GetScissorRect();
+		pCommandList->RSSetViewports(1, &viewport);
+		pCommandList->RSSetScissorRects(1, &scissorRect);
+		//RootSignatureの設定
+		auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
+		pCommandList->SetGraphicsRootSignature(rootSignature.Get());
+		//RenderTargetsの設定
+		auto depthDsvs = GetDepthDsvs();
+		pCommandList->OMSetRenderTargets(1, &GetCurrentBackBufferRtvCpuHandle(), FALSE, &depthDsvs[SceneEnums::DepthGenPass::Scene]);
+		m_triangle->OnSceneDraw(pCommandList);
+	}
+</pre>
+　まず、ビューポートとシザー矩形を設定します。
+<pre class="my-3 p-3">
+		//ViewportsとScissorRectsの設定
+		auto& viewport = GetViewport();
+		auto& scissorRect = GetScissorRect();
+		pCommandList->RSSetViewports(1, &viewport);
+		pCommandList->RSSetScissorRects(1, &scissorRect);
+</pre>
+　続いて、<strong>ルート認証</strong>ですが
+<pre class="my-3 p-3">
+		//ルート認証（RootSignature）の設定
+		auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
+		pCommandList->SetGraphicsRootSignature(rootSignature.Get());
+</pre>
+　と設定します。パイプラインステートでも設定してましたが、両方設定が必要なようです。<br>
+　こういう<strong>DirectX12の仕様</strong>なので、<strong>ルート認証</strong>はアプリケーション内で一つ、にしておいたほうが良いと思います。<br>
+　続いて<strong>RenderTargetsの設定</strong>ですが、まず<strong>GetDepthDsvs()</strong>でデプスステンシルビューを取り出し、その後設定します。
+<pre class="my-3 p-3">
+		//RenderTargetsの設定
+		auto depthDsvs = GetDepthDsvs();
+		pCommandList->OMSetRenderTargets(1, &GetCurrentBackBufferRtvCpuHandle(), FALSE, &depthDsvs[SceneEnums::DepthGenPass::Scene]);
+</pre>
+　これで前準備は終わりです。続いて<strong>三角形の描画</strong>です。
+<pre class="my-3 p-3">
+		m_triangle->OnSceneDraw(pCommandList);
+</pre>
+　で描画します。
+<h5>三角形の描画</h5>
+　<strong>三角形の描画</strong>は<strong>Triangle::OnSceneDraw()関数</strong>で行います。
+<pre class="my-3 p-3">
+	void Triangle::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)
+	{
+		//メッシュが有効な時のみ実行
+		if (m_mesh) {
+			//シーンの取り出し
+			auto pBaseScene = BaseScene::Get();
+			//現在のフレームの取り出し
+			auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
+			//ディスクプリタヒープ（CbvSrvUav用）の取り出し
+			auto CbvSrvUavDescriptorHeap = pBaseScene->GetCbvSrvUavDescriptorHeap();
+			//パイプラインステートの取得
+			ComPtr&lt;ID3D12PipelineState> defaultPipelineState
+				= PipelineStatePool::GetPipelineState(L"SpPCStatic", true);
+			//パイプラインステートの設定
+			pCommandList->SetPipelineState(defaultPipelineState.Get());
+			//テクスチャスロットにnullの設定
+			CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvGpuNullHandle(CbvSrvUavDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), cbvSrvGpuNullHandle);
+			//コンスタントバッファをGPUスロット（b0）に設定
+			pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
+				pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress());
+			//描画
+			pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			pCommandList->IASetVertexBuffers(0, 1, &m_mesh->GetVertexBufferView());
+			pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
+			pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
+		}
+	}
+</pre>
+　まず描画処理は<strong>メッシュ（m_mesh）</strong>が有効な時のみ行います。
+<pre class="my-3 p-3">
+		//メッシュが有効な時のみ実行
+		if (m_mesh) {
+			// ...
+		}
+</pre>
+　続いて描画に必要なオブジェクトやリソースを取り出します。
+<pre class="my-3 p-3">
+			//シーンの取り出し
+			auto pBaseScene = BaseScene::Get();
+			//現在のフレームの取り出し
+			auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
+			//ディスクプリタヒープ（CbvSrvUav用）の取り出し
+			auto CbvSrvUavDescriptorHeap = pBaseScene->GetCbvSrvUavDescriptorHeap();
+			//パイプラインステートの取得
+			ComPtr&lt;ID3D12PipelineState> defaultPipelineState
+				= PipelineStatePool::GetPipelineState(L"SpPCStatic", true);
+</pre>
+　続いてそれらの設定です
+<pre class="my-3 p-3">
+			//パイプラインステートの設定
+			pCommandList->SetPipelineState(defaultPipelineState.Get());
+			//テクスチャスロットにnullの設定
+			CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvGpuNullHandle(CbvSrvUavDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), cbvSrvGpuNullHandle);
+			//コンスタントバッファをGPUスロット（b0）に設定
+			pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
+				pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress());
+</pre>
+　最後に描画処理です。
+<pre class="my-3 p-3">
+			//描画
+			pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			pCommandList->IASetVertexBuffers(0, 1, &m_mesh->GetVertexBufferView());
+			pCommandList->IASetIndexBuffer(&m_mesh->GetIndexBufferView());
+			pCommandList->DrawIndexedInstanced(m_mesh->GetNumIndices(), 1, 0, 0, 0);
+</pre>
+　長い戦いでしたが、これで最小限の<strong>BaseCrossDx12</strong>の実装ができました。お疲れ様でした。
+<h5>この先どうするか</h5>
 　このサンプルでは<strong>BaseCrossDx12</strong>でオブジェクトを描画する最低限の処理が記述されています。<br>
 　すなわちこの3角形を、モデルにすれば（簡単ではないですが）、モデルの描画ができます。<br>
 　プレイヤーや敵キャラも基本的にこの延長線で記述することができます。<br>
 　しかし、このままオブジェクトを追加していったのでは非効率すぎます。<br>
 　そこで<strong>BaseCrossDx12</strong>では前バージョンの<strong>BaseCross64</strong>のフルバージョンにあったようなフレームワークも実装してあります。<strong>スタンダードサンプル</strong>がそのサンプルです。<br>
-　しかし、フレームワークを自作したい場合は、この<strong>ベーシックサンプル</strong>をふくらませて作成するのがよいでしょう。
+　しかし、フレームワークを自作したい場合は、この<strong>ベーシックサンプル</strong>に独自のフレームワークを追加していくのがよいでしょう。
 
 <footer class="py-3 my-4">
 <ul class="nav justify-content-center border-top pb-3 mb-3">
 <li class="nav-item"><a href="000.html" class="nav-link px-2 text-success">前へ</a></li>
 <li class="nav-item"><a href="index.html" class="nav-link px-2 text-primary">目次</a></li>
+<li class="nav-item"><a href="002.html" class="nav-link px-2 text-success">次へ</a></li>
 </ul>
 <p class="text-center text-body-secondary">&copy; WiZ Tamura Hiroki,Yamanoi Yasushi MIT License.</p>
 </footer>

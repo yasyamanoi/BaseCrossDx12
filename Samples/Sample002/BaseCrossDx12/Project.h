@@ -10,8 +10,6 @@
 
 //個別オブジェクト等
 #include "Constants.h"
-#include "Camera.h"
-#include "Light.h"
 #include "Model.h"
 
 

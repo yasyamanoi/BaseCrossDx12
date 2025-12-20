@@ -144,8 +144,8 @@ namespace basecross {
 			&m_shadowConstantBuffer, sizeof(m_shadowConstantBuffer));
 	}
 
-	void Shadowmap::OnShadowDraw() {
-		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+	void Shadowmap::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
+//		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		auto mesh = GetBaseMesh(0);
 		if (mesh) {
 			auto pBaseScene = BaseScene::Get();

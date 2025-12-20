@@ -87,7 +87,7 @@ namespace basecross {
 		virtual void OnUpdate(double elapsedTime)override {}
 		virtual void OnUpdateConstantBuffers()override;
 		virtual void OnCommitConstantBuffers()override;
-		virtual void OnSceneDraw()override;
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override;
 		virtual void OnDestroy()override {}
 	};
 

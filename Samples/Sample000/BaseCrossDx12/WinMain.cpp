@@ -9,7 +9,7 @@
 _Use_decl_annotations_
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
-	// Declare this process to be high DPI aware, and prevent automatic scaling 
+	// このプロセスを高DPI対応として宣言し、自動スケーリングを防止します。
 	HINSTANCE hUser32 = LoadLibrary(L"user32.dll");
 	if (hUser32)
 	{

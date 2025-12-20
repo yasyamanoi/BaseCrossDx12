@@ -75,20 +75,20 @@ namespace basecross {
 		LoadSizeDependentResources();
 	}
 
-	// Load the rendering pipeline dependencies.
+	// レンダリング パイプラインの依存関係を読み込みます。
 	void BaseDevice::LoadPipeline()
 	{
 		m_dxgiFactoryFlags = 0;
 
 #if defined(_DEBUG)
-		// Enable the debug layer (requires the Graphics Tools "optional feature").
+		// デバッグ レイヤーを有効にします (グラフィックス ツールの「オプション機能」が必要です)。.
 		{
 			ComPtr<ID3D12Debug> debugController;
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
 			{
 				debugController->EnableDebugLayer();
 
-				// Enable additional debug layers.
+				// 追加のデバッグ レイヤーを有効にします。
 				m_dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 			}
 		}
@@ -114,12 +114,12 @@ namespace basecross {
 		GetGPUAdapter(m_activeAdapter, &hardwareAdapter);
 		ThrowIfFailed(D3D12CreateDevice(
 			hardwareAdapter.Get(),
-			D3D_FEATURE_LEVEL_11_0,
+			D3D_FEATURE_LEVEL_12_1,//D3D_FEATURE_LEVEL_11_0を書き換え
 			IID_PPV_ARGS(&m_device)
 		));
 		m_activeAdapterLuid = m_gpuAdapterDescs[m_activeAdapter].desc.AdapterLuid;
 
-		// Describe and create the command queue.
+		// コマンド キューを記述して作成します。
 		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 		queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -127,7 +127,7 @@ namespace basecross {
 		ThrowIfFailed(m_device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue)));
 		NAME_D3D12_OBJECT(m_commandQueue);
 
-		// Describe and create the swap chain.
+		// スワップ チェーンを記述して作成します。
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 		swapChainDesc.BufferCount = FrameCount;
 		swapChainDesc.Width = m_width;
@@ -137,17 +137,18 @@ namespace basecross {
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapChainDesc.SampleDesc.Count = 1;
 
-		// It is recommended to always use the tearing flag when it is available.
+		// ティアリング フラグが使用可能な場合は常にそれを使用することをお勧めします。
 		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 		ComPtr<IDXGISwapChain1> swapChain;
-		// DXGI does not allow creating a swapchain targeting a window which has fullscreen styles(no border + topmost).
-		// Temporarily remove the topmost property for creating the swapchain.
+		// DXGI では、フルスクリーン スタイル (境界線なし + 最上位) を持つウィンドウをターゲットとするスワップチェーンの作成は許可されません。
+		// スワップチェーンを作成するために、一時的に最上位プロパティを削除します。
 		bool prevIsFullscreen = App::IsFullscreen();
 		if (prevIsFullscreen)
 		{
 			App::SetWindowZorderToTopMost(false);
 		}
+		//スワップチェーンの作成
 		ThrowIfFailed(m_dxgiFactory->CreateSwapChainForHwnd(
 			m_commandQueue.Get(),		// Swap chain needs the queue so that it can force a flush on it.
 			App::GetHwnd(),
@@ -156,25 +157,25 @@ namespace basecross {
 			nullptr,
 			&swapChain
 		));
-
+		//一時的に最上位プロパティの復帰
 		if (prevIsFullscreen)
 		{
 			App::SetWindowZorderToTopMost(true);
 		}
-
-		// With tearing support enabled we will handle ALT+Enter key presses in the
-		// window message loop rather than let DXGI handle it by calling SetFullscreenState.
+		//ティアリングサポートを有効にすると、
+		// DXGI が SetFullscreenState を呼び出して処理するのではなく、
+		// ウィンドウ メッセージ ループ内で ALT+Enter キーの押下を処理します。
 		m_dxgiFactory->MakeWindowAssociation(App::GetHwnd(), DXGI_MWA_NO_ALT_ENTER);
 
 		ThrowIfFailed(swapChain.As(&m_swapChain));
 		m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 
-		// Create synchronization objects.
+		// 同期オブジェクトを作成します。
 		{
 			ThrowIfFailed(m_device->CreateFence(m_fenceValues[m_frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
 			m_fenceValues[m_frameIndex]++;
 
-			// Create an event handle to use for frame synchronization.
+			// フレーム同期に使用するイベント ハンドルを作成します。
 			m_fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 			if (m_fenceEvent == nullptr)
 			{
@@ -183,7 +184,7 @@ namespace basecross {
 		}
 	}
 
-	// Load assets required for rendering.
+	// レンダリングに必要なアセットを読み込みます。
 	void BaseDevice::LoadAssets()
 	{
 		if (!m_scene)
@@ -627,7 +628,11 @@ namespace basecross {
 			ThrowIfFailed(adapter->GetDesc1(&desc));
 
 			// Check to see if the adapter supports Direct3D 12.
-			ThrowIfFailed(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr));
+			ThrowIfFailed(
+				D3D12CreateDevice(adapter.Get(), 
+				D3D_FEATURE_LEVEL_12_1,//D3D_FEATURE_LEVEL_11_0を書き換え
+				_uuidof(ID3D12Device), 
+				nullptr));
 
 			*ppAdapter = adapter.Detach();
 		}

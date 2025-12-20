@@ -1,6 +1,6 @@
 /*!
-@file Model.h
-@brief モデルクラス
+@file Triangle.h
+@brief 三角形クラス
 @copyright WiZ Tamura Hiroki,Yamanoi Yasushi MIT License (MIT).
  MIT License URL: https://opensource.org/license/mit
 */
@@ -11,21 +11,18 @@
 
 namespace basecross {
 
-	DECLARE_DX12SHADER(BcVSPNTBonePL)
-	DECLARE_DX12SHADER(BcPSPNTPL)
-
+	DECLARE_DX12SHADER(SpVSPCStatic)
+	DECLARE_DX12SHADER(SpPSPCStatic)
 
 	//--------------------------------------------------------------------------------------
-	//	モデルクラス
+	//	三角形クラス
 	//--------------------------------------------------------------------------------------
-	class Model : public ObjectInterface {
-		std::shared_ptr<BaseMesh> m_mesh;
-		std::vector<Mat4x4>  m_BoneTransforms;
-		double m_totalTime;
-		BasicConstant m_constantBuffer;
+	class Triangle : public ObjectInterface {
+		SimpleConstant m_constantBuffer;
 		size_t m_constantBufferIndex;
+		std::shared_ptr<BaseMesh> m_mesh;
+		double m_totalTime;
 		TransParam m_param;
-		//コンスタントバッファの作成
 		void CreateConstantBuffer();
 	public:
 		//--------------------------------------------------------------------------------------
@@ -34,8 +31,8 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		Model() : m_totalTime(0.0){}
-		virtual ~Model() {}
+		Triangle() : m_totalTime(0.0) {}
+		virtual ~Triangle() {}
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	作成処理
@@ -51,14 +48,6 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void OnUpdate(double elapsedTime)override;
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief アニメーションの更新処理
-		@param[in]	elapsedTime	ターン時間
-		@return	なし
-		*/
-		//--------------------------------------------------------------------------------------
-		virtual void UpdateAnimation(double animeTime);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	コンスタントバッファの更新
@@ -80,7 +69,13 @@ namespace basecross {
 		@return	なし
 		*/
 		//--------------------------------------------------------------------------------------
-		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList);
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override;
+
+
+
 	};
+
+
+
 }
-// end namespace basecross
+//namespace basecross

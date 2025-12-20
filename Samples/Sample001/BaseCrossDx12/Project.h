@@ -10,5 +10,6 @@
 
 //個別オブジェクト等
 #include "Constants.h"
+#include "Triangle.h"
 
 

@@ -301,8 +301,8 @@ namespace basecross {
 
 
 
-	void BcPNTBoneDraw::OnSceneDraw() {
-		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+	void BcPNTBoneDraw::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
+//		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
