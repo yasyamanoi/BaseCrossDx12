@@ -24,7 +24,6 @@
 <li class="list-group-item base-item">もともとの<strong>D3D12xGPU</strong>内のファイル名は変更し、そのうえで書き加えています。そういったファイルは、マイクロソフト社のライセンス文が記述され、その下に僕たちのライセンス（MITライセンス）が、記述されています。</li>
 <li class="list-group-item base-item"><strong>D3D12xGPU</strong>は、デフォルトで<strong>マルチスレッド版</strong>ですが、これを<strong>シングルスレッド版</strong>にして、そこから書き進めています。理由は<strong>マルチスレッド版</strong>は、ハードルが高すぎるかな、と思ったからです。（いつ日にかは挑戦してみたいですが・・・）</li>
 <li class="list-group-item base-item"><strong>BaseCrossDx12</strong>は<strong>D3D12xGPU</strong>をベースに作成されていますが、このほかに<strong>DirectXTex</strong>を使用しています。<strong>DirectXTex</strong>もマイクロソフト社の登録商標です。（こちらは、改変していません）</li>
-<li class="list-group-item base-item">V05ディレクトリには、BaseCross64風の、Dx12で作成したサンプルが含まれています。プリミティブな形状のみですが、何かの参考になるかもしれません。ご興味があれば見てやってください。</li>
 </ul>
 <h4>外部ライブラリについて</h4>
 　<strong>BaseCrossDx12</strong>では<strong>外部ライブラリ</strong>として<strong>PhysX物理エンジン</strong>と、モデルの読み込み支援として<strong>Open Asset Import Library (assimp)</strong>を使用しています。<strong>PhysX</strong>は<strong>Libs\PhysX</strong>に展開され、<strong>assimp</strong>は<strong>Libs\Assimp</strong>に展開されています。<strong>BaseCrossDx12</strong>のサンプルをビルドすると、実行ファイル作成後に各dllがそのディレクトリにコピーされます。それぞれ<strong>ベーシックサンプル</strong>と<strong>スタンダードサンプル</strong>から利用できますが、<strong>スタンダードサンプル</strong>のほうがそれぞれコンポーネント化されているので使いやすいと思います。
