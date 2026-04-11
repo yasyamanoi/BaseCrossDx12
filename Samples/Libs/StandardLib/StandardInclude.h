@@ -15,7 +15,6 @@
 #include "Objects/CollisionManager.h"
 #include "Objects/Stage.h"
 #include "Objects/StateMachine.h"
-#include "Objects/Steering.h"
 
 #include "Components/Shadowmap.h"
 #include "Components/BcStaticDraw.h"

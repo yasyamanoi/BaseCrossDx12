@@ -48,13 +48,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)\$(SolutionName)\</IntDir>
-    <IncludePath>$(SolutionDir)..\Libs\include;$(SolutionDir)..\Libs\PhysX\include;$(SolutionDir)..\Libs\Assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\Libs\include;$(SolutionDir)..\Libs\Assimp\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\Libs\lib\$(Configuration)\;$(SolutionDir)..\Libs\PhysX\lib\$(Configuration)\;$(SolutionDir)..\Libs\Assimp\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)\$(SolutionName)\</IntDir>
-    <IncludePath>$(SolutionDir)..\Libs\include;$(SolutionDir)..\Libs\PhysX\include;$(SolutionDir)..\Libs\Assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\Libs\include;$(SolutionDir)..\Libs\Assimp\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\Libs\lib\$(Configuration)\;$(SolutionDir)..\Libs\PhysX\lib\$(Configuration)\;$(SolutionDir)..\Libs\Assimp\lib\;$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>

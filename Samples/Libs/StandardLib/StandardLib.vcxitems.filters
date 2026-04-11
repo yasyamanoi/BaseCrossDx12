@@ -64,9 +64,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\StateMachine.h">
       <Filter>Objects\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Steering.h">
-      <Filter>Objects\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\SteeringBehavior.h">
       <Filter>Components\Headers</Filter>
     </ClInclude>
@@ -104,9 +101,6 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\BcBoneDraw.cpp">
       <Filter>Components\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Steering.cpp">
-      <Filter>Objects\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\SteeringBehavior.cpp">
       <Filter>Components\Sources</Filter>

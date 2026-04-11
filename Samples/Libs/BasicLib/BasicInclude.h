@@ -120,6 +120,10 @@ using namespace basecross::bsm;
 #pragma comment( lib, "d2d1.lib" )
 #pragma comment( lib, "dwrite.lib" )
 
+//Jolt
+#pragma comment( lib, "Jolt.lib" )
+
+
 #if defined(_DEBUG)
 #pragma comment(lib, "assimp-vc143-mtd.lib")
 #pragma comment(lib, "zlibstaticd.lib")

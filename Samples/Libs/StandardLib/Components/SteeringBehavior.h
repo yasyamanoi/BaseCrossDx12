@@ -106,11 +106,12 @@ namespace basecross {
 		@brief	行動を実行する
 		@param[in]	Force	現在のフォース
 		@param[in]	Velocity	現在の速度
-		@param[in]	TargetPos	到着する位置
+		@param[in]	Target	目標となるオブジェクトの位置
+		@param[in]	Pos	現在の位置
 		@return	掛けるべきフォース
 		*/
 		//--------------------------------------------------------------------------------------
-		Vec3 Execute(const Vec3& Force, const Vec3& Velocity, const Vec3& TargetPos);
+		Vec3 Execute(const Vec3& Force, const Vec3& Velocity, const Vec3& Target,const Vec3& Pos);
 	};
 
 
@@ -119,6 +120,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class Separation : public SteeringBehavior {
 		std::weak_ptr<GameObjectGroup> m_group;
+		std::shared_ptr<GameObject> m_GameObjectPtr;
 
 	public:
 		Separation(const std::shared_ptr<GameObject>& GameObjectPtr);

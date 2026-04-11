@@ -72,14 +72,21 @@ namespace basecross {
 	{
 	}
 
-	Vec3 Arrive::Execute(const Vec3& Force, const Vec3& Velocity, const Vec3& TargetPos) {
-		auto TransPtr = GetGameObject()->GetComponent<Transform>();
+	Vec3 Arrive::Execute(const Vec3& Force, const Vec3& Velocity, const Vec3& Target, const Vec3& Pos) {
+		Vec3 ToTarget = Target - Pos;
 		Vec3 TempForce = Force;
 		Vec3 WorkForce;
-		WorkForce = Steering::Arrive(Velocity, TargetPos,
-			TransPtr->GetWorldPosition(), (float)m_max_speed, m_Decl) * m_weight;
-		Steering::AccumulateForce(TempForce, WorkForce, (float)m_max_force);
-		return TempForce;
+		float dist = bsmUtil::length(ToTarget);
+		if (dist > 0) {
+			const float DecelerationTweaker = 0.3f;
+			float speed = dist / (m_Decl * DecelerationTweaker);
+			speed = Util::Minimum(speed, (float)m_max_speed);
+			Vec3 DesiredVelocity = ToTarget * speed / dist;
+			WorkForce = DesiredVelocity - Velocity;
+			AccumulateForce(TempForce, WorkForce);
+			return TempForce;
+		}
+		return Vec3(0, 0, 0);
 	}
 
 
@@ -95,9 +102,23 @@ namespace basecross {
 
 	Vec3 Separation::Execute(const Vec3& Force) {
 		Vec3 TempForce = Force;
-		Vec3 WorkForce;
-		WorkForce = Steering::Separation(GetGameObjectGroup(), GetGameObject()) * m_weight;
-		Steering::AccumulateForce(TempForce, WorkForce, (float)m_max_force);
+		auto GameObj = GetGameObject();
+
+		Vec3 SteeringForce(0, 0, 0);
+		auto Vec = GetGameObjectGroup()->GetGroupVector();
+		for (auto Ptr : Vec) {
+			auto PtrObj = Ptr.lock();
+			if (PtrObj) {
+				if (PtrObj != GameObj) {
+					//PtrObj->GetComponent<Transform>();
+					Vec3 ToAgent
+						= GameObj->GetComponent<Transform>()->GetWorldPosition()
+						- PtrObj->GetComponent<Transform>()->GetWorldPosition();
+					SteeringForce += bsmUtil::normalize(ToAgent) / bsmUtil::length(ToAgent);
+				}
+			}
+		}
+		AccumulateForce(TempForce, SteeringForce);
 		return TempForce;
 	}
 

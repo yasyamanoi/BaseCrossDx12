@@ -254,7 +254,7 @@ namespace basecross {
 		//フォースの初期化
 		Vec3 force(0.0f);
 		//フォースの計算
-		force = arriveComp->Execute(force,Obj->GetVelocity(), Obj->GetTargetPos());
+		force = arriveComp->Execute(force,Obj->GetVelocity(), Obj->GetTargetPos(), trans->GetPosition());
 		force += separationComp->Execute(force);
 		//そのforceを設定する
 		Obj->SetForce(force);

@@ -28,7 +28,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\GameObject.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Stage.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\StateMachine.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Steering.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StandardInclude.h" />
   </ItemGroup>
   <ItemGroup>
@@ -44,7 +43,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\GameObject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Stage.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Steering.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)Shaders\BcINCCommon.hlsli" />
