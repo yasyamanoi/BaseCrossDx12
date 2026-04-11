@@ -9,4 +9,4 @@
 namespace basecross {
 
 }
-//end namespace basecross
+// end namespace basecross

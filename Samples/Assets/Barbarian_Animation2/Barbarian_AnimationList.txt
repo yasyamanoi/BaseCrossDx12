@@ -1,0 +1,3 @@
+<< Barbarian Animation List>>
+01:Stay  0f - 30f ( 30frames )
+02:Walk 40f - 70f ( 30frames )

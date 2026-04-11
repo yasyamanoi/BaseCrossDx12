@@ -19,17 +19,21 @@ namespace basecross {
 	FixedBox::~FixedBox() {}
 
 	void FixedBox::OnCreate() {
-		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		//OBB衝突j判定を付ける
 		auto ptrColl = AddComponent<CollisionObb>();
+		//この衝突判定は、動かない、という特徴をつける
 		ptrColl->SetFixed(true);
-		//タグをつける
-		AddTag(L"FixedBox");
+		//影（シャドウマップ）をつける
 		auto ptrShadow = AddComponent<Shadowmap>();
+		//L"DEFAULT_CUBE"というメッシュをつける
 		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		//描画コンポーネントに、BcPNTStaticDraw、を指定する
 		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
+		//ここにもL"DEFAULT_CUBE"というメッシュをつける
 		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+		//L"SKY_TX"というテクスチャをつける
 		ptrDraw->AddBaseTexture(L"SKY_TX");
+		//自分自身に影が移りこむようにする
 		ptrDraw->SetOwnShadowActive(true);
 	}
 
@@ -70,7 +74,6 @@ namespace basecross {
 		param.position.x = (float)sin(m_totalTime) * 2.0f;
 	}
 
-
 	//--------------------------------------------------------------------------------------
 	//	追いかける配置オブジェクト
 	//--------------------------------------------------------------------------------------
@@ -80,7 +83,11 @@ namespace basecross {
 		m_StartPos(startPos),
 		m_StateChangeSize(5.0f),
 		m_Force(0),
-		m_Velocity(0)
+		m_Velocity(0),
+		m_Weight(1.0f),
+		m_MaxSpeed(10.0f),
+		m_MaxForce(30.0f),
+		m_Decl(3.0f)
 	{
 		m_transParam.position = startPos;
 	}
@@ -93,17 +100,28 @@ namespace basecross {
 		ptrTransform->SetScale(0.125f, 0.25f, 0.25f);
 		ptrTransform->SetRotation(0.0f, 0.0f, 0.0f);
 
-		//オブジェクトのグループを得る
-		auto group = GetStage()->GetSharedObjectGroup(L"SeekGroup");
-		//グループに自分自身を追加
-		group->IntoGroup(GetThis<SeekObject>());
+
 		//Obbの衝突判定をつける
 		auto ptrColl = AddComponent<CollisionObb>();
 		//重力をつける
 		auto ptrGra = AddComponent<Gravity>();
+
+
 		//分離行動をつける
-		auto PtrSep = GetBehavior<SeparationSteering>();
-		PtrSep->SetGameObjectGroup(group);
+		//オブジェクトのグループを得る
+		auto group = GetStage()->GetSharedObjectGroup(L"SeekGroup");
+		//グループに自分自身を追加
+		group->IntoGroup(GetThis<SeekObject>());
+		//分離行動をつける
+		auto ptrSep = AddComponent<Separation>();
+		//分離行動にグループを追加する
+		ptrSep->SetGameObjectGroup(group);
+
+		//追跡行動をつける
+		auto ptrSeek = AddComponent<Seek>();
+		//到着行動をつける
+		auto ptrArr = AddComponent<Arrive>();
+
 		//影をつける
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
@@ -128,8 +146,7 @@ namespace basecross {
 		//ステートマシンのUpdateを行う
 		//この中でステートの切り替えが行われる
 		m_StateMachine->Update();
-		auto ptrUtil = GetBehavior<UtilBehavior>();
-		ptrUtil->RotToHead(1.0f);
+		RotToHead(1.0f);
 	}
 
 
@@ -148,6 +165,39 @@ namespace basecross {
 		ptrTrans->SetPosition(pos);
 	}
 
+	void SeekObject::RotToHead(float LerpFact) {
+		if (LerpFact <= 0.0f) {
+			//補間係数が0以下なら何もしない
+			return;
+		}
+		//回転の更新
+		//Velocityの値で、回転を変更する
+		//これで進行方向を向くようになる
+		auto PtrTransform = GetComponent<Transform>();
+		Vec3 Velocity = PtrTransform->GetVelocity();
+		if (Velocity.length() > 0.0f) {
+			Vec3 Temp = Velocity;
+			Temp.normalize();
+			float ToAngle = atan2(Temp.x, Temp.z);
+			Quat Qt;
+			Qt.rotationRollPitchYawFromVector(Vec3(0, ToAngle, 0));
+			Qt.normalize();
+			//現在の回転を取得
+			Quat NowQt = PtrTransform->GetQuaternion();
+			//現在と目標を補間
+			//現在と目標を補間
+			if (LerpFact >= 1.0f) {
+				NowQt = Qt;
+			}
+			else {
+				NowQt = XMQuaternionSlerp(NowQt, Qt, LerpFact);
+			}
+			PtrTransform->SetQuaternion(NowQt);
+		}
+
+	}
+
+
 
 
 	//--------------------------------------------------------------------------------------
@@ -160,13 +210,24 @@ namespace basecross {
 	void SeekFarState::Enter(const std::shared_ptr<SeekObject>& Obj) {
 	}
 	void SeekFarState::Execute(const std::shared_ptr<SeekObject>& Obj) {
-		auto ptrSeek = Obj->GetBehavior<SeekSteering>();
-		auto ptrSep = Obj->GetBehavior<SeparationSteering>();
-		auto force = Obj->GetForce();
-		force = ptrSeek->Execute(force, Obj->GetVelocity(), Obj->GetTargetPos());
-		force += ptrSep->Execute(force);
+		auto trans = Obj->GetComponent<Transform>();
+
+
+		auto seekComp = Obj->GetComponent<Seek>();
+		auto separationComp = Obj->GetComponent<Separation>();
+
+		//フォースの初期化
+		Vec3 force(0.0f);
+		//フォースの計算
+		force = seekComp->Execute(Obj->GetVelocity(), Obj->GetTargetPos(), trans->GetWorldPosition())
+			* Obj->GetWeight();
+		force += separationComp->Execute(force);
+		//そのforceを設定する
 		Obj->SetForce(force);
+		//その結果をもとにオブジェクトの位置に反映する
 		Obj->ApplyForce();
+		//結果として、ターゲットとの間の距離がObj->GetStateChangeSize()
+		//より近ければ、ステートSeekNearStateに変換
 		float f = bsm::bsmUtil::length(Obj->GetComponent<Transform>()->GetPosition() - Obj->GetTargetPos());
 		if (f < Obj->GetStateChangeSize()) {
 			Obj->GetStateMachine()->ChangeState(SeekNearState::Instance());
@@ -186,13 +247,21 @@ namespace basecross {
 	void SeekNearState::Enter(const std::shared_ptr<SeekObject>& Obj) {
 	}
 	void SeekNearState::Execute(const std::shared_ptr<SeekObject>& Obj) {
-		auto ptrArrive = Obj->GetBehavior<ArriveSteering>();
-		auto ptrSep = Obj->GetBehavior<SeparationSteering>();
-		auto force = Obj->GetForce();
-		force = ptrArrive->Execute(force, Obj->GetVelocity(), Obj->GetTargetPos());
-		force += ptrSep->Execute(force);
+		auto trans = Obj->GetComponent<Transform>();
+		auto arriveComp = Obj->GetComponent<Arrive>();
+		auto separationComp = Obj->GetComponent<Separation>();
+
+		//フォースの初期化
+		Vec3 force(0.0f);
+		//フォースの計算
+		force = arriveComp->Execute(force,Obj->GetVelocity(), Obj->GetTargetPos());
+		force += separationComp->Execute(force);
+		//そのforceを設定する
 		Obj->SetForce(force);
+		//その結果をもとにオブジェクトの位置に反映する
 		Obj->ApplyForce();
+		//結果として、ターゲットとの間の距離がObj->GetStateChangeSize()
+		//より遠ければ、ステートSeekFarStateに変換
 		float f = bsm::bsmUtil::length(Obj->GetComponent<Transform>()->GetPosition() - Obj->GetTargetPos());
 		if (f >= Obj->GetStateChangeSize()) {
 			Obj->GetStateMachine()->ChangeState(SeekFarState::Instance());
@@ -200,7 +269,6 @@ namespace basecross {
 	}
 	void SeekNearState::Exit(const std::shared_ptr<SeekObject>& Obj) {
 	}
-
 
 
 

@@ -52,7 +52,7 @@ namespace basecross {
 			m_fogEnabled = b;
 		}
 
-		
+
 
 		BcPNTStaticDraw(const std::shared_ptr<GameObject>& gameObjectPtr);
 		virtual ~BcPNTStaticDraw() {}

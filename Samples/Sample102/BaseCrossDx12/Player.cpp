@@ -33,8 +33,8 @@ namespace basecross {
 	}
 
 
-	Vec3 Player::GetMoveVector() {
-		m_angle = Vec3(0, 0, 0);
+	Vec3 Player::GetMoveVector() const {
+		Vec3 angle(0, 0, 0);
 		//入力の取得
 		auto inPut = GetInputState();
 		float moveX = inPut.x;
@@ -57,29 +57,28 @@ namespace basecross {
 			//トータルの角度を算出
 			float totalAngle = frontAngle + cntlAngle;
 			//角度からベクトルを作成
-			m_angle = Vec3(cos(totalAngle), 0, sin(totalAngle));
+			angle = Vec3(cos(totalAngle), 0, sin(totalAngle));
 			//正規化する
-			m_angle.normalize();
+			angle.normalize();
 			//移動サイズを設定。
-			m_angle *= moveSize;
+			angle *= moveSize;
 			//Y軸は変化させない
-			m_angle.y = 0;
+			angle.y = 0;
 		}
-		return m_angle;
+		return angle;
 	}
 
 	void Player::MovePlayer() {
 		float elapsedTime = (float)Scene::GetElapsedTime();
 		auto angle = GetMoveVector();
-		//RigidbodyDynamicコンポーネントを取り出す
-		auto ptrRigid = GetComponent<RigidbodyDynamic>();
-		auto pRigDynamic = ptrRigid->GetRigidDynamic();
 		if (angle.length() > 0.0f) {
-			Vec3 tmpVelo = angle * m_Speed;
-			pRigDynamic->setLinearVelocity(bsmUtil::ToPxVec3(tmpVelo));
+			auto pos = GetComponent<Transform>()->GetPosition();
+			pos += angle * elapsedTime * m_Speed;
+			GetComponent<Transform>()->SetPosition(pos);
 		}
-		else {
-			pRigDynamic->setLinearVelocity(bsmUtil::ToPxVec3(Vec3(0)));
+		//回転の計算
+		if (angle.length() > 0.0f) {
+			RotToHead(1.0f);
 		}
 	}
 
@@ -89,22 +88,12 @@ namespace basecross {
 	void Player::OnCreate() {
 		GetStage()->SetSharedGameObject(L"Player", GetThis<Player>());
 
-		//Transformコンポーネントを取り出す
-		auto ptrTrans = GetComponent<Transform>();
-		auto& param = ptrTrans->GetTransParam();
-		//PhysX関連
-		PhysxCreateParam pxParam;
-		physx::PxSphereGeometry scale(param.scale.x * 0.5f);
-		pxParam.pGeometry = &scale;
-		pxParam.staticFriction = 1.0f;
-		pxParam.dynamicFriction = 1.0f;
-		pxParam.restitution = 1.0f;
-		auto pRigDynamicComp = AddComponent<RigidbodyDynamic>(pxParam);
-		auto pRigDynamic = pRigDynamicComp->GetRigidDynamic();
-
-
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_SPHERE");
+		//CollisionSphere衝突判定を付ける
+		auto ptrColl = AddComponent<CollisionSphere>();
+		//重力をつける
+		auto ptrGra = AddComponent<Gravity>();
 
 		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
 		ptrDraw->AddBaseMesh(L"DEFAULT_SPHERE");
@@ -128,9 +117,44 @@ namespace basecross {
 		MovePlayer();
 	}
 
-
 	void Player::OnPushA() {
+		auto grav = GetComponent<Gravity>();
+		grav->StartJump(Vec3(0, 4.0f, 0));
 	}
+
+	void Player::RotToHead(float LerpFact) {
+		if (LerpFact <= 0.0f) {
+			//補間係数が0以下なら何もしない
+			return;
+		}
+		//回転の更新
+		//Velocityの値で、回転を変更する
+		//これで進行方向を向くようになる
+		auto PtrTransform = GetComponent<Transform>();
+		Vec3 Velocity = PtrTransform->GetVelocity();
+		if (Velocity.length() > 0.0f) {
+			Vec3 Temp = Velocity;
+			Temp.normalize();
+			float ToAngle = atan2(Temp.x, Temp.z);
+			Quat Qt;
+			Qt.rotationRollPitchYawFromVector(Vec3(0, ToAngle, 0));
+			Qt.normalize();
+			//現在の回転を取得
+			Quat NowQt = PtrTransform->GetQuaternion();
+			//現在と目標を補間
+			//現在と目標を補間
+			if (LerpFact >= 1.0f) {
+				NowQt = Qt;
+			}
+			else {
+				NowQt = XMQuaternionSlerp(NowQt, Qt, LerpFact);
+			}
+			PtrTransform->SetQuaternion(NowQt);
+		}
+
+	}
+
+
 
 }
 // end namespace basecross

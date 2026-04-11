@@ -24,8 +24,8 @@ namespace basecross {
 		std::vector<std::weak_ptr<BaseMesh>> m_meshVec;
 		std::vector<std::weak_ptr<BaseTexture>> m_textureVec;
 
-//		std::map<std::wstring,std::weak_ptr<BaseMesh>> m_meshMap;
-//		std::map<std::wstring, std::weak_ptr<BaseTexture>> m_textureMap;
+		//		std::map<std::wstring,std::weak_ptr<BaseMesh>> m_meshMap;
+		//		std::map<std::wstring, std::weak_ptr<BaseTexture>> m_textureMap;
 
 		explicit Component(const std::shared_ptr<GameObject>& gameObjectPtr);
 		virtual ~Component() {}
@@ -193,10 +193,10 @@ namespace basecross {
 		}
 
 
-		virtual void OnUpdateConstantBuffers(){}
-		virtual void OnCommitConstantBuffers(){}
+		virtual void OnUpdateConstantBuffers() {}
+		virtual void OnCommitConstantBuffers() {}
 
-		virtual void OnPreCreate() override{}
+		virtual void OnPreCreate() override {}
 		virtual void OnCreate()override {}
 		virtual void OnUpdate(double elapsedTime)override {}
 		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override {}

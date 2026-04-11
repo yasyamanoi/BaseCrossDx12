@@ -8,7 +8,7 @@
 
 namespace basecross {
 
-	float Shadowmap::m_lightHeight(200.0f);
+	float Shadowmap::m_lightHeight(100.0f);
 	float Shadowmap::m_lightNear(0.1f);
 	float Shadowmap::m_lightFar(220.0f);
 	float Shadowmap::m_viewWidth(32.0f);
@@ -21,7 +21,7 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	IMPLEMENT_DX12SHADER(PNTShadowmap, App::GetShadersDir() + L"VSShadowmap.cso")
 
-	Shadowmap::Shadowmap(const std::shared_ptr<GameObject>& gameObjectPtr) :
+		Shadowmap::Shadowmap(const std::shared_ptr<GameObject>& gameObjectPtr) :
 		Component(gameObjectPtr)
 	{
 	}
@@ -145,7 +145,7 @@ namespace basecross {
 	}
 
 	void Shadowmap::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
-//		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+		//		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		auto mesh = GetBaseMesh(0);
 		if (mesh) {
 			auto pBaseScene = BaseScene::Get();

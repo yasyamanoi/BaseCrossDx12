@@ -19,16 +19,12 @@ namespace basecross {
 	FixedBox::~FixedBox() {}
 
 	void FixedBox::OnCreate() {
-
-		//Transformコンポーネントを取り出す
-		auto ptrTrans = GetComponent<Transform>();
-		auto& param = ptrTrans->GetTransParam();
-		//PhysX関連
-		PhysxCreateParam pxParam;
-		physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);
-		pxParam.pGeometry = &scale;
-		AddComponent<RigidbodyStatic>(pxParam);
-
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+		//OBB衝突j判定を付ける
+		auto ptrColl = AddComponent<CollisionObb>();
+		ptrColl->SetFixed(true);
+		//タグをつける
+		AddTag(L"FixedBox");
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
 		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
@@ -37,42 +33,44 @@ namespace basecross {
 		ptrDraw->SetOwnShadowActive(true);
 	}
 
+
 	//--------------------------------------------------------------------------------------
-	// 四角のオブジェクト
+	// モデルオブジェクト
 	//--------------------------------------------------------------------------------------
-	WallBox::WallBox(const std::shared_ptr<Stage>& stage, const TransParam& param) :
+	BoneModel::BoneModel(const std::shared_ptr<Stage>& stage, const TransParam& param) :
 		GameObject(stage),
 		m_totalTime(0.0)
 	{
 		m_transParam = param;
 	}
-	WallBox::~WallBox() {}
+	BoneModel::~BoneModel() {}
 
-	void WallBox::OnCreate() {
-		auto ptrGameStage = std::dynamic_pointer_cast<GameStage>(GetStage());
-		//Transformコンポーネントを取り出す
-		auto ptrTrans = GetComponent<Transform>();
-		auto& param = ptrTrans->GetTransParam();
-		//PhysX関連
-		PhysxCreateParam pxParam;
-		physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);
-		pxParam.pGeometry = &scale;
-		auto pRigDynamicComp = AddComponent<RigidbodyDynamic>(pxParam);
-		auto pRigDynamic = pRigDynamicComp->GetRigidDynamic();
-
+	void BoneModel::OnCreate() {
+		//コマンドリストの取得
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+		//モデルメッシュの作成
+		m_baseMesh = BaseMesh::CreateSingleBoneModelMesh(
+			pCommandList,
+			App::GetRelativeAssetsDir(), L"SeaLife_Rigged\\Green_Sea_Turtle_Maya_2018.fbx"
+		);
+		//シャドウマップをつける
 		auto ptrShadow = AddComponent<Shadowmap>();
-		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
-		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
-		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
-		ptrDraw->AddBaseTexture(L"WALL_TX");
-		ptrDraw->SetOwnShadowActive(true);
-
-		//ジャンプさせる
-		pRigDynamic->addForce(physx::PxVec3(0, 10, 0), physx::PxForceMode::eIMPULSE);
-
+		ptrShadow->AddBaseMesh(m_baseMesh);
+		//BcPNTBoneDraw描画コンポーネントをつける
+		auto ptrDraw = AddComponent<BcPNTBoneDraw>();
+		ptrDraw->AddBaseMesh(m_baseMesh);
 	}
 
-	void WallBox::OnUpdate(double elapsedTime) {
+	void BoneModel::OnUpdate(double elapsedTime) {
+		//2秒で一回りするアニメーション
+		m_totalTime += elapsedTime;
+		if (m_totalTime >= 2.0) {
+			m_totalTime = 0.0;
+		}
+		//描画コンポーネントを取り出して
+		//アニメーションを更新する
+		auto ptrDraw = GetComponent<BcPNTBoneDraw>();
+		ptrDraw->UpdateAnimation(m_totalTime);
 	}
 
 

@@ -9,19 +9,14 @@
 namespace basecross {
 
 
-	DECLARE_DX12SHADER(SpVSPCStatic)
-	DECLARE_DX12SHADER(SpPSPCStatic)
+//	DECLARE_DX12SHADER(SpVSPCStatic)
+//	DECLARE_DX12SHADER(SpPSPCStatic)
 
 	//--------------------------------------------------------------------------------------
 	// ÉVÅ[Éì
 	//--------------------------------------------------------------------------------------
 	class Scene : public BaseScene
 	{
-		SimpleConstant m_constantBuffer;
-		size_t m_constantBufferIndex;
-		std::shared_ptr<BaseMesh> m_mesh;
-		double m_totalTime;
-		TransParam m_param;
 		std::shared_ptr<Camera> m_camera;
 		std::shared_ptr<LightSet> m_lightSet;
 	public:

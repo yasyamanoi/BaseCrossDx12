@@ -7,7 +7,7 @@
 
 namespace basecross {
 
-	Transform::Transform(const std::shared_ptr<GameObject>& gameObjectPtr, const TransParam& param):
+	Transform::Transform(const std::shared_ptr<GameObject>& gameObjectPtr, const TransParam& param) :
 		Component(gameObjectPtr),
 		m_beforeParam(param),
 		m_param(param),
@@ -305,8 +305,6 @@ namespace basecross {
 		ret.normalize();
 		return ret;
 	}
-
-
 
 
 }

@@ -8,11 +8,14 @@
 
 namespace basecross {
 
+
 	//--------------------------------------------------------------------------------------
 	// ÉVÅ[Éì
 	//--------------------------------------------------------------------------------------
 	class Scene : public BaseScene
 	{
+		std::shared_ptr<Camera> m_camera;
+		std::shared_ptr<LightSet> m_lightSet;
 	public:
 		Scene(UINT frameCount, PrimDevice* pPrimDevice);
 		virtual ~Scene();

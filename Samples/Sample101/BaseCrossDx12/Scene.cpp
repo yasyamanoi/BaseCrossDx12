@@ -7,9 +7,6 @@
 
 namespace basecross {
 
-	IMPLEMENT_DX12SHADER(SpVSPCStatic, App::GetShadersDir() + L"SpVSPCStatic.cso")
-	IMPLEMENT_DX12SHADER(SpPSPCStatic, App::GetShadersDir() + L"SpPSPCStatic.cso")
-
 	using namespace SceneEnums;
 
 	//--------------------------------------------------------------------------------------
@@ -75,9 +72,10 @@ namespace basecross {
 	}
 
 	void Scene::Update(double elapsedTime) {
+		//親クラスのstatic変数にelapsedTimeをコピー
 		s_elapsedTime = elapsedTime;
 		if (m_activeStage) {
-			m_activeStage->UpdateStage();
+			m_activeStage->UpdateStage(elapsedTime);
 			UpdateConstantBuffers();
 			CommitConstantBuffers();
 		}

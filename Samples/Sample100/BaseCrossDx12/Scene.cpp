@@ -7,7 +7,6 @@
 
 namespace basecross {
 
-
 	using namespace SceneEnums;
 
 	//--------------------------------------------------------------------------------------
@@ -24,6 +23,7 @@ namespace basecross {
 
 	void Scene::CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)
 	{
+
 		//ステージ作成
 		ResetActiveStage<GameStage>(pDevice);
 	}
@@ -58,12 +58,12 @@ namespace basecross {
 	}
 
 	void Scene::Update(double elapsedTime) {
+		//親クラスのstatic変数にelapsedTimeをコピー
 		s_elapsedTime = elapsedTime;
 		if (m_activeStage) {
-			m_activeStage->UpdateStage();
+			m_activeStage->UpdateStage(elapsedTime);
 			UpdateConstantBuffers();
 			CommitConstantBuffers();
-
 		}
 	}
 

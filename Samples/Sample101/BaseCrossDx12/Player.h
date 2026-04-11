@@ -32,7 +32,7 @@ namespace basecross {
 		//Aボタン
 		void OnPushA();
 		//Bボタン
-		void OnPushB(){}
+		void OnPushB() {}
 	};
 
 }

@@ -31,4 +31,3 @@ namespace basecross {
 }
 
 //end namespace basecross
-

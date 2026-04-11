@@ -20,18 +20,20 @@ namespace basecross {
 		virtual void OnUpdate(double elapsedTime)override {}
 	};
 
+
 	//--------------------------------------------------------------------------------------
-	// 四角のオブジェクト
+	// モデルオブジェクト
 	//--------------------------------------------------------------------------------------
-	class WallBox : public  GameObject {
+	class BoneModel : public GameObject {
+		std::shared_ptr<BaseMesh> m_baseMesh;
 		double m_totalTime;
-	protected:
 	public:
-		WallBox(const std::shared_ptr<Stage>& stage, const TransParam& param);
-		virtual ~WallBox();
-		virtual void OnCreate();
-		virtual void OnUpdate(double elapsedTime);
+		BoneModel(const std::shared_ptr<Stage>& stage, const TransParam& param);
+		virtual ~BoneModel();
+		virtual void OnCreate()override;
+		virtual void OnUpdate(double elapsedTime)override;
 	};
+
 
 
 }

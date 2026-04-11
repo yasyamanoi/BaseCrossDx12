@@ -235,7 +235,7 @@ namespace basecross {
 		}
 		//クオータニオンでY回転（つまりXZベクトルの値）を計算
 		Quat qtXZ;
-		qtXZ.rotationAxis(Vec3(0, 1.0f, 0),m_RadXZ);
+		qtXZ.rotationAxis(Vec3(0, 1.0f, 0), m_RadXZ);
 		qtXZ.normalize();
 		//移動先行の行列計算することで、XZの値を算出
 		Mat4x4 Mat;
@@ -291,4 +291,4 @@ namespace basecross {
 
 
 }
-//end 
+//end namespace basecross

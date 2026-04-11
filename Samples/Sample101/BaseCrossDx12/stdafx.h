@@ -5,8 +5,11 @@
 
 #pragma once
 
-//ライブラリ側
+//ベイシックライブラリ
 #include "BasicInclude.h"
+//スタンダードライブラリ
+#include "StandardInclude.h"
+
 //以下のインクルードは必要
 #include "Scene.h"
 //リソース

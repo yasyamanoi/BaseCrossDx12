@@ -7,9 +7,6 @@
 
 namespace basecross {
 
-	IMPLEMENT_DX12SHADER(SpVSPCStatic, App::GetShadersDir() + L"SpVSPCStatic.cso")
-	IMPLEMENT_DX12SHADER(SpPSPCStatic, App::GetShadersDir() + L"SpPSPCStatic.cso")
-
 	using namespace SceneEnums;
 
 	//--------------------------------------------------------------------------------------
@@ -25,21 +22,14 @@ namespace basecross {
 	}
 
 	void Scene::CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)
-	{
+	{	
 		//テクスチャ
-		auto texFile = App::GetRelativeAssetsDir() + L"wall.jpg";
+		auto texFile = App::GetRelativeAssetsDir() + L"sky.jpg";
 		auto texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
-		RegisterTexture(L"WALL_TX", texture);
-		texFile = App::GetRelativeAssetsDir() + L"sky.jpg";
-		texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
 		RegisterTexture(L"SKY_TX", texture);
 		texFile = App::GetRelativeAssetsDir() + L"trace.png";
 		texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
 		RegisterTexture(L"TRACE_TX", texture);
-
-		texFile = App::GetRelativeAssetsDir() + L"trace3.png";
-		texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
-		RegisterTexture(L"TRACE3_TX", texture);
 
 		//ステージ作成
 		ResetActiveStage<GameStage>(pDevice);
@@ -77,7 +67,7 @@ namespace basecross {
 	void Scene::Update(double elapsedTime) {
 		s_elapsedTime = elapsedTime;
 		if (m_activeStage) {
-			m_activeStage->UpdateStage();
+			m_activeStage->UpdateStage(elapsedTime);
 			UpdateConstantBuffers();
 			CommitConstantBuffers();
 		}

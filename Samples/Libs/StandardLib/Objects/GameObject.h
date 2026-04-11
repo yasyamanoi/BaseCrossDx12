@@ -11,7 +11,6 @@
 namespace basecross {
 
 	class Stage;
-	class Behavior;
 	class Collision;
 	struct CollisionPair;
 
@@ -19,18 +18,18 @@ namespace basecross {
 	// 配置されるオブジェクトの親
 	//--------------------------------------------------------------------------------------
 	class GameObject : public ObjectInterface {
+		//所属するステージ
 		std::weak_ptr<Stage> m_stage;
-
 		//updateするかどうか
 		bool m_updateActive;
 		//drawするかどうか
 		bool m_drawActive;
 		//透明かどうか
 		bool m_alphaActive;
+		//速度
+		Vec3 m_velocity;
 
 
-		//行動のマップ
-		std::map<std::type_index, std::shared_ptr<Behavior>> m_BehaviorMap;
 		//コンポーネントのマップ
 		std::map<std::type_index, std::shared_ptr<Component> > m_compMap;
 		//コンポーネント実行順番
@@ -49,44 +48,29 @@ namespace basecross {
 			return nullptr;
 		}
 
-
 		int m_drawLayer = 0;	//描画レイヤー
 		std::set<std::wstring> m_tagSet;	//タグのセット
 		std::set<int> m_numTagSet;	//数字タグのセット
 
 
-		const std::map<std::type_index, std::shared_ptr<Behavior> >& GetBehaviorMap() const {
-			return m_BehaviorMap;
-		}
-		std::map<std::type_index, std::shared_ptr<Behavior> >& GetBehaviorMap() {
-			return m_BehaviorMap;
-		}
-		std::shared_ptr<Behavior> SearchBehavior(std::type_index TypeIndex)const {
-			auto it = m_BehaviorMap.find(TypeIndex);
-			if (it != m_BehaviorMap.end()) {
-				return it->second;
-			}
-			return nullptr;
-
-		}
-		void AddMakedBehavior(std::type_index TypeIndex, const std::shared_ptr<Behavior>& Ptr) {
-			//mapに追加もしくは更新
-			m_BehaviorMap[TypeIndex] = Ptr;
-		}
 	protected:
 		TransParam m_transParam;
-		GameObject(const std::shared_ptr<Stage>& stage):
+		GameObject(const std::shared_ptr<Stage>& stage) :
 			m_stage(stage),
-			m_transParam(),
 			m_updateActive(true),
 			m_drawActive(true),
 			m_alphaActive(false)
 		{
 		}
 		virtual ~GameObject() {}
-
-
 	public:
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	所属するステージを得る(const)
+		@param[in]	exceptionActive	ステージが無効だったとき。trueで
+		@return	所属するステージ
+		*/
+		//--------------------------------------------------------------------------------------
 		std::shared_ptr<Stage> GetStage(bool exceptionActive = true) const;
 		bool IsUpdateActive() const {
 			return m_updateActive;
@@ -106,6 +90,7 @@ namespace basecross {
 		void SetAlphaActive(bool b) {
 			m_alphaActive = b;
 		}
+
 
 		virtual std::shared_ptr<Camera> GetCamera()const;
 		virtual std::shared_ptr<LightSet> GetLightSet() const;
@@ -180,62 +165,6 @@ namespace basecross {
 				it++;
 			}
 		}
-
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	行動の取得。存在しなければ作成する
-		@tparam	T	取得する型
-		@return	コンポーネント
-		*/
-		//--------------------------------------------------------------------------------------
-		template <typename T>
-		std::shared_ptr<T> GetBehavior() {
-			auto Ptr = SearchBehavior(std::type_index(typeid(T)));
-			if (Ptr) {
-				//指定の型の行動が見つかった
-				auto RetPtr = std::dynamic_pointer_cast<T>(Ptr);
-				if (RetPtr) {
-					return RetPtr;
-				}
-				else {
-					throw BaseException(
-						L"行動がありましたが、型キャストできません",
-						Util::GetWSTypeName<T>(),
-						L"GameObject::GetBehavior<T>()"
-					);
-				}
-			}
-			else {
-				//無ければ新たに制作する
-				std::shared_ptr<T> newPtr = ObjectFactory::Create<T>(GetThis<GameObject>());
-				AddMakedBehavior(std::type_index(typeid(T)), newPtr);
-				return newPtr;
-			}
-			return nullptr;
-		}
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief	行動の検索。
-		@tparam	T	取得する型
-		@return	存在すればtrue
-		*/
-		//--------------------------------------------------------------------------------------
-		template <typename T>
-		bool FindBehavior() {
-			auto Ptr = SearchBehavior(type_index(typeid(T)));
-			if (Ptr) {
-				//指定の型の行動が見つかった
-				auto RetPtr = dynamic_pointer_cast<T>(Ptr);
-				if (RetPtr) {
-					return true;
-				}
-				else {
-					return false;
-				}
-			}
-			return false;
-		}
-
 
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -412,8 +341,9 @@ namespace basecross {
 		virtual void OnDestroy()override {}
 		virtual void SetToBefore();
 
-	};
 
+
+	};
 
 	//--------------------------------------------------------------------------------------
 	///	ゲームオブジェクトのweak_ptrをグループ化したもの
@@ -477,10 +407,12 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void OnCreate()override {}
-		virtual void OnUpdate(double elapsedTime) override{}
-		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override{}
-		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override{}
+		virtual void OnUpdate(double elapsedTime) override {}
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override {}
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override {}
 		virtual void OnDestroy() override {}
 	};
+
+
 }
 // end namespace basecross

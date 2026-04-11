@@ -77,17 +77,17 @@ namespace basecross {
 			GetComponent<Transform>()->SetPosition(pos);
 		}
 		//‰ñ“]‚ÌŒvŽZ
-		if (angle.length() > 0.0f) {
-			auto utilPtr = GetBehavior<UtilBehavior>();
-			utilPtr->RotToHead(angle, 1.0f);
-		}
+		//if (angle.length() > 0.0f) {
+		//	auto utilPtr = GetBehavior<UtilBehavior>();
+		//	utilPtr->RotToHead(angle, 1.0f);
+		//}
 	}
 
 
 
 
 	void Player::OnCreate() {
-		GetStage()->SetSharedGameObject(L"Player",GetThis<Player>());
+		GetStage()->SetSharedGameObject(L"Player", GetThis<Player>());
 
 		auto ptrShadow = AddComponent<Shadowmap>();
 		ptrShadow->AddBaseMesh(L"DEFAULT_SPHERE");

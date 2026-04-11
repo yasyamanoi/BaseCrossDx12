@@ -21,9 +21,9 @@ namespace basecross {
 		//親オブジェクト
 		std::weak_ptr<GameObject> m_parent;
 	public:
-		Transform(const std::shared_ptr<GameObject>& gameObjectPtr,const TransParam& param);
-		virtual ~Transform(){}
-		TransParam& GetTransParam(){
+		Transform(const std::shared_ptr<GameObject>& gameObjectPtr, const TransParam& param);
+		virtual ~Transform() {}
+		TransParam& GetTransParam() {
 			return m_param;
 		}
 		void SetTransParam(const TransParam& param) {
@@ -32,7 +32,7 @@ namespace basecross {
 		TransParam& GetBeforeParam() {
 			return m_beforeParam;
 		}
-		void SetBeforeParam(const TransParam& param){
+		void SetBeforeParam(const TransParam& param) {
 			m_beforeParam = param;
 		}
 		Vec3 GetBeforeScale() const;

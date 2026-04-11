@@ -95,8 +95,8 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void OnCreate()override {}
-		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override{}
-		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override{}
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override {}
+		virtual void OnSceneDraw(ID3D12GraphicsCommandList* pCommandList)override {}
 		virtual void OnDestroy()override {}
 	};
 

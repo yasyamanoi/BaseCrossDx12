@@ -8,14 +8,14 @@
 namespace basecross {
 
 	IMPLEMENT_DX12SHADER(BcVSPNTStaticPL, App::GetShadersDir() + L"BcVSPNTStaticPL.cso")
-	IMPLEMENT_DX12SHADER(BcPSPNTPL, App::GetShadersDir() + L"BcPSPNTPL.cso")
+		IMPLEMENT_DX12SHADER(BcPSPNTPL, App::GetShadersDir() + L"BcPSPNTPL.cso")
 
-	IMPLEMENT_DX12SHADER(BcVSPNTStaticPLShadow, App::GetShadersDir() + L"BcVSPNTStaticPLShadow.cso")
-	IMPLEMENT_DX12SHADER(BcPSPNTPLShadow, App::GetShadersDir() + L"BcPSPNTPLShadow.cso")
+		IMPLEMENT_DX12SHADER(BcVSPNTStaticPLShadow, App::GetShadersDir() + L"BcVSPNTStaticPLShadow.cso")
+		IMPLEMENT_DX12SHADER(BcPSPNTPLShadow, App::GetShadersDir() + L"BcPSPNTPLShadow.cso")
 
 
 
-	BcPNTStaticDraw::BcPNTStaticDraw(const std::shared_ptr<GameObject>& gameObjectPtr) :
+		BcPNTStaticDraw::BcPNTStaticDraw(const std::shared_ptr<GameObject>& gameObjectPtr) :
 		Component(gameObjectPtr),
 		m_ownShadowActive(false),
 		m_fogEnabled(true),
@@ -261,7 +261,7 @@ namespace basecross {
 
 
 	void BcPNTStaticDraw::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
-//		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+		//		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
@@ -270,7 +270,7 @@ namespace basecross {
 		auto& scissorRect = pBaseScene->GetScissorRect();
 		auto depthDsvs = pBaseScene->GetDepthDsvs();
 		auto depthGPUDsvs = pBaseScene->GetDepthSrvGpuHandles();
-		
+
 		auto CbvSrvUavDescriptorHeap = pBaseScene->GetCbvSrvUavDescriptorHeap();
 		auto mesh = GetBaseMesh(0);
 		auto texture = GetBaseTexture(0);

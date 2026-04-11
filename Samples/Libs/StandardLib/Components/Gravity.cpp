@@ -45,18 +45,17 @@ namespace basecross {
 
 	void Gravity::OnUpdate(double elapsedTime) {
 		//コリジョンがあって、スリープ状態なら更新しない
-		//auto PtrCollision = GetGameObject()->GetComponent<Collision>(false);
-		//if (PtrCollision && PtrCollision->IsSleep()) {
-		//	return;
-		//}
-		auto PtrTransform = GetGameObject()->GetComponent<Transform>();
+		auto PtrCollision = GetGameObject()->GetComponent<Collision>(false);
+		if (PtrCollision && PtrCollision->IsSleep()) {
+			return;
+		}
+		auto ptrTransform = GetGameObject()->GetComponent<Transform>();
 		//前回のターンからの時間
-		float ElapsedTime = (float)Scene::GetElapsedTime();
-		m_GravityVelocity += m_Gravity * ElapsedTime;
-		auto Pos = PtrTransform->GetPosition();
-		//		auto Pos = PtrTransform->GetWorldPosition();
-		Pos += m_GravityVelocity * ElapsedTime;
-		PtrTransform->SetPosition(Pos);
+		float f_elapsedTime = (float)elapsedTime;
+		m_GravityVelocity += m_Gravity * f_elapsedTime;
+		auto pos = ptrTransform->GetPosition();
+		pos += m_GravityVelocity * f_elapsedTime;
+		ptrTransform->SetPosition(pos);
 	}
 
 

@@ -61,12 +61,15 @@
 #include <codecvt>
 using namespace DirectX;
 
-//PhysX
-#include "PxPhysicsAPI.h"
 //assimp
 #include <assimp/Importer.hpp>      // C++ importer interface
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>     // Post processing flags
+//JoltPhysics
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+
 
 //BaseLib
 //シンプルオブジェクト
@@ -116,16 +119,6 @@ using namespace basecross::bsm;
 #pragma comment( lib, "d3d11.lib" )
 #pragma comment( lib, "d2d1.lib" )
 #pragma comment( lib, "dwrite.lib" )
-
-#pragma comment(lib, "PhysX_64.lib")
-#pragma comment(lib, "PhysXCommon_64.lib")
-#pragma comment(lib, "PhysXCooking_64.lib")
-#pragma comment(lib, "PhysXExtensions_static_64.lib")
-#pragma comment(lib, "PhysXFoundation_64.lib")
-#pragma comment(lib, "PhysXPvdSDK_static_64.lib")
-#pragma comment(lib, "PhysXTask_static_64.lib")
-#pragma comment(lib, "SceneQuery_static_64.lib")
-#pragma comment(lib, "SimulationController_static_64.lib")
 
 #if defined(_DEBUG)
 #pragma comment(lib, "assimp-vc143-mtd.lib")

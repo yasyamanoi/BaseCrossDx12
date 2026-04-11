@@ -125,12 +125,12 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 
 	IMPLEMENT_DX12SHADER(SpVSPNTStatic, App::GetShadersDir() + L"SpVSPNTStatic.cso")
-	IMPLEMENT_DX12SHADER(SpVSPNTStaticShadow, App::GetShadersDir() + L"SpVSPNTStaticShadow.cso")
+		IMPLEMENT_DX12SHADER(SpVSPNTStaticShadow, App::GetShadersDir() + L"SpVSPNTStaticShadow.cso")
 
-	IMPLEMENT_DX12SHADER(SpPSPNTStatic, App::GetShadersDir() + L"SpPSPNTStatic.cso")
-	IMPLEMENT_DX12SHADER(SpPSPNTStaticShadow, App::GetShadersDir() + L"SpPSPNTStaticShadow.cso")
+		IMPLEMENT_DX12SHADER(SpPSPNTStatic, App::GetShadersDir() + L"SpPSPNTStatic.cso")
+		IMPLEMENT_DX12SHADER(SpPSPNTStaticShadow, App::GetShadersDir() + L"SpPSPNTStaticShadow.cso")
 
-	SpPNTStaticDraw::SpPNTStaticDraw(const std::shared_ptr<GameObject>& gameObjectPtr) :
+		SpPNTStaticDraw::SpPNTStaticDraw(const std::shared_ptr<GameObject>& gameObjectPtr) :
 		SpStaticDraw(gameObjectPtr)
 	{
 
@@ -233,7 +233,7 @@ namespace basecross {
 	}
 
 	void SpPNTStaticDraw::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
-//		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+		//		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
 		auto pBaseScene = BaseScene::Get();
 		auto& frameResources = pBaseScene->GetFrameResources();
 		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
@@ -328,11 +328,6 @@ namespace basecross {
 		}
 
 	}
-
-
-
-
-
 
 }
 // end namespace basecross

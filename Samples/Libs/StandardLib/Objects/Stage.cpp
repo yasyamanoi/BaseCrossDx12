@@ -22,7 +22,7 @@ namespace basecross {
 	}
 
 	//ステージ内の更新（シーンからよばれる）
-	void Stage::UpdateStage() {
+	void Stage::UpdateStage(double elapsedTime) {
 		//追加・削除まちオブジェクトの追加と削除
 		SetWaitToObjectVec();
 		//Transformコンポーネントの値をバックアップにコピー
@@ -32,16 +32,28 @@ namespace basecross {
 				ptr2->SetToBefore();
 			}
 		}
+
+		////物理オブジェクトのフォースの初期化
+		//if (IsPhysicsActive()) {
+		//	pImpl->m_BasePhysics.InitForce();
+		//}
+
 		//配置オブジェクトの更新処理
 		for (auto& ptr : GetGameObjectVec()) {
 			if (ptr->IsUpdateActive()) {
-				ptr->OnUpdate(Scene::GetElapsedTime());
+				ptr->OnUpdate(elapsedTime);
 			}
 		}
 		//自身の更新処理
 		if (IsUpdateActive()) {
-			OnUpdate(Scene::GetElapsedTime());
+			OnUpdate(elapsedTime);
 		}
+
+		////物理オブジェクトの更新
+		//if (IsPhysicsActive()) {
+		//	pImpl->m_BasePhysics.Update(false);
+		//}
+
 		//配置オブジェクトのコンポーネント更新
 		for (auto& ptr : GetGameObjectVec()) {
 			if (ptr->IsUpdateActive()) {
@@ -53,16 +65,15 @@ namespace basecross {
 		//配置オブジェクトの更新後処理
 		for (auto& ptr : GetGameObjectVec()) {
 			if (ptr->IsUpdateActive()) {
-				ptr->OnUpdate2(Scene::GetElapsedTime());
+				ptr->OnUpdate2(elapsedTime);
 			}
 		}
 		//自身の更新後処理
 		if (IsUpdateActive()) {
-			OnUpdate2(Scene::GetElapsedTime());
+			OnUpdate2(elapsedTime);
 		}
-		//カメラとライト
-		m_camera->OnUpdate(Scene::GetElapsedTime());
-		m_lightSet->OnUpdate(Scene::GetElapsedTime());
+		//カメラとライト更新
+		UpdateCameraLight(elapsedTime);
 	}
 
 	//衝突判定の更新（ステージから呼ぶ）
@@ -180,42 +191,42 @@ namespace basecross {
 		}
 		m_waitAddObjectVec.clear();
 	}
-	std::shared_ptr<GameObject> Stage::GetSharedGameObject(const std::wstring & key, bool exceptionActive)const {
+	std::shared_ptr<GameObject> Stage::GetSharedGameObject(const std::wstring& key, bool exceptionActive)const {
 		std::map<const std::wstring, std::weak_ptr<GameObject> >::const_iterator it;
-			//重複キーの検査
-			it = m_SharedMap.find(key);
-			if (it != m_SharedMap.end()) {
-				auto shptr = it->second.lock();
-				if (shptr) {
-					return shptr;
-				}
-				else {
-					//すでに無効
-					if (exceptionActive) {
-						//例外発生
-						std::wstring keyerr = key;
-						throw BaseException(
-							L"オブジェクトが無効です",
-							keyerr,
-							L"Stage::GetSharedGameObject()"
-						);
-					}
-				}
+		//重複キーの検査
+		it = m_SharedMap.find(key);
+		if (it != m_SharedMap.end()) {
+			auto shptr = it->second.lock();
+			if (shptr) {
+				return shptr;
 			}
 			else {
-				//指定の名前が見つからなかった
+				//すでに無効
 				if (exceptionActive) {
 					//例外発生
 					std::wstring keyerr = key;
 					throw BaseException(
-						L"オブジェクトが見つかりません",
+						L"オブジェクトが無効です",
 						keyerr,
 						L"Stage::GetSharedGameObject()"
 					);
 				}
 			}
-			return nullptr;
 		}
+		else {
+			//指定の名前が見つからなかった
+			if (exceptionActive) {
+				//例外発生
+				std::wstring keyerr = key;
+				throw BaseException(
+					L"オブジェクトが見つかりません",
+					keyerr,
+					L"Stage::GetSharedGameObject()"
+				);
+			}
+		}
+		return nullptr;
+	}
 
 	void Stage::SetSharedGameObject(const std::wstring& key, const std::shared_ptr<GameObject>& ptr) {
 		std::map<const std::wstring, std::weak_ptr<GameObject> >::iterator it;
@@ -316,7 +327,7 @@ namespace basecross {
 	}
 
 
-	
+
 
 
 

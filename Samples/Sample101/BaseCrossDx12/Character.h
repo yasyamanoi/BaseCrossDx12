@@ -47,6 +47,13 @@ namespace basecross {
 		Vec3 m_Force;
 		//ë¨ìx
 		Vec3 m_Velocity;
+		float m_Weight;
+		float m_MaxSpeed;
+		float m_MaxForce;
+
+		float m_Decl;
+
+
 	public:
 		//ç\ízÇ∆îjä¸
 		SeekObject(const std::shared_ptr<Stage>& StagePtr, const Vec3& startPos);
@@ -75,6 +82,20 @@ namespace basecross {
 		void SetVelocity(const Vec3& v) {
 			m_Velocity = v;
 		}
+		float GetWeight()const {
+			return m_Weight;
+		}
+		float GetMaxSpeed()const {
+			return m_MaxSpeed;
+		}
+		float GetMaxForce()const {
+			return m_MaxForce;
+		}
+		float GetDecl() const { return m_Decl; }
+		void SetDecl(float f) { m_Decl = f; }
+
+		void RotToHead(float LerpFact);
+
 		void ApplyForce();
 		Vec3 GetTargetPos()const;
 		//ëÄçÏ
@@ -108,6 +129,8 @@ namespace basecross {
 		virtual void Execute(const std::shared_ptr<SeekObject>& Obj)override;
 		virtual void Exit(const std::shared_ptr<SeekObject>& Obj)override;
 	};
+
+
 
 
 }

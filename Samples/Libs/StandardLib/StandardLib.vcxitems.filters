@@ -1,74 +1,65 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Components">
-      <UniqueIdentifier>{ca08752a-8d17-44ad-a83b-128e7aa538a4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Objects">
-      <UniqueIdentifier>{bc11e059-4c34-4066-9718-8955c1bd0cb3}</UniqueIdentifier>
+      <UniqueIdentifier>{f7a1632d-d0b6-4327-a714-3ba893be0c6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components">
+      <UniqueIdentifier>{606be255-c782-490d-8f67-a1c6f4dc8654}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders">
-      <UniqueIdentifier>{16b2aa4a-efd8-4591-9de6-7b3048042450}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Components\Headers">
-      <UniqueIdentifier>{2dfe31ea-2264-490e-bde5-8a88ed2b5e59}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Components\Sources">
-      <UniqueIdentifier>{7733d800-181b-436c-88a4-1624c6e1715f}</UniqueIdentifier>
+      <UniqueIdentifier>{a526e0ac-803a-4da7-9c3f-defc65b84430}</UniqueIdentifier>
     </Filter>
     <Filter Include="Objects\Headers">
-      <UniqueIdentifier>{61d7827c-73ca-41e0-a24e-56e9d58c528b}</UniqueIdentifier>
+      <UniqueIdentifier>{e06a639d-f492-465f-8c53-4ce09e663f50}</UniqueIdentifier>
     </Filter>
     <Filter Include="Objects\Sources">
-      <UniqueIdentifier>{f1b1343a-3af9-46b4-83bb-35359266a84b}</UniqueIdentifier>
+      <UniqueIdentifier>{3e42a74d-e1bb-41f2-b2f2-c03f7e8e7551}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Headers">
+      <UniqueIdentifier>{6ff10cd7-8aa6-46b2-ac42-7bacbc187e23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components\Sources">
+      <UniqueIdentifier>{82171651-1781-4fbe-a1e4-34e458ed72f1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Components\BcBoneDraw.h">
-      <Filter>Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Components\BcStaticDraw.h">
-      <Filter>Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Collision.h">
-      <Filter>Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Component.h">
-      <Filter>Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Gravity.h">
-      <Filter>Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Rigidbody.h">
-      <Filter>Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Shadowmap.h">
-      <Filter>Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Components\SpStaticDraw.h">
-      <Filter>Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Transform.h">
-      <Filter>Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)StandardInclude.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Behavior.h">
-      <Filter>Objects\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\BehaviorSteering.h">
-      <Filter>Objects\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.h">
-      <Filter>Objects\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Constants.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Stage.h">
       <Filter>Objects\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\GameObject.h">
       <Filter>Objects\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Stage.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)StandardInclude.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Component.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Constants.h">
       <Filter>Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Transform.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Gravity.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Collision.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Shadowmap.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\BcStaticDraw.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\SpStaticDraw.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\BcBoneDraw.h">
+      <Filter>Components\Headers</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\StateMachine.h">
       <Filter>Objects\Headers</Filter>
@@ -76,52 +67,49 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Steering.h">
       <Filter>Objects\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\SteeringBehavior.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Components\BcBoneDraw.cpp">
-      <Filter>Components\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Components\BcStaticDraw.cpp">
-      <Filter>Components\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Collision.cpp">
-      <Filter>Components\Sources</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\GameObject.cpp">
+      <Filter>Objects\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Component.cpp">
-      <Filter>Components\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Gravity.cpp">
-      <Filter>Components\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Rigidbody.cpp">
-      <Filter>Components\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Shadowmap.cpp">
-      <Filter>Components\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Components\SpStaticDraw.cpp">
       <Filter>Components\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Transform.cpp">
       <Filter>Components\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Behavior.cpp">
-      <Filter>Objects\Sources</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Gravity.cpp">
+      <Filter>Components\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\BehaviorSteering.cpp">
-      <Filter>Objects\Sources</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Collision.cpp">
+      <Filter>Components\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.cpp">
-      <Filter>Objects\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\GameObject.cpp">
       <Filter>Objects\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Stage.cpp">
       <Filter>Objects\Sources</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Shadowmap.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\BcStaticDraw.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\SpStaticDraw.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\BcBoneDraw.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Steering.cpp">
       <Filter>Objects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\SteeringBehavior.cpp">
+      <Filter>Components\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +149,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcPSPNTPLShadow.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTBonePL.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTBonePLShadow.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTStaticPL.hlsl">
@@ -221,12 +215,6 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\VSShadowmap.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTBonePL.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\BcVSPNTBonePLShadow.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

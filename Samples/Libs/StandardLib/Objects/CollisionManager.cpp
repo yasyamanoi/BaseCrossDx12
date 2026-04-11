@@ -1,6 +1,6 @@
 /*!
-@file CollisionManager.h
-@brief 衝突判定マネージャクラス
+@file CollisionManager.cpp
+@brief 衝突判定マネージャクラス実体
 */
 
 
