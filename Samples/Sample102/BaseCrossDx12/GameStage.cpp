@@ -24,17 +24,14 @@ namespace basecross {
 		param.position = Vec3(0.0f, -0.5, 0.0f);
 		AddGameObject<FixedBox>(param);
 
+
 		param.scale = Vec3(0.25f, 0.25f, 0.25f);
 		param.position = Vec3(0.0f, 0.125f, 0.0f);
 		AddGameObject<Player>(param);
 
-
-
 		param = TransParam();
 		param.scale = Vec3(0.1f);
-		//		param.quaternion = Quat();
 		param.quaternion = Quat(Vec3(0, 1, 0), -XM_PI);
-		//		param.quaternion = Quat(Vec3(1, 0, 0), -XM_PIDIV2);
 		param.position = Vec3(0.0f, 0.0f, 10.0f);
 		AddGameObject<BoneModel>(param);
 

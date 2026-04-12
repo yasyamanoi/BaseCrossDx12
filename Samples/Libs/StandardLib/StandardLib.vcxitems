@@ -19,6 +19,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\Collision.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\Component.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\Gravity.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\JoltLayers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\JoltManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\RigidBody.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\Shadowmap.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\SpStaticDraw.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\SteeringBehavior.h" />
@@ -36,6 +39,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Collision.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Component.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Gravity.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\JoltManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\RigidBody.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Shadowmap.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\SpStaticDraw.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\SteeringBehavior.cpp" />

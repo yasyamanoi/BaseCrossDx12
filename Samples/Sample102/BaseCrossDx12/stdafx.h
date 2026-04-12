@@ -7,6 +7,8 @@
 
 //ライブラリ側
 #include "BasicInclude.h"
+//スタンダードライブラリ
+#include "StandardInclude.h"
 //以下のインクルードは必要
 #include "Scene.h"
 //リソース
