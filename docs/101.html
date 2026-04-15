@@ -291,10 +291,379 @@
 		virtual void OnUpdate(double elapsedTime)override;
 	};
 </pre>
-　実装内容はコメントの通りです。これは、プレイヤーをはじめ、他のオブジェクトでも参照されます。
+　実装内容はコメントの通りです。これは、プレイヤーをはじめ、他のオブジェクトでも参照されます。<br>
+　<strong>スタンダードサンプル</strong>では、このカメラが多用されています。<br>
+　しかし<strong>カメラ</strong>は各ゲームにおいて<strong>非常に重要なオブジェクト</strong>です。各ゲームにおいて<strong>カメラの演出</strong>は個性の現れとも言えます。ですのでこの<strong>MyCameraクラス</strong>を参考にしながら、ぜひ、ゲーム独自のカメラ設計を行っていただきたいと思います。<br>
+　<strong>カメラ</strong>に絶対に必要なメンバは以下の3つです。<strong>PerspecCamera</strong>の親の<strong>Cameraクラス</strong>のメンバですが
+<pre class="my-3 p-3">
+		Vec3 m_eye;	//カメラ位置　
+		Vec3 m_at;	//注目点
+		Vec3 m_up;   //カメラの傾き（アップ）
+</pre>
+　この３つのメンバを<strong>動的にどのように変化させるか</strong>がカメラの本質です。<br>
+　例えば映画を撮影する場合、カメラマンは監督の指示のもと、<strong>視点（m_eye）</strong>を変えたり、<strong>映す場所（m_at）</strong>を変えたり<strong>カメラの傾き（m_up）</strong>を変えたりします。これを動的に変化させることで、ゲームの演出を行います。<br>
+　このほかに<strong>画角</strong>や、実際に画面に表示させる場合の<strong>縦横比（アスペクト比）</strong>があります。<br>
+　<strong>PerspecCamera</strong>のメンバですがこちらも重要です。
+<pre class="my-3 p-3">
+		float m_fovY;   //射影角度
+		float m_aspect;	//アスペクト比
+</pre>
+　これらはデフォルトの値があり（射影角度は45度、アスペクト比はゲーム画面の縦横比）、それを変える演出が必要な場合動的に変更します。<br>
+　構造は単純ですので、ぜひ、<strong>作成するゲームの独自カメラ</strong>を宣言定義することをお勧めします。<br>
+<h5>ステージ</h5>
+　<strong>スタンダードサンプル</strong>では<strong>ステージ</strong>という概念があります。<br>
+　もちろん、一番重要なのは<strong>シーン</strong>ですがその<strong>シーン</strong>に<strong>現在アクティブなステージ</strong>というオブジェクトを取り入れています。<br>
+　ゲームには<strong>タイトル画面、ゲーム画面、クリア画面</strong>などなど様々な状態があります。これを実現するのが<strong>ステージ</strong>です。<br>
+　<strong>ステージ</strong>は<strong>スタンダードサンプル</strong>のなかのライブラリ<strong>StandardLib/Objects/Headers/Stage.h</strong>にヘッダがあり<strong>StandardLib/Objects/Sources/Stage.cpp</strong>に実体があります。<br>
+　<strong>ステージクラス</strong>は結構大きなクラスです。テンプレート関数含め様々な機能を実装しています。興味ある人は、ぜひ参照してください。<br>
+　しかし、皆さんはこれらの関数を熟知する必要はありません。<br>
+<h5>ゲームステージ</h5>
+　例えば<strong>ゲーム画面</strong>であれば<strong>Stageクラス</strong>を継承して<strong>GameStageクラス</strong>などを作成すればよいのです。
+　<strong>Sample101</strong>ではコンテンツ側に<strong>GameStage.h/cpp</strong>があり、そのヘッダは以下のようになっています。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	// ゲームステージ
+	//--------------------------------------------------------------------------------------
+	class GameStage : public Stage {
+		std::shared_ptr&lt;Camera> m_camera;
+		std::shared_ptr&lt;LightSet> m_lightSet;
+	public:
+		GameStage(ID3D12Device* pDevice):
+			Stage(pDevice)
+		{}
+		virtual ~GameStage() {}
+		//構築時処理
+		virtual void OnCreate()override;
+		//カメラをを得る
+		virtual std::shared_ptr&lt;Camera> GetCamera() const override {
+			return m_camera;
+		}
+		//ライトセットを得る
+		virtual std::shared_ptr&lt;LightSet> GetLightSet() const override {
+			return m_lightSet;
+		}
+		//カメラとライト更新
+		virtual void UpdateCameraLight(double elapsedTime)override {
+			m_camera->OnUpdate(elapsedTime);
+			m_lightSet->OnUpdate(elapsedTime);
+		}
+		//ボックスオブジェクトの作成
+		void CreateFixedBox();
+		//壁模様のボックスの作成
+		void CreateWallBox();
+		//追いかけるオブジェクトの作成
+		void CreateSeekObject();
+		//プレイヤーの作成
+		void CreatePlayer();
+	};
+</pre>
+　<strong>Stageクラスの派生クラス</strong>で記述しなければいけないのは、ごくわずかです。すなわち<strong>カメラとライト</strong>、<strong>カメラとライトの更新</strong>、あとは配置するオブジェクトの構築、更新処理です。<br>
 <h5>配置オブジェクトの定義</h5>
+<h6>ボックスオブジェクトの定義</h6>
+　まず一番簡単な<strong>ボックスオブジェクトの作成</strong>です。これは<strong>CreateFixedBox()関数</strong>で実装されます。<br>
+　内容は以下です。
+<pre class="my-3 p-3">
+	//ボックスオブジェクトの作成
+	void GameStage::CreateFixedBox() {
+		TransParam param;
+		param.scale = Vec3(50.0f, 1.0f, 50.0f);
+		param.position = Vec3(0.0f, -0.5, 0.0f);
+		<span class="red">AddGameObject&lt;FixedBox>(param);</span>
+
+		param.scale = Vec3(5.0f, 1.0f, 5.0f);
+		param.position = Vec3(10.0f, 0.0, 10.0f);
+		<span class="red">AddGameObject&lt;FixedBox>(param);</span>
+
+		param.position = Vec3(10.0f, 0.0, 10.0f);
+		param.quaternion = Quat(Vec3(-1, 0, 1), XM_PIDIV4);
+		<span class="red">AddGameObject&lt;FixedBox>(param);</span>
+
+		param.position = Vec3(-10.0f, 0.0, 10.0f);
+		param.quaternion = Quat(Vec3(0, 1, 1), XM_PIDIV4);
+		<span class="red">AddGameObject&lt;FixedBox>(param);</span>
+	}
+</pre>
+　ここでは4つの<strong>FixedBox</strong>が構築されます。<br>
+　<strong>FixedBox</strong>はコンストラクタに<strong>TransParam構造体</strong>をとりますので、各オブジェクトごとに内容を設定して
+<pre class="my-3 p-3">
+		<span class="red">AddGameObject&lt;FixedBox>(param);</span>
+</pre>
+　のように呼び出します。<strong>AddGameObject()テンプレート関数</strong>はステージ方式におけるかなり重要な関数です。この関数は指定のクラス（ここではFixedBox）を構築して<strong>FixedBox::OnCreate()関数</strong>を呼び出します。<br>
+　以下は<strong>FixedBox::OnCreate()関数</strong>です。<strong>Character.cpp</strong>にあります。
+<pre class="my-3 p-3">
+	void FixedBox::OnCreate() {
+		//OBB衝突j判定を付ける
+		auto ptrColl = <span class="red">AddComponent&lt;CollisionObb>();</span>
+		//この衝突判定は、動かない、という特徴をつける
+		ptrColl->SetFixed(true);
+		//影（シャドウマップ）をつける
+		auto ptrShadow = <span class="red">AddComponent&lt;Shadowmap>();</span>
+		//L"DEFAULT_CUBE"というメッシュをつける
+		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		//描画コンポーネントに、BcPNTStaticDraw、を指定する
+		auto ptrDraw = <span class="red">AddComponent&lt;BcPNTStaticDraw>();</span>
+		//ここにもL"DEFAULT_CUBE"というメッシュをつける
+		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+		//L"SKY_TX"というテクスチャをつける
+		ptrDraw->AddBaseTexture(L"SKY_TX");
+		//自分自身に影が移りこむようにする
+		ptrDraw->SetOwnShadowActive(true);
+	}
+</pre>
+　ここで<strong>コンポーネント</strong>が出てきます。<strong>コンポーネント</strong>というのは、各オブジェクトにおける<strong>特徴</strong>というか<strong>性格（擬人化してますが）</strong>みたいなものです。<br>
+　コンポーネントを実装するには、上記してるように
+<pre class="my-3 p-3">
+		//OBB衝突j判定を付ける
+		auto ptrColl = <span class="red">AddComponent&lt;CollisionObb>();</span>
+		//この衝突判定は、動かない、という特徴をつける
+		ptrColl->SetFixed(true);
+</pre>
+　のように記述します。これにより、このゲームオブジェクトは<strong>CollisionObb（直方体の衝突判定）</strong>を付けることになります。<br>
+　そして<strong>ptrColl->SetFixed(true);</strong>という記述で<strong>衝突によって後ずさりなどの影響を受けない</strong>設定になります。<br>
+　続いて<strong>シャドウマップ（影）</strong>のコンポーネントを実装します。
+<pre class="my-3 p-3">
+		//影（シャドウマップ）をつける
+		auto ptrShadow = <span class="red">AddComponent&lt;Shadowmap>();</span>
+		//L"DEFAULT_CUBE"というメッシュをつける
+		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+</pre>
+　ここで出てくる<strong>L"DEFAULT_CUBE"</strong>は、<strong>BaseCrossDx12</strong>が基本的に持っている<strong>メッシュ</strong>の形状を指定しています。<br>
+　<strong>BasicLib</strong>内の<strong>BaseScene::CreateDefaultResources()</strong>に実装があります。<br>
+　<strong>FixedBox</strong>は直方体のオブジェクトなので、立方体（すなわちL"DEFAULT_CUBE"）の形状のメッシュで、あとは拡大縮小や傾きによってゲームステージ上の形状を決定します。<br>
+　続いて<strong>描画方法</strong>に指定です。
+<pre class="my-3 p-3">
+		//描画コンポーネントに、BcPNTStaticDraw、を指定する
+		auto ptrDraw = <span class="red">AddComponent&lt;BcPNTStaticDraw>();</span>
+		//ここにもL"DEFAULT_CUBE"というメッシュをつける
+		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+</pre>
+　描画も<strong>コンポーネント</strong>として指定します。<strong>BcPNTStaticDraw</strong>というコンポーネントは<strong>ベーシックな（Bc）、位置と法線とテクスチャ情報（PNT）</strong>の頂点情報を持つ、<strong>動的に頂点は変更しない（Static）、描画コンポーネント</strong>という意味です。<br>
+　<strong>BaseCrossDx12</strong>には、他にも様々な描画コンポーネントがあります。<br>
+　<strong>描画コンポーネント</strong>を使うことで、DirectX12が持つ細かな描画設定を記述しなくて済みます。<br>
+　しかし、独自の描画を実装したければ、その方法もあります。（サンプルは後述します）<br>
+　<strong>描画コンポーネント</strong>にも<strong>L"DEFAULT_CUBE"</strong>を指定します。
+<h6>追いかけるオブジェクトの定義</h6>
+　このサンプルでは、プレイヤーを動かすと追いかけるオブジェクトがあります。これは<strong>SeekObject</strong>で、以下のように<strong>Character.h/cpp</strong>で記述します。以下は宣言です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	//	追いかける配置オブジェクト
+	//--------------------------------------------------------------------------------------
+	class SeekObject : public GameObject {
+		//ステートマシーン
+		std::unique_ptr&lt; StateMachine&lt;SeekObject> >  m_StateMachine;
+		Vec3 m_StartPos;
+		float m_StateChangeSize;
+		//フォース
+		Vec3 m_Force;
+		//速度
+		Vec3 m_Velocity;
+		float m_Weight;
+		float m_MaxSpeed;
+		float m_MaxForce;
+
+		float m_Decl;
+
+
+	public:
+		//構築と破棄
+		SeekObject(const std::shared_ptr&lt;Stage>& StagePtr, const Vec3& startPos);
+		virtual ~SeekObject();
+		//初期化
+		virtual void OnCreate() override;
+		//アクセサ
+		const std::unique_ptr&lt;StateMachine&lt;SeekObject>>& GetStateMachine() {
+			return m_StateMachine;
+		}
+		float GetStateChangeSize() const {
+			return m_StateChangeSize;
+		}
+		const Vec3& GetForce()const {
+			return m_Force;
+		}
+		void SetForce(const Vec3& f) {
+			m_Force = f;
+		}
+		void AddForce(const Vec3& f) {
+			m_Force += f;
+		}
+		const Vec3& GetVelocity()const {
+			return m_Velocity;
+		}
+		void SetVelocity(const Vec3& v) {
+			m_Velocity = v;
+		}
+		float GetWeight()const {
+			return m_Weight;
+		}
+		float GetMaxSpeed()const {
+			return m_MaxSpeed;
+		}
+		float GetMaxForce()const {
+			return m_MaxForce;
+		}
+		float GetDecl() const { return m_Decl; }
+		void SetDecl(float f) { m_Decl = f; }
+
+		void RotToHead(float LerpFact);
+
+		void ApplyForce();
+		Vec3 GetTargetPos()const;
+		//操作
+		virtual void OnUpdate(double elapsedTime) override;
+	};
+</pre>
+　このオブジェクトは<strong>ステートマシン</strong>という仕組みが実装されています。<br>
+　例えば<strong>OnUpdate処理</strong>で、いろんな条件次第で動きを変えたいときがあります。簡単な分岐であれば<strong>if else 文</strong>や、<strong>switch 文</strong>などで分岐できますが、複雑な処理になると不具合が出やすくなります。<br>
+　そんなときは、オブジェクトに、複数の<strong>ステート（状態）</strong>というクラスを用意して、何かの条件でそれらのステートを適応して更新処理を記述します。そうすることで可読性が高くなるばかりでなく、不具合も少なくなります。<br>
+　ステートマシンを実装するには、まず、メンバ変数に
+<pre class="my-3 p-3">
+		//ステートマシーン
+		std::unique_ptr&lt; StateMachine&lt;SeekObject> >  m_StateMachine;
+</pre>
+　のような変数を用意します。<br>
+　そのうえで、必要なステートクラスを実装します。<br>
+　以下は、その中の<strong>SeekFarState</strong>です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	//	class SeekFarState : public ObjState&lt;SeekObject>;
+	//	用途: プレイヤーから遠いときの移動
+	//--------------------------------------------------------------------------------------
+	class SeekFarState : public ObjState&lt;SeekObject>
+	{
+		SeekFarState() {}
+	public:
+		static std::shared_ptr&lt;SeekFarState> Instance();
+		virtual void Enter(const std::shared_ptr&lt;SeekObject>& Obj)override;
+		virtual void Execute(const std::shared_ptr&lt;SeekObject>& Obj)override;
+		virtual void Exit(const std::shared_ptr&lt;SeekObject>& Obj)override;
+	};
+</pre>
+　コンストラクタはprivateにしておきます。オブジェクトの生成は、staticなInstance関数で行います。<br>
+　ステートは<strong>Enter、Execute、Exit</strong>関数を用意します
+<ul>
+<li>Enter関数</li>
+</ul>
+　この関数はこのステートに入った時に、一度だけ呼ばれます。
+<ul>
+<li>Execute関数</li>
+</ul>
+　この関数はEnter関数が呼ばれた次のターンから、毎ターン呼ばれます。
+<ul>
+<li>Exit関数</li>
+</ul>
+　この関数はこのステートから抜けるときに一度だけばれます。<br>
+　以下は実体です。ここで重要なのは<strong>SeekFarState::Execute()関数</strong>です。
+<pre class="my-3 p-3">
+	void SeekFarState::Execute(const std::shared_ptr&lt;SeekObject>& Obj) {
+		auto trans = Obj->GetComponent&lt;Transform>();
+
+
+		auto seekComp = <span class="red">Obj->GetComponent&lt;Seek>();</span>
+		auto separationComp = <span class="red">Obj->GetComponent&lt;Separation>();</span>
+
+		//フォースの初期化
+		Vec3 force(0.0f);
+		//フォースの計算
+		force = <span class="red">seekComp->Execute(Obj->GetVelocity(), Obj->GetTargetPos(), trans->GetWorldPosition())
+			* Obj->GetWeight();
+		force += separationComp->Execute(force);</span>
+		//そのforceを設定する
+		<span class="red">Obj->SetForce(force);</span>
+		//その結果をもとにオブジェクトの位置に反映する
+		<span class="red">Obj->ApplyForce();</span>
+		//結果として、ターゲットとの間の距離がObj->GetStateChangeSize()
+		//より近ければ、ステートSeekNearStateに変換
+		<span class="red">float f = bsm::bsmUtil::length(Obj->GetComponent&lt;Transform>()->GetPosition() - Obj->GetTargetPos());
+		if (f &lt; Obj->GetStateChangeSize()) {
+			Obj->GetStateMachine()->ChangeState(SeekNearState::Instance());
+		}</span>
+	}
+</pre>
+　ここでは以下のように<strong>Seek</strong>と<strong>Separation</strong>というコンポーネントが実装されています。これらは<strong>ステアリング行動コンポーネント</strong>という種類で<strong>フォース</strong>という、その物体にかけられる<strong>力</strong>によって物体を動かす仕組みです。<br>
+　<strong>ニュートンの第2法則</strong>にのっとった処理です。<br>
+　<strong>Seek</strong>という行動は<strong>目標物を追いかける（ここではプレイヤー）</strong>コンポーネントです。<br>
+　しかし<strong>Seek</strong>は追いかけるだけなので、お互いにぶつかり合っても気にしません。それではちょっと頭が悪いので<strong>Separation</strong>という<strong>常にお互いに距離をあける</strong>コンポーネントも実装します。
+<pre class="my-3 p-3">
+		auto seekComp = <span class="red">Obj->GetComponent&lt;Seek>();</span>
+		auto separationComp = <span class="red">Obj->GetComponent&lt;Separation>();</span>
+</pre>
+　それぞれ<strong>Execute()</strong>という関数を持ち、その関数にパラメータを渡すことで<strong>フォース</strong>を変化させます。<br>
+<pre class="my-3 p-3">
+		//フォースの初期化
+		Vec3 force(0.0f);
+		//フォースの計算
+		force = <span class="red">seekComp->Execute(Obj->GetVelocity(), Obj->GetTargetPos(), trans->GetWorldPosition())
+			* Obj->GetWeight();
+		force += separationComp->Execute(force);</span>
+</pre>
+　<strong>Seek</strong>には<strong>速度、目標物、現在位置</strong>をパラメータにして<strong>Execute()関数</strong>を呼び出し、<strong>Separation</strong>には<strong>現在のフォース</strong>をパラメータにして<strong>Execute()関数</strong>を呼び出します。最終的に決定した<strong>フォース</strong>をオブジェクト側に設定し
+<pre class="my-3 p-3">
+		//そのforceを設定する
+		<span class="red">Obj->SetForce(force);</span>
+</pre>
+　最後に、実際に位置情報を更新します。
+<pre class="my-3 p-3">
+		//その結果をもとにオブジェクトの位置に反映する
+		<span class="red">Obj->ApplyForce();</span>
+</pre>
+　<strong>Seek</strong>は<strong>Separation</strong>と同時に反映しても、追いかける相手が急停止したときなども<strong>通り過ぎてしまう</strong>欠点があります。それを補うのが、目標に近づいたときに<strong>ステート</strong>を変更する処理です。
+<pre class="my-3 p-3">
+		//結果として、ターゲットとの間の距離がObj->GetStateChangeSize()
+		//より近ければ、ステートSeekNearStateに変換
+		<span class="red">float f = bsm::bsmUtil::length(Obj->GetComponent&lt;Transform>()->GetPosition() - Obj->GetTargetPos());
+		if (f &lt; Obj->GetStateChangeSize()) {
+			Obj->GetStateMachine()->ChangeState(SeekNearState::Instance());
+		}</span>
+</pre>
+　このように<strong>SeekNearState</strong>にステートを変更します。<br>
+　以下は<strong>SeekNearState</strong>の中身です。
+
+<pre class="my-3 p-3">
+	void SeekNearState::Execute(const std::shared_ptr&lt;SeekObject>& Obj) {
+		auto trans = Obj->GetComponent&lt;Transform>();
+		<span class="red">auto arriveComp = Obj->GetComponent&lt;Arrive>();
+		auto separationComp = Obj->GetComponent&lt;Separation>();</span>
+
+		//フォースの初期化
+		Vec3 force(0.0f);
+		//フォースの計算
+		<span class="red">force = arriveComp->Execute(force,Obj->GetVelocity(), Obj->GetTargetPos());</span>
+		force += separationComp->Execute(force);
+		//そのforceを設定する
+		Obj->SetForce(force);
+		//その結果をもとにオブジェクトの位置に反映する
+		<span class="red">Obj->ApplyForce();</span>
+		//結果として、ターゲットとの間の距離がObj->GetStateChangeSize()
+		//より遠ければ、ステートSeekFarStateに変換
+		<span class="red">float f = bsm::bsmUtil::length(Obj->GetComponent&lt;Transform>()->GetPosition() - Obj->GetTargetPos());
+		if (f >= Obj->GetStateChangeSize()) {
+			Obj->GetStateMachine()->ChangeState(SeekFarState::Instance());
+		}</span>
+	}
+</pre>
+　ここでは<strong>Arrive</strong>という新たな行動コンポーネントを使用します。これは<strong>到着する</strong>を実装する行動コンポーネントです。引き続き<strong>Separation</strong>も使います。
+<pre class="my-3 p-3">
+		<span class="red">auto arriveComp = Obj->GetComponent&lt;Arrive>();
+		auto separationComp = Obj->GetComponent&lt;Separation>();</span>
+</pre>
+　<strong>Arrive</strong>の<strong>Execute()関数</strong>には<strong>フォース、速度、目標地点</strong>を渡します。
+<pre class="my-3 p-3">
+		//フォースの計算
+		<span class="red">force = arriveComp->Execute(force,Obj->GetVelocity(), Obj->GetTargetPos());</span>
+</pre>
+　このように実装し、プレイヤーが動くなどで一定距離より遠ざかった場合に<strong>SeekFarState</strong>にステートを変更します。
+
+<pre class="my-3 p-3">
+		//結果として、ターゲットとの間の距離がObj->GetStateChangeSize()
+		//より遠ければ、ステートSeekFarStateに変換
+		<span class="red">float f = bsm::bsmUtil::length(Obj->GetComponent&lt;Transform>()->GetPosition() - Obj->GetTargetPos());
+		if (f >= Obj->GetStateChangeSize()) {
+			Obj->GetStateMachine()->ChangeState(SeekFarState::Instance());
+		}</span>
+</pre>
 <h6>Player.h/cpp</h6>
-　このサンプルはコントローラーで操作できます。コントローラーを動かすと、Playerに見立てたボールを動かすことができます。以下は<strong>Playerクラス</strong>です。
+　最後に<strong>プレイヤー</strong>です<br>
+　<strong>プレイヤー</strong>はコントローラーで操作できます。コントローラーを動かすと、Playerに見立てたボールを動かすことができます。以下は<strong>Playerクラス</strong>です。
 <pre class="my-3 p-3">
 	//--------------------------------------------------------------------------------------
 	///	プレイヤー
@@ -324,9 +693,7 @@
 	};
 </pre>
 　以下、実体です。<strong>Player.cpp</strong>に記述されます。
-<ul>
-<li>Player::OnCreate関数</li>
-</ul>
+<h5>Player::OnCreate関数</h5>
 <pre class="my-3 p-3">
 	void Player::OnCreate() {
 		GetStage()->SetSharedGameObject(L"Player",GetThis&lt;Player>());
@@ -481,211 +848,6 @@
 <li>プレイヤーの更新（Player::OnUpdate）</li>
 </ul>
 　と構造的（関数に小分け）にメンバ関数が呼ばれているのが分かります。
-<h6>Character.h/cpp</h6>
-　このサンプルに配置されるオブジェクトは、主に<strong>Character.h/cpp</strong>に記述されます。<br>
-　記述されているオブジェクトは以下の通り。
-<ul>
-<li>FixedBoxクラス</li>
-<li>WallBoxクラス</li>
-<li>SeekObjectクラス</li>
-</ul>
-　この中で<strong>SeekObjectクラス</strong>は<strong>ステートマシン</strong>というAIクラスが含んでいます。
-<ul>
-<li>FixedBoxクラス</li>
-</ul>
-　<strong>FixedBoxクラス</strong>の宣言は以下の通りです。
-<pre class="my-3 p-3">
-	//--------------------------------------------------------------------------------------
-	// ボックスオブジェクト
-	//--------------------------------------------------------------------------------------
-	class FixedBox : public GameObject {
-	public:
-		FixedBox(const std::shared_ptr&lt;Stage>& stage, const TransParam& param);
-		virtual ~FixedBox();
-		//構築時
-		virtual void OnCreate()override;
-		//更新時
-		virtual void OnUpdate(double elapsedTime)override {}
-	};
-</pre>
-　<strong>FixedBoxクラス</strong>は動くことがない直方体オブジェクトです。<br>
-　初期設定で設定すれば、プレイヤーやその他の動くオブジェクトに影響されることはありません。
-<ul>
-<li>FixedBox::OnCreate関数</li>
-</ul>
-<pre class="my-3 p-3">
-	void FixedBox::OnCreate() {
-		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
-		//OBB衝突j判定を付ける
-		auto ptrColl = AddComponent&lt;CollisionObb>();
-		ptrColl->SetFixed(true);
-		//タグをつける
-		AddTag(L"FixedBox");
-		auto ptrShadow = AddComponent&lt;Shadowmap>();
-		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
-		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
-		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
-		ptrDraw->AddBaseTexture(L"SKY_TX");
-		ptrDraw->SetOwnShadowActive(true);
-	}
-</pre>
-　ここではコンポーネント関連は、直方体（OBB）の衝突判定の<strong>CollisionObb</strong>と<strong>Shadowmap</strong>、そして<strong>BcPNTStaticDraw</strong>が設定されています。<br>
-　<strong>CollisionObb</strong>の
-<pre class="my-3 p-3">
-		ptrColl->SetFixed(true);
-</pre>
-　は、ほかの影響を受けない設定です。<br>
-　また<strong>OnUpdate関数</strong>は何もしてません。
-<ul>
-<li>WallBoxクラス</li>
-</ul>
-　<strong>WallBoxクラス</strong>の宣言は以下の通りです。
-<pre class="my-3 p-3">
-	//--------------------------------------------------------------------------------------
-	// 四角のオブジェクト
-	//--------------------------------------------------------------------------------------
-	class WallBox : public  GameObject {
-		double m_totalTime;
-	protected:
-	public:
-		WallBox(const std::shared_ptr&lt;Stage>& stage, const TransParam& param);
-		virtual ~WallBox();
-		virtual void OnCreate();
-		virtual void OnUpdate(double elapsedTime);
-	};
-</pre>
- <strong>WallBoxクラス</strong>は自分自身も行ったり来たりしながら、プレイヤーなどに衝突すると影響を受けて位置を移動させられます。<br>
-　簡単な敵キャラの動きに応用できると思います。
-<ul>
-<li>WallBox::OnCreate関数</li>
-</ul>
-<pre class="my-3 p-3">
-	void WallBox::OnCreate() {
-		//OBB衝突j判定を付ける
-		auto ptrColl = AddComponent&lt;CollisionObb>();
-		//重力をつける
-		auto ptrGra = AddComponent&lt;Gravity>();
-
-		auto ptrShadow = AddComponent&lt;Shadowmap>();
-		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
-		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
-		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
-		ptrDraw->AddBaseTexture(L"WALL_TX");
-		ptrDraw->SetOwnShadowActive(true);
-	}
-</pre>
-　コンポーネントは<strong>CollisionObb、Gravity、Shadowmap、BcPNTStaticDraw</strong>が設定されます。<br>
-　このオブジェクトは自分自身も動くので、<strong>WallBox::OnUpdate関数</strong>も実装します。
-<ul>
-<li>WallBox::OnUpdate関数</li>
-</ul>
-<pre class="my-3 p-3">
-	void WallBox::OnUpdate(double elapsedTime) {
-		//Transformコンポーネントを取り出す
-		auto ptrTrans = GetComponent&lt;Transform>();
-		auto& param = ptrTrans->GetTransParam();
-
-		m_totalTime += elapsedTime;
-		if (m_totalTime >= XM_2PI) {
-			m_totalTime = 0.0;
-		}
-		param.position.x = (float)sin(m_totalTime) * 2.0f;
-	}
-</pre>
-　ここではメンバ変数<strong>m_totalTime</strong>に<strong>elapsedTime</strong>を足してそれをもとに<strong>sinカーブ</strong>を作り出し、それをx座標に代入します。簡単なAI処理と言えます。
-<ul>
-<li>SeekObjectクラス</li>
-</ul>
-　このサンプルでは、起動直後からプレイヤーを追いかけまわすオブジェクトがあります。<br>
-　これは<strong>SeekObjectクラス</strong>です。以下宣言です。
-<pre class="my-3 p-3">
-	//--------------------------------------------------------------------------------------
-	//	追いかける配置オブジェクト
-	//--------------------------------------------------------------------------------------
-	class SeekObject : public GameObject {
-		//ステートマシーン
-		std::unique_ptr&lt; StateMachine&lt;SeekObject> >  m_StateMachine;
-		Vec3 m_StartPos;
-		float m_StateChangeSize;
-		//フォース
-		Vec3 m_Force;
-		//速度
-		Vec3 m_Velocity;
-	public:
-		//構築と破棄
-		SeekObject(const std::shared_ptr&lt;Stage>& StagePtr, const Vec3& startPos);
-		virtual ~SeekObject();
-		//初期化
-		virtual void OnCreate() override;
-		//アクセサ
-		const std::unique_ptr&lt;StateMachine&lt;SeekObject>>& GetStateMachine() {
-			return m_StateMachine;
-		}
-		float GetStateChangeSize() const {
-			return m_StateChangeSize;
-		}
-		const Vec3& GetForce()const {
-			return m_Force;
-		}
-		void SetForce(const Vec3& f) {
-			m_Force = f;
-		}
-		void AddForce(const Vec3& f) {
-			m_Force += f;
-		}
-		const Vec3& GetVelocity()const {
-			return m_Velocity;
-		}
-		void SetVelocity(const Vec3& v) {
-			m_Velocity = v;
-		}
-		void ApplyForce();
-		Vec3 GetTargetPos()const;
-		//操作
-		virtual void OnUpdate(double elapsedTime) override;
-	};
-</pre>
-　このオブジェクトは<strong>ステートマシン</strong>という仕組みが実装されています。<br>
-　例えば<strong>OnUpdate処理</strong>で、いろんな条件次第で動きを変えたいときがあります。簡単な分岐であれば<strong>if else 文</strong>や、<strong>switch 文</strong>などで分岐できますが、複雑な処理になると不具合が出やすくなります。<br>
-　そんなときは、オブジェクトに、複数の<strong>ステート（状態）</strong>というクラスを用意して、何かの条件でそれらのステートを適応して更新処理を記述します。そうすることで可読性が高くなるばかりでなく、不具合も少なくなります。<br>
-　ステートマシンを実装するには、まず、メンバ変数に
-<pre class="my-3 p-3">
-		//ステートマシーン
-		std::unique_ptr&lt; StateMachine&lt;SeekObject> >  m_StateMachine;
-</pre>
-　のような変数を用意します。<br>
-　そのうえで、必要なステートクラスを実装します。<br>
-　以下は、その中の<strong>SeekFarState</strong>です。
-<pre class="my-3 p-3">
-	//--------------------------------------------------------------------------------------
-	//	class SeekFarState : public ObjState&lt;SeekObject>;
-	//	用途: プレイヤーから遠いときの移動
-	//--------------------------------------------------------------------------------------
-	class SeekFarState : public ObjState&lt;SeekObject>
-	{
-		SeekFarState() {}
-	public:
-		static std::shared_ptr&lt;SeekFarState> Instance();
-		virtual void Enter(const std::shared_ptr&lt;SeekObject>& Obj)override;
-		virtual void Execute(const std::shared_ptr&lt;SeekObject>& Obj)override;
-		virtual void Exit(const std::shared_ptr&lt;SeekObject>& Obj)override;
-	};
-</pre>
-　コンストラクタはprivateにしておきます。オブジェクトの生成は、staticなInstance関数で行います。<br>
-　ステートは<strong>Enter、Execute、Exit</strong>関数を用意します
-<ul>
-<li>Enter関数</li>
-</ul>
-　この関数はこのステートに入った時に、一度だけ呼ばれます。
-<ul>
-<li>Execute関数</li>
-</ul>
-　この関数はEnter関数が呼ばれた次のターンから、毎ターン呼ばれます。
-<ul>
-<li>Exit関数</li>
-</ul>
-　この関数はこのステートから抜けるときに一度だけばれます。
-
 <footer class="py-3 my-4">
 <ul class="nav justify-content-center border-top pb-3 mb-3">
 <li class="nav-item"><a href="100.html" class="nav-link px-2 text-success">前へ</a></li>

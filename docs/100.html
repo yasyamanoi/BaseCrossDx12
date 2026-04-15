@@ -15,11 +15,264 @@
 <div class="py-3">
 <img src="img/100a.png" width="80%" />
 </div>
+　<strong>Emptyプロジェクト</strong>のソリューションは以下の通りです。
+<div class="py-3">
+<img src="img/100b.png" width="30%" />
+</div>
+<h5>シーンの役割</h5>
+　<strong>スタンダードサンプル</strong>も基本的には<strong>シーン（Scene.h/cpp）</strong>が中心になります。<br>
+　以下は<strong>Scene.h</strong>です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	// シーン
+	//--------------------------------------------------------------------------------------
+	class Scene : public BaseScene
+	{
+	public:
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンストラクタ、デストラクタ
+		@param[in]	frameCount	フレーム数
+		@param[in]	pPrimDevice	デバイス
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		Scene(UINT frameCount, PrimDevice* pPrimDevice);
+		virtual ~Scene();
+	protected:
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンテンツの作成
+		@param[in]	pDevice	デバイス
+		@param[in]	pCommandList	コマンドリスト
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)override;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	更新処理
+		@param[in]	elapsedTime	前のターンからの時間
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void Update(double elapsedTime)override;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンスタントバッファの更新
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void UpdateConstantBuffers()override;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	コンスタントバッファのコミット
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void CommitConstantBuffers()override;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	UIの更新
+		@param[in]	uiLayer	UIレイヤー
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer)override;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	シャドウマップの描画
+		@param[in]	コマンドリスト
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void ShadowPass(ID3D12GraphicsCommandList* pCommandList)override;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	シーンの描画
+		@param[in]	コマンドリスト
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		virtual void ScenePass(ID3D12GraphicsCommandList* pCommandList);
+	};
+</pre>
+　このヘッダファイルは<strong>ベーシックサンプルのEmptyプロジェクト</strong>とほぼ同じですが<strong>スタンダードサンプル</strong>はそれぞれの関数は<strong>何もしない</strong>わけではなく実体を持っています。以下がその内容です。<strong>Scene.cpp</strong>になります。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	// シーン
+	//--------------------------------------------------------------------------------------
+	Scene::Scene(UINT frameCount, PrimDevice* pPrimDevice) :
+		BaseScene(frameCount, pPrimDevice)
+	{
+	}
+
+	Scene::~Scene()
+	{
+	}
+
+	void Scene::CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)
+	{
+		//ステージ作成
+		ResetActiveStage&lt;GameStage>(pDevice);
+	}
+
+	void Scene::UpdateConstantBuffers() {
+		if (m_activeStage) {
+			m_activeStage->OnUpdateConstantBuffers();
+		}
+	}
+
+	void Scene::CommitConstantBuffers() {
+		if (m_activeStage) {
+			m_activeStage->OnCommitConstantBuffers();
+		}
+	}
 
 
+	void Scene::UpdateUI(std::unique_ptr&lt;UILayer>& uiLayer) {
+		auto device = BaseDevice::GetBaseDevice();
+		//1秒間に１回更新される安定したfpsを得る
+		auto fps = device->GetStableFps();
+		//1秒間に１回更新される安定したelapsedTimeを得る
+		auto elapsedTime = device->GetStableElapsedTime();
+
+		std::wstring uiText = L"";
+		wchar_t buff[512];
+		swprintf_s(buff, 500, L"FPS: %.1f\n", fps);
+		uiText = buff;
+		swprintf_s(buff, 500, L"ElapsedTime: %.6f\n", elapsedTime);
+		uiText += buff;
+		uiLayer->UpdateLabels(uiText);
+	}
+
+	void Scene::Update(double elapsedTime) {
+		s_elapsedTime = elapsedTime;
+		if (m_activeStage) {
+			m_activeStage->UpdateStage(elapsedTime);
+			UpdateConstantBuffers();
+			CommitConstantBuffers();
+		}
+	}
 
 
+	void Scene::ShadowPass(ID3D12GraphicsCommandList* pCommandList) {
+		if (m_activeStage) {
+			m_pTgtCommandList = pCommandList;
+			m_activeStage->OnShadowDraw(pCommandList);
+		}
+	}
 
+	void Scene::ScenePass(ID3D12GraphicsCommandList* pCommandList)
+	{
+		if (m_activeStage) {
+			m_pTgtCommandList = pCommandList;
+			m_activeStage->OnSceneDraw(pCommandList);
+		}
+	}
+</pre>
+<h5>ステージの構築</h5>
+　まず、構築時に呼ばれる<strong>Scene::CreateAssetResources()</strong>では以下のように<strong>ステージ作成</strong>を行います。ここでは<strong>GameStage</strong>というクラスのステージを構築します。
+<pre class="my-3 p-3">
+	void Scene::CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)
+	{
+		//ステージ作成
+		ResetActiveStage&lt;GameStage>(pDevice);
+	}
+</pre>
+　<strong>GameStage</strong>クラスは、コンテンツ側の<strong>GameStage.h/cpp</strong>に実装があり、それぞれ以下のような内容です。<br>
+　以下<strong>GameStage.h</strong>です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	// ゲームステージ
+	//--------------------------------------------------------------------------------------
+	class GameStage : public Stage {
+		std::shared_ptr&lt;Camera> m_camera;
+		std::shared_ptr&lt;LightSet> m_lightSet;
+	public:
+		GameStage(ID3D12Device* pDevice):
+			Stage(pDevice)
+		{}
+		virtual ~GameStage() {}
+		virtual void OnCreate()override;
+		virtual std::shared_ptr&lt;Camera> GetCamera() const override{
+			return m_camera;
+		}
+		virtual std::shared_ptr&lt;LightSet> GetLightSet() const override {
+			return m_lightSet;
+		}
+		virtual void UpdateCameraLight(double elapsedTime) override{
+			//カメラとライト更新
+			m_camera->OnUpdate(elapsedTime);
+			m_lightSet->OnUpdate(elapsedTime);
+		}
+	};
+</pre>
+　<strong>Scene::CreateAssetResources()関数</strong>で呼んでいる<strong>ResetActiveStage()テンプレート関数</strong>では、内部で<strong>GameStage::OnCreate()関数</strong>を呼んでいて、その内容は以下になります。
+<pre class="my-3 p-3">
+	void GameStage::OnCreate() {
+		//カメラとライトの設定
+		m_camera = ObjectFactory::Create&lt;PerspecCamera>();
+		m_camera->SetEye(Vec3(0, 3.43f, -6.37f));
+		m_camera->SetAt(Vec3(0, 0.125f, 0));
+		m_lightSet = ObjectFactory::Create&lt;LightSet>();
+	}
+</pre>
+　どのみち真っ黒な画面なのでカメラもライトも影響はないのですが、<strong>Emptyプロジェクト</strong>は実際にゲームを作成する場合のひな形になりますのでこのような記述になってます。<br>
+　<strong>m_camera</strong>および<strong>m_lightSet</strong>は、自由度の高い設計になっていて、このサンプルでは<strong>GameStageクラス</strong>に実装されてますが、例えば<strong>Playerなどのゲームオブジェクト</strong>などにも設定可能です。つまり、オブジェクトごとに描画するカメラとライトを変えることが可能です。そのあたりのサンプルは後述します。
+<h5>シーンの更新</h5>
+　シーンの更新は<strong>Scene::Update()関数</strong>からステージの更新を行います。
+<pre class="my-3 p-3">
+	void Scene::Update(double elapsedTime) {
+		s_elapsedTime = elapsedTime;
+		if (m_activeStage) {
+			m_activeStage->UpdateStage(elapsedTime);
+			UpdateConstantBuffers();
+			CommitConstantBuffers();
+		}
+	}
+</pre>
+　<strong>m_activeStage->UpdateStage()関数</strong>は<strong>Stage::UpdateStage()関数</strong>を呼び出します。ここでは、ステージに配置されたオブジェクトの更新処理などを行います。仮想関数なのでGameStageなどで多重定義することは可能です。
+<pre class="my-3 p-3">
+			UpdateConstantBuffers();
+			CommitConstantBuffers();
+</pre>
+　は、以下です。
+<pre class="my-3 p-3">
+	void Scene::UpdateConstantBuffers() {
+		if (m_activeStage) {
+			m_activeStage->OnUpdateConstantBuffers();
+		}
+	}
+
+	void Scene::CommitConstantBuffers() {
+		if (m_activeStage) {
+			m_activeStage->OnCommitConstantBuffers();
+		}
+	}
+</pre>
+　それぞれ、ステージのコンスタントバッファの更新とコミットを行います。
+<h5>シーンの描画</h5>
+　描画処理は<strong>Scene::ShadowPass()関数（シャドウマップ）</strong>と<strong>Scene::ScenePass()関数（シーン描画）</strong>があります。<br>
+　それぞれステージの<strong>OnShadowDraw()、OnSceneDraw()関数</strong>を呼び出します。これらの関数は、内部で<strong>ゲームオブジェクトの描画関数</strong>を呼び出します。それらの記述は、次項以降に説明します。
+<pre class="my-3 p-3">
+	void Scene::ShadowPass(ID3D12GraphicsCommandList* pCommandList) {
+		if (m_activeStage) {
+			m_pTgtCommandList = pCommandList;
+			m_activeStage->OnShadowDraw(pCommandList);
+		}
+	}
+	void Scene::ScenePass(ID3D12GraphicsCommandList* pCommandList)
+	{
+		if (m_activeStage) {
+			m_pTgtCommandList = pCommandList;
+			m_activeStage->OnSceneDraw(pCommandList);
+		}
+	}
+</pre>
+<h5>まとめ</h5>
+　この<strong>Emptyプロジェクト</strong>は、実際にゲームを作り始めるときの土台となります。<br>
+　実際のゲームオブジェクトの配置や、描画コンポーネントの指定などは、次項以降に紹介します。
 <footer class="py-3 my-4">
 <ul class="nav justify-content-center border-top pb-3 mb-3">
 <li class="nav-item"><a href="index.html" class="nav-link px-2 text-primary">目次</a></li>

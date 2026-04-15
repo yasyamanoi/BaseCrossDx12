@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BaseCrossDx12ドキュメント</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous"><link href="css/style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<!-- container -->
+<div class="container bg-light">
+<h2>BaseCrossDx12ドキュメント</h2>
+<h4>【Sample103】物理計算</h4>
+
+　このサンプルは<strong>Samples/Sample103</strong>ディレクトリ内にあります。<br>VisualStdioで該当ソリューション（VS2022では<strong>BaseCrossDx12VS2022.sln</strong>、VS2026では<strong>BaseCrossDx12VS2026.sln</strong>）を開いてください。<br>ビルド後実行すると、以下の画面が現れます。
+<div class="py-3">
+<img src="img/103a.png" width="80%" />
+</div>
+<h5>BaseCrossDx12における物理演算</h5>
+　<strong>BaseCrossDx12</strong>では物理演算に<strong>PhysX</strong>を使っています。それらは<strong>コンポーネント</strong>として実装されます。<br>
+<h6>RigidbodyStaticコンポーネント</h6>
+　以下は動かないオブジェクト<strong>FixedBox</strong>の<strong>OnCreate()関数</strong>です。
+<pre class="my-3 p-3">
+	void FixedBox::OnCreate() {
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = GetComponent&lt;Transform>();
+		auto& param = ptrTrans->GetTransParam();
+		//PhysX関連
+		PhysxCreateParam pxParam;
+		<span class="red">physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);</span>
+		pxParam.pGeometry = &scale;
+		<span class="red">AddComponent&lt;RigidbodyStatic>(pxParam);</span>
+
+		auto ptrShadow = AddComponent&lt;Shadowmap>();
+		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->AddBaseTexture(L"SKY_TX");
+		ptrDraw->SetOwnShadowActive(true);
+	}
+</pre>
+　赤くなっているところが<strong>PhysX</strong>のコンポーネント<strong>RigidbodyStatic</strong>を実装しているところです。<br>
+　台座のオブジェクトですね。<strong><span class="red">physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);</span></strong>で形状がBoxタイプであることを指定しています。<strong>BaseCrossDx12</strong>の計算尺とのやり取りは、<strong>param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f</strong>のようにします。あとは内部で自動計算します。
+<h6>RigidbodyDynamicコンポーネント</h6>
+　続いて上から降ってくるオブジェクトです。<strong>WallBox::OnCreate()</strong>は以下です。
+<pre class="my-3 p-3">
+	void WallBox::OnCreate() {
+		auto ptrGameStage = std::dynamic_pointer_cast&lt;GameStage>(GetStage());
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = GetComponent&lt;Transform>();
+		auto& param = ptrTrans->GetTransParam();
+		//PhysX関連
+		PhysxCreateParam pxParam;
+		<span class="red">physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);</span>
+		pxParam.pGeometry = &scale;
+		<span class="red">auto pRigDynamicComp = AddComponent&lt;RigidbodyDynamic>(pxParam);</span>
+		auto pRigDynamic = pRigDynamicComp->GetRigidDynamic();
+
+		auto ptrShadow = AddComponent&lt;Shadowmap>();
+		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->AddBaseTexture(L"WALL_TX");
+		ptrDraw->SetOwnShadowActive(true);
+
+		//ジャンプさせる
+		pRigDynamic->addForce(physx::PxVec3(0, 10, 0), physx::PxForceMode::eIMPULSE);
+
+	}
+</pre>
+　ここでは、動くオブジェクトである<strong>RigidbodyDynamicコンポーネント</strong>が実装されています。<strong>physx::PxBoxGeometry</strong>がBoxタイプを指定しています。
+<h6>プレイヤーのコンポーネント</h6>
+　最後に<strong>プレイヤー</strong>です。以下は<strong>Player::OnCreate()</strong>です。
+<pre class="my-3 p-3">
+	void Player::OnCreate() {
+		GetStage()->SetSharedGameObject(L"Player", GetThis&lt;Player>());
+
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = GetComponent&lt;Transform>();
+		auto& param = ptrTrans->GetTransParam();
+		//PhysX関連
+		PhysxCreateParam pxParam;
+		<span class="red">physx::PxSphereGeometry scale(param.scale.x * 0.5f);</span>
+		pxParam.pGeometry = &scale;
+		pxParam.staticFriction = 1.0f;
+		pxParam.dynamicFriction = 1.0f;
+		pxParam.restitution = 1.0f;
+		<span class="red">auto pRigDynamicComp = AddComponent&lt;RigidbodyDynamic>(pxParam);</span>
+		auto pRigDynamic = pRigDynamicComp->GetRigidDynamic();
+
+
+		auto ptrShadow = AddComponent&lt;Shadowmap>();
+		ptrShadow->AddBaseMesh(L"DEFAULT_SPHERE");
+
+		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
+		ptrDraw->AddBaseMesh(L"DEFAULT_SPHERE");
+		ptrDraw->AddBaseTexture(L"TRACE_TX");
+		//透明処理
+		SetAlphaActive(true);
+		//カメラを得る
+		auto ptrCamera = std::dynamic_pointer_cast&lt;MyCamera>(GetStage()->GetCamera());
+		if (ptrCamera) {
+			//MyCameraである
+			//MyCameraに注目するオブジェクト（プレイヤー）の設定
+			ptrCamera->SetTargetObject(GetThis&lt;GameObject>());
+			ptrCamera->SetTargetToAt(Vec3(0, 0.25f, 0));
+		}
+
+	}
+</pre>
+　ここでは<strong><span class="red">physx::PxSphereGeometry scale(param.scale.x * 0.5f);</span></strong>のように<strong>球体</strong>を指定しています。<br>
+ あとは<strong><span class="red">auto pRigDynamicComp = AddComponent&lt;RigidbodyDynamic>(pxParam);</span></strong>で動く物理計算である、<strong>RigidbodyDynamic</strong>をコンポーネントに追加すれば実装完了です。
+<h6>プレイヤーの動き</h6>
+　このオブジェクトはコントローラで動けるようにします。それを実装しているのは以下です。
+<pre class="my-3 p-3">
+	void Player::MovePlayer() {
+		float elapsedTime = (float)Scene::GetElapsedTime();
+		auto angle = GetMoveVector();
+		//RigidbodyDynamicコンポーネントを取り出す
+		auto ptrRigid = GetComponent&lt;RigidbodyDynamic>();
+		<span class="red">auto pRigDynamic = ptrRigid->GetRigidDynamic();</span>
+		if (angle.length() > 0.0f) {
+			Vec3 tmpVelo = angle * m_Speed;
+			<span class="red">pRigDynamic->setLinearVelocity(bsmUtil::ToPxVec3(tmpVelo));</span>
+		}
+		else {
+			<span class="red">pRigDynamic->setLinearVelocity(bsmUtil::ToPxVec3(Vec3(0)));</span>
+		}
+	}
+</pre>
+　<strong><span class="red">auto pRigDynamic = ptrRigid->GetRigidDynamic();</span></strong>のように<strong>RigidDynamicオブジェクト</strong>を取り出し、<strong>pRigDynamic->setLinearVelocity()関数</strong>で、<strong>速度</strong>を変更します。物理オブジェクトでは基本的に<strong>位置情報</strong>などを直接変更しません。<strong>setLinearVelocity</strong>のように<strong>間接的に</strong>操作します。
+<h5>物理計算を使う場合の気を付けるべきこと</h5>
+　このように<strong>物理計算</strong>を使う場合、非常に簡単に<strong>リアルな世界</strong>を実装できます（<strong>Sample101</strong>の記述量と比べると一目瞭然です）。しかし<strong>BaseCrossDx12</strong>は<strong>ゲームのフレームワーク</strong>です。今後<strong>モデル</strong>を<strong>物理計算</strong>に使うサンプルも紹介しますが、そうなると、<strong>現実社会のシミュレーション</strong>的な世界が構築できるようになります。<br>
+　しかし考えてみてください。私たちの作りたいのは<strong>ゲーム</strong>です。このあたりをよく考えながら、今後も<strong>BaseCrossDx12</strong>をご利用いただければ幸いです。
+<footer class="py-3 my-4">
+<ul class="nav justify-content-center border-top pb-3 mb-3">
+<li class="nav-item"><a href="102.html" class="nav-link px-2 text-success">前へ</a></li>
+<li class="nav-item"><a href="index.html" class="nav-link px-2 text-primary">目次</a></li>
+</ul>
+<p class="text-center text-body-secondary">&copy; WiZ Tamura Hiroki,Yamanoi Yasushi MIT License.</p>
+</footer>
+</div>
+<!-- /container -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
+</body>
+</html>

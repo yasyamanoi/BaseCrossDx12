@@ -10,153 +10,89 @@
 <!-- container -->
 <div class="container bg-light">
 <h2>BaseCrossDx12ドキュメント</h2>
-<h4>【Sample102】物理処理</h4>
+<h4>【Sample102】モデルの描画</h4>
 
-　このサンプルは<strong>Samples/Sample102</strong>ディレクトリ内にあります。VisualStdioで該当ソリューション（VS2022では<strong>BaseCrossDx12VS2022.sln</strong>、VS2026では<strong>BaseCrossDx12VS2026.sln</strong>）を開いてください。ビルド後実行すると、以下の画面が現れます。
+　このサンプルは<strong>Samples/Sample102</strong>ディレクトリ内にあります。<br>VisualStdioで該当ソリューション（VS2022では<strong>BaseCrossDx12VS2022.sln</strong>、VS2026では<strong>BaseCrossDx12VS2026.sln</strong>）を開いてください。<br>ビルド後実行すると、以下の画面が現れます。
 <div class="py-3">
 <img src="img/102a.png" width="80%" />
 </div>
-<h5>BaseCrossDx12における物理処理</h5>
-　<strong>BaseCross64</strong>では、物理処理を独自のライブラリ側に入れていましたが、<strong>BaseCrossDx12</strong>では<strong>PhysX</strong>を導入することにしました。それを実装するオブジェクトは<strong>Rigidbodyコンポーネント</strong>です。<br>
-　このサンプルでは起動すると上から立方体が降ってきます。これは<strong>Rigidbodyコンポーネント</strong>が設定されたオブジェクトです。まずこのゲームオブジェクトから説明します
-<h6>FixedBox</h6>
-　このサンプルでの<strong>FixedBox</strong>は<strong>Rigidbodyコンポーネント</strong>が実装されています。<br>
-　その場合、<strong>FixedBox::OnCreate関数</strong>は以下のような記述になります。
+　このサンプルでは<strong>スキンメッシュモデル</strong>を描画したものです。前項のように<strong>プレイヤー</strong>も実装してますが、これはモデルをあちこちの角度から眺められるためです。
+<h5>リソースの登録</h5>
+　リソース登録は<strong>Scene::CreateAssetResources()関数</strong>で行います。構造は前項と変わりません。
 <pre class="my-3 p-3">
-	void FixedBox::OnCreate() {
+	void Scene::CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)
+	{	
+		//テクスチャ
+		auto texFile = App::GetRelativeAssetsDir() + L"sky.jpg";
+		auto texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
+		RegisterTexture(L"SKY_TX", texture);
+		texFile = App::GetRelativeAssetsDir() + L"trace.png";
+		texture = BaseTexture::CreateTextureFlomFile(pCommandList, texFile);
+		RegisterTexture(L"TRACE_TX", texture);
 
-		//Transformコンポーネントを取り出す
-		auto ptrTrans = GetComponent&lt;Transform>();
-		auto& param = ptrTrans->GetTransParam();
-		//PhysX関連
-		PhysxCreateParam pxParam;
-		physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);
-		pxParam.pGeometry = &scale;
-		AddComponent&lt;RigidbodyStatic>(pxParam);
+		//ステージ作成
+		ResetActiveStage&lt;GameStage>(pDevice);
+	}
+</pre>
+<h6>スキンメッシュモデル</h6>
+　モデルクラスは<strong>Character.h/cpp</strong>にあります。<strong>BoneModel</strong>クラスです。以下は<strong>Character.h</strong>に記述がある宣言部です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	// モデルオブジェクト
+	//--------------------------------------------------------------------------------------
+	class BoneModel : public GameObject {
+		std::shared_ptr&lt;BaseMesh> m_baseMesh;
+		double m_totalTime;
+	public:
+		BoneModel(const std::shared_ptr&lt;Stage>& stage, const TransParam& param);
+		virtual ~BoneModel();
+		virtual void OnCreate()override;
+		virtual void OnUpdate(double elapsedTime)override;
+	};
+</pre>
+　このサンプルは<strong>スキンメッシュ</strong>を実装した<strong>ボーンモデル</strong>を説明するためのものですが、できるだけ単純にしてあります。<br>
+　ですので、モデルにテクスチャも入ってないし、衝突判定も入ってません。以下は実装部です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	// モデルオブジェクト
+	//--------------------------------------------------------------------------------------
+	BoneModel::BoneModel(const std::shared_ptr&lt;Stage>& stage, const TransParam& param) :
+		GameObject(stage),
+		m_totalTime(0.0)
+	{
+		m_transParam = param;
+	}
+	BoneModel::~BoneModel() {}
 
+	void BoneModel::OnCreate() {
+		//コマンドリストの取得
+		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
+		//モデルメッシュの作成
+		m_baseMesh = BaseMesh::CreateSingleBoneModelMesh(
+			pCommandList,
+			App::GetRelativeAssetsDir(), L"SeaLife_Rigged\\Green_Sea_Turtle_Maya_2018.fbx"
+		);
+		//シャドウマップをつける
 		auto ptrShadow = AddComponent&lt;Shadowmap>();
-		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
-		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
-		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
-		ptrDraw->AddBaseTexture(L"SKY_TX");
-		ptrDraw->SetOwnShadowActive(true);
+		ptrShadow->AddBaseMesh(m_baseMesh);
+		//BcPNTBoneDraw描画コンポーネントをつける
+		auto ptrDraw = AddComponent&lt;BcPNTBoneDraw>();
+		ptrDraw->AddBaseMesh(m_baseMesh);
+	}
+
+	void BoneModel::OnUpdate(double elapsedTime) {
+		//2秒で一回りするアニメーション
+		<span class="red">m_totalTime += elapsedTime;
+		if (m_totalTime >= 2.0) {
+			m_totalTime = 0.0;
+		}</span>
+		//描画コンポーネントを取り出して
+		//アニメーションを更新する
+		auto ptrDraw = GetComponent&lt;BcPNTBoneDraw>();
+		<span class="red">ptrDraw->UpdateAnimation(m_totalTime);</span>
 	}
 </pre>
-　ここでポイントとなるのは
-<pre class="my-3 p-3">
-		physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);
-</pre>
-　とスケーリングを<strong>BaseCrossDx12</strong>から<strong>PhysX</strong>に変換をかける部分です。<br>
-　<strong>x、y、z成分</strong>をすべて半分にしています。これは互換性のために必要な処理です。回転と位置はそのままでかまいません。<br>
-　パラメータを揃えたら
-<pre class="my-3 p-3">
-		AddComponent&lt;RigidbodyStatic>(pxParam);
-</pre>
-　でOKです。これで物理演算処理する台座ができます。
-<h6>WallBox</h6>
-　上から降ってくるオブジェクトは<strong>WallBox</strong>です。<br>
-　以下は<strong>WallBox::OnCreate関数</strong>です
-<pre class="my-3 p-3">
-	void WallBox::OnCreate() {
-		auto ptrGameStage = std::dynamic_pointer_cast&lt;GameStage>(GetStage());
-		//Transformコンポーネントを取り出す
-		auto ptrTrans = GetComponent&lt;Transform>();
-		auto& param = ptrTrans->GetTransParam();
-		//PhysX関連
-		PhysxCreateParam pxParam;
-		physx::PxBoxGeometry scale(param.scale.x * 0.5f, param.scale.y * 0.5f, param.scale.z * 0.5f);
-		pxParam.pGeometry = &scale;
-		auto pRigDynamicComp = AddComponent&lt;RigidbodyDynamic>(pxParam);
-		auto pRigDynamic = pRigDynamicComp->GetRigidDynamic();
-
-		auto ptrShadow = AddComponent&lt;Shadowmap>();
-		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
-		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
-		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
-		ptrDraw->AddBaseTexture(L"WALL_TX");
-		ptrDraw->SetOwnShadowActive(true);
-
-		//ジャンプさせる
-		pRigDynamic->addForce(physx::PxVec3(0, 10, 0), physx::PxForceMode::eIMPULSE);
-
-	}
-</pre>
-　このオブジェクトは動的に変化するので<strong>RigidbodyDynamicコンポーネント</strong>を設定します。
-<pre class="my-3 p-3">
-		auto pRigDynamicComp = AddComponent&lt;RigidbodyDynamic>(pxParam);
-</pre>
-　の部分がそうです。<br>
-　ほかは<strong>FixedBox::OnCreate関数</strong>と大きく変わるところがないですが、最後に記述される
-<pre class="my-3 p-3">
-		//ジャンプさせる
-		pRigDynamic->addForce(physx::PxVec3(0, 10, 0), physx::PxForceMode::eIMPULSE);
-</pre>
-　が特徴的です。初期状態で上方にジャンプしてるので、実行時は上から降ってくるような見た目になります。<br>
-<h6>Player</h6>
-　プレイヤーも<strong>物理処理</strong>を実装します。<strong>Player::OnCreate関数</strong>です。
-<pre class="my-3 p-3">
-	void Player::OnCreate() {
-		GetStage()->SetSharedGameObject(L"Player", GetThis&lt;Player>());
-
-		//Transformコンポーネントを取り出す
-		auto ptrTrans = GetComponent&lt;Transform>();
-		auto& param = ptrTrans->GetTransParam();
-		//PhysX関連
-		PhysxCreateParam pxParam;
-		physx::PxSphereGeometry scale(param.scale.x * 0.5f);
-		pxParam.pGeometry = &scale;
-		pxParam.staticFriction = 1.0f;
-		pxParam.dynamicFriction = 1.0f;
-		pxParam.restitution = 1.0f;
-		auto pRigDynamicComp = AddComponent&lt;RigidbodyDynamic>(pxParam);
-		auto pRigDynamic = pRigDynamicComp->GetRigidDynamic();
-
-
-		auto ptrShadow = AddComponent&lt;Shadowmap>();
-		ptrShadow->AddBaseMesh(L"DEFAULT_SPHERE");
-
-		auto ptrDraw = AddComponent&lt;BcPNTStaticDraw>();
-		ptrDraw->AddBaseMesh(L"DEFAULT_SPHERE");
-		ptrDraw->AddBaseTexture(L"TRACE_TX");
-		//透明処理
-		SetAlphaActive(true);
-		//カメラを得る
-		auto ptrCamera = std::dynamic_pointer_cast&lt;MyCamera>(GetStage()->GetCamera());
-		if (ptrCamera) {
-			//MyCameraである
-			//MyCameraに注目するオブジェクト（プレイヤー）の設定
-			ptrCamera->SetTargetObject(GetThis&lt;GameObject>());
-			ptrCamera->SetTargetToAt(Vec3(0, 0.25f, 0));
-		}
-
-	}
-</pre>
-　プレイヤーはコントローラーに反応するので、<strong>Player::OnUpdate関数</strong>は以下です。
-<pre class="my-3 p-3">
-	void Player::OnUpdate(double elapsedTime) {
-		//コントローラチェックして入力があればコマンド呼び出し
-		m_InputHandler.PushHandle(GetThis&lt;Player>());
-		MovePlayer();
-	}
-</pre>
-　これではよくわからないのですが、実際に物理演算の処理をしているのは以下です。
-<pre class="my-3 p-3">
-	void Player::MovePlayer() {
-		float elapsedTime = (float)Scene::GetElapsedTime();
-		auto angle = GetMoveVector();
-		//RigidbodyDynamicコンポーネントを取り出す
-		auto ptrRigid = GetComponent&lt;RigidbodyDynamic>();
-		auto pRigDynamic = ptrRigid->GetRigidDynamic();
-		if (angle.length() > 0.0f) {
-			Vec3 tmpVelo = angle * m_Speed;
-			pRigDynamic->setLinearVelocity(bsmUtil::ToPxVec3(tmpVelo));
-		}
-		else {
-			pRigDynamic->setLinearVelocity(bsmUtil::ToPxVec3(Vec3(0)));
-		}
-	}
-</pre>
-　これで単純でありますが、物理演算を<strong>BaseCrossDx12</strong>に実装するための方法を解説しました。
+　ここで重要なのは<strong>BoneModel::OnUpdate()関数</strong>です。<strong>m_totalTime</strong>は<strong>double型のメンバ変数</strong>で<strong>0.0</strong>に初期化されます。<strong>BoneModel::OnUpdate()関数</strong>は前回のターンからの経過時間が渡されるので、それを<strong>m_totalTime</strong>に加算して。それが<strong>2.0</strong>を超えたら<strong>0.0</strong>に戻すという処理です。その変数は描画コンポーネントの<strong>UpdateAnimation()関数</strong>に渡されます。これだけで<strong>ボーンアニメーション</strong>が実装できます
 <footer class="py-3 my-4">
 <ul class="nav justify-content-center border-top pb-3 mb-3">
 <li class="nav-item"><a href="101.html" class="nav-link px-2 text-success">前へ</a></li>

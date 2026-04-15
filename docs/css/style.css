@@ -21,18 +21,18 @@ h2{
 h4{
 	font-size: 24px;
 	padding-top: 30px;
-	padding-bottom: 10px;
+	padding-bottom: 0px;
 }
 
 h5{
 	font-size: 20px;
 	padding-top: 20px;
-	padding-bottom: 10px;
+	padding-bottom: 0px;
 }
 
 h6{
-	font-size: 14px;
-	padding-top: 16px;
+	font-size: 16px;
+	padding-top: 10px;
 	padding-bottom: 0px;
 }
 
@@ -43,6 +43,7 @@ h6{
 
 pre{
 	background-color: #fffdee;
+	color: #008080;
 	border: 1px #ffb366 solid;
 	font-weight: bold;
 	tab-size: 4;
