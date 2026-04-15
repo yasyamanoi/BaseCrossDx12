@@ -70,12 +70,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\RigidBody.h">
       <Filter>Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Components\JoltManager.h">
-      <Filter>Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Components\JoltLayers.h">
-      <Filter>Components\Headers</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\GameObject.cpp">
@@ -115,9 +109,6 @@
       <Filter>Components\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\RigidBody.cpp">
-      <Filter>Components\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Components\JoltManager.cpp">
       <Filter>Components\Sources</Filter>
     </ClCompile>
   </ItemGroup>

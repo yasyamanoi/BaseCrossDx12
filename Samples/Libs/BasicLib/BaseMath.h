@@ -2477,11 +2477,25 @@ namespace basecross {
 
 
 
+			static physx::PxVec3 ToPxVec3(const Vec3& v) {
+				return physx::PxVec3(v.x, v.y, v.z);
+			}
 
+			static physx::PxQuat ToPxQuat(const Quat& q) {
+				return physx::PxQuat(q.x, q.y, q.z, q.w);
+			}
 
+			static physx::PxTransform ToPxTransform(const Vec3& position, const Quat& quaternion) {
+				return physx::PxTransform(ToPxVec3(position), ToPxQuat(quaternion));
+			}
 
+			static Vec3 ToVec3(const physx::PxVec3& v) {
+				return Vec3(v.x, v.y, v.z);
+			}
 
-
+			static Quat ToQuat(const physx::PxQuat& q) {
+				return Quat(q.x, q.y, q.z, q.w);
+			}
 
 		};
 

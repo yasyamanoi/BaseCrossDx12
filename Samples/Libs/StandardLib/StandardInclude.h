@@ -17,8 +17,6 @@
 #include "Objects/StateMachine.h"
 
 #include "Components/RigidBody.h"
-#include "Components/JoltManager.h"
-#include "Components/JoltLayers.h"
 
 
 #include "Components/Shadowmap.h"

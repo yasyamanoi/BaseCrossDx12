@@ -1,118 +1,150 @@
-
 /*!
-@file RigidBody.cpp
-@brief 重力コンポーネント　実体
+@file RigidComp.cpp
+@brief 物理演算コンポーネント　実体
 */
+
+
+#pragma once
 #include "stdafx.h"
 
+namespace basecross {
 
-#include "stdafx.h"
-#include "RigidBody.h"
-#include "JoltManager.h"
-
-namespace basecross
-{
-	RigidBody::RigidBody(const std::shared_ptr<GameObject>& owner)
-		: Component(owner),
-		m_bodyID(JPH::BodyID::cInvalidBodyID)
+	//--------------------------------------------------------------------------------------
+	///	 物理演算コンポーネント
+	//--------------------------------------------------------------------------------------
+	Rigidbody::Rigidbody(const std::shared_ptr<GameObject>& GameObjectPtr) :
+		Component(GameObjectPtr)
 	{
 	}
 
-	void RigidBody::Initialize(const Settings& settings)
-	{
-		m_settings = settings;
+	Rigidbody::~Rigidbody() {}
 
-		m_pPhysicsSystem = JoltManager::GetActiveSystem();
-		if (!m_pPhysicsSystem) return;
 
-		JPH::BodyInterface& bodyInterface = m_pPhysicsSystem->GetBodyInterface();
-
-		// 1. 同期元のTransformを取得
-		auto transComp = GetGameObject()->GetComponent<Transform>();
-		if (!transComp) return;
-
-		Vec3 pos = transComp->GetPosition();
-		Quat q = transComp->GetQuaternion();
-
-		// 2. DX11の座標系(DirectXMath)からJoltの座標系(JPH)へ変換
-		JPH::Vec3 joltPos(pos.x, pos.y, pos.z);
-		JPH::Quat joltRot(q.x, q.y, q.z, q.w);
-
-		// 3. JoltのBodyを作成
-		JPH::BodyCreationSettings creationSettings(
-			m_settings.shape,
-			joltPos,
-			joltRot,
-			m_settings.motionType,
-			m_settings.objectLayer
-		);
-		creationSettings.mRestitution = m_settings.restitution;
-		creationSettings.mFriction = m_settings.friction;
-
-		// 質量の手動上書き（Shapeから自動計算も可能）
-		if (m_settings.motionType == JPH::EMotionType::Dynamic) {
-			creationSettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
-			creationSettings.mMassPropertiesOverride.mMass = m_settings.mass;
-		}
-
-		// 4. 物理世界へ追加
-		m_bodyID = bodyInterface.CreateAndAddBody(
-			creationSettings,
-			m_settings.motionType == JPH::EMotionType::Dynamic ? JPH::EActivation::Activate : JPH::EActivation::DontActivate
-		);
+	void Rigidbody::OnCreate() {
 	}
 
-	void RigidBody::OnCreate()
+	void Rigidbody::OnUpdate(double elapsedTime) {
+	}
+	void Rigidbody::OnDestroy() {
+	}
+
+	//--------------------------------------------------------------------------------------
+	///	 スタティック物理演算コンポーネント
+	//--------------------------------------------------------------------------------------
+	RigidbodyStatic::RigidbodyStatic(const std::shared_ptr<GameObject>& GameObjectPtr,
+		const PhysxCreateParam& pxParam) :
+		Rigidbody(GameObjectPtr),
+		m_pxParam(pxParam)
 	{
 	}
 
-	void RigidBody::OnUpdate(double elapsedTime)
-	{
-		if (!m_pPhysicsSystem || m_bodyID.IsInvalid()) return;
+	RigidbodyStatic::~RigidbodyStatic() {}
 
-		JPH::BodyInterface& bodyInterface = m_pPhysicsSystem->GetBodyInterface();
 
-		// 静的(Static)なオブジェクトは動かないので同期をスキップして最適化
-		if (m_settings.motionType == JPH::EMotionType::Static) return;
+	void RigidbodyStatic::OnCreate() {
+		auto pBaseScene = BaseScene::Get();
+		auto ptrGameObject = GetGameObject();
+		auto ptrGameStage = std::dynamic_pointer_cast<Stage>(ptrGameObject->GetStage());
+		auto ptrPxPhysics = pBaseScene->GetPxPhysics();
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = ptrGameObject->GetComponent<Transform>();
+		auto& param = ptrTrans->GetTransParam();
+		auto pose = bsmUtil::ToPxTransform(param.position, param.quaternion);
+		//physx::PxRigidStaticの作成
+		m_pRigidStatic
+			= ptrPxPhysics->createRigidStatic(
+				pose
+			);
+		//shapeの作成
+		physx::PxShape* shape
+			= ptrPxPhysics->createShape(
+				*m_pxParam.pGeometry,
+				*ptrPxPhysics->createMaterial(
+					m_pxParam.staticFriction,
+					m_pxParam.dynamicFriction,
+					m_pxParam.restitution
+				)
+			);
+		shape->setLocalPose(m_pxParam.localPose);
+		m_pRigidStatic->attachShape(*shape);
+		pBaseScene->GetPxScene()->addActor(*m_pRigidStatic);
+		shape->release();
+	}
 
-		// 物理計算の結果、Bodyが動いていればTransformを更新する
-		if (bodyInterface.IsActive(m_bodyID)) {
-			JPH::RVec3 joltPos = bodyInterface.GetCenterOfMassPosition(m_bodyID);
-			JPH::Quat joltRot = bodyInterface.GetRotation(m_bodyID);
+	void RigidbodyStatic::OnUpdate(double elapsedTime) {
+	}
 
-			auto pTransform = GetGameObject()->GetComponent<Transform>();
-			if (pTransform) {
-				// Jolt(物理結果) -> エンジン(Transform)への書き戻し
-				pTransform->SetPosition(joltPos.GetX(), joltPos.GetY(), joltPos.GetZ());
-				pTransform->SetQuaternion(Quat(joltRot.GetX(), joltRot.GetY(), joltRot.GetZ(), joltRot.GetW()));
-			}
+
+	void RigidbodyStatic::OnDestroy() {
+		if (m_pRigidStatic) {
+			m_pRigidStatic->release();
 		}
 	}
 
-
-	RigidBody::~RigidBody()
+	//--------------------------------------------------------------------------------------
+	///	 ダイナミック物理演算コンポーネント
+	//--------------------------------------------------------------------------------------
+	RigidbodyDynamic::RigidbodyDynamic(const std::shared_ptr<GameObject>& GameObjectPtr,
+		const PhysxCreateParam& pxParam) :
+		Rigidbody(GameObjectPtr),
+		m_pxParam(pxParam)
 	{
-		m_pPhysicsSystem = JoltManager::GetActiveSystem(); // このタイミングではPhysicsSystemが終了している場合があるので最新のものを取得する
-		if (!m_pPhysicsSystem || m_bodyID.IsInvalid()) return;
-
-		JPH::BodyInterface& bodyInterface = m_pPhysicsSystem->GetBodyInterface();
-
-		// 必ずRemoveしてからDestroyする（Joltの厳格なルール）
-		bodyInterface.RemoveBody(m_bodyID);
-		bodyInterface.DestroyBody(m_bodyID);
-
-		m_bodyID = JPH::BodyID(JPH::BodyID::cInvalidBodyID);
 	}
 
-	void RigidBody::AddForce(const DirectX::XMFLOAT3& force)
-	{
-		if (!m_pPhysicsSystem || m_bodyID.IsInvalid()) return;
-		m_pPhysicsSystem->GetBodyInterface().AddForce(m_bodyID, JPH::Vec3(force.x, force.y, force.z));
+	RigidbodyDynamic::~RigidbodyDynamic() {}
+
+
+	void RigidbodyDynamic::OnCreate() {
+		auto pBaseScene = BaseScene::Get();
+		auto ptrGameObject = GetGameObject();
+		auto ptrGameStage = std::dynamic_pointer_cast<Stage>(ptrGameObject->GetStage());
+		auto ptrPxPhysics = pBaseScene->GetPxPhysics();
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = ptrGameObject->GetComponent<Transform>();
+		auto& param = ptrTrans->GetTransParam();
+		auto pose = bsmUtil::ToPxTransform(param.position, param.quaternion);
+		//physx::PxRigidDynamicの作成
+		m_pRigidDynamic
+			= ptrPxPhysics->createRigidDynamic(
+				pose
+			);
+		//shapeの作成
+		physx::PxShape* shape
+			= ptrPxPhysics->createShape(
+				*m_pxParam.pGeometry,
+				*ptrPxPhysics->createMaterial(
+					m_pxParam.staticFriction,
+					m_pxParam.dynamicFriction,
+					m_pxParam.restitution
+				)
+			);
+		shape->setLocalPose(m_pxParam.localPose);
+		m_pRigidDynamic->attachShape(*shape);
+		pBaseScene->GetPxScene()->addActor(*m_pRigidDynamic);
+		shape->release();
+
 	}
 
-	void RigidBody::SetLinearVelocity(const DirectX::XMFLOAT3& velocity)
-	{
-		if (!m_pPhysicsSystem || m_bodyID.IsInvalid()) return;
-		m_pPhysicsSystem->GetBodyInterface().SetLinearVelocity(m_bodyID, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+	void RigidbodyDynamic::OnUpdate(double elapsedTime) {
+		auto pBaseScene = BaseScene::Get();
+		auto ptrGameObject = GetGameObject();
+		auto ptrGameStage = std::dynamic_pointer_cast<Stage>(ptrGameObject->GetStage());
+		auto ptrPxPhysics = pBaseScene->GetPxPhysics();
+		//Transformコンポーネントを取り出す
+		auto ptrTrans = ptrGameObject->GetComponent<Transform>();
+		auto& param = ptrTrans->GetTransParam();
+		physx::PxTransform pose = m_pRigidDynamic->getGlobalPose();
+		param.position = bsmUtil::ToVec3(pose.p);
+		param.quaternion = bsmUtil::ToQuat(pose.q);
 	}
+
+
+	void RigidbodyDynamic::OnDestroy() {
+		if (m_pRigidDynamic) {
+			m_pRigidDynamic->release();
+		}
+	}
+
+
 }
+// end namespace basecross

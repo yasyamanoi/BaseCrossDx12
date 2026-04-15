@@ -48,26 +48,27 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)\$(SolutionName)\</IntDir>
-    <IncludePath>$(SolutionDir)..\Libs\include;$(SolutionDir)..\Libs\Assimp\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\Libs\lib\$(Configuration)\;$(SolutionDir)..\Libs\PhysX\lib\$(Configuration)\;$(SolutionDir)..\Libs\Assimp\lib\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\Libs\include;$(SolutionDir)..\Libs\Assimp\include;$(SolutionDir)..\Libs\PhysX\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\Libs\lib\$(Configuration)\;$(SolutionDir)..\Libs\Assimp\lib\;$(SolutionDir)..\Libs\PhysX\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)\$(SolutionName)\</IntDir>
-    <IncludePath>$(SolutionDir)..\Libs\include;$(SolutionDir)..\Libs\Assimp\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\Libs\lib\$(Configuration)\;$(SolutionDir)..\Libs\PhysX\lib\$(Configuration)\;$(SolutionDir)..\Libs\Assimp\lib\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\Libs\include;$(SolutionDir)..\Libs\Assimp\include;$(SolutionDir)..\Libs\PhysX\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\Libs\lib\$(Configuration)\;$(SolutionDir)..\Libs\Assimp\lib\;$(SolutionDir)..\Libs\PhysX\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>JPH_DEBUG_RENDERER;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED;JPH_OBJECT_STREAM;JPH_PROFILE_ENABLED;JPH_DISABLE_CUSTOM_ALLOCATOR;_HAS_STD_BYTE=0;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>Default</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -77,6 +78,9 @@
       <Command>xcopy /y /d "$(SolutionDir)..\Libs\PhysX\dlls\$(Configuration)\" "$(SolutionDir)$(Configuration)\"
 xcopy /y /d "$(SolutionDir)..\Libs\Assimp\dlls\" "$(SolutionDir)$(Configuration)\"</Command>
     </PostBuildEvent>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -84,18 +88,21 @@ xcopy /y /d "$(SolutionDir)..\Libs\Assimp\dlls\" "$(SolutionDir)$(Configuration)
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>JPH_PROFILE_ENABLED;JPH_DEBUG_RENDERER;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED;JPH_OBJECT_STREAM;JPH_DISABLE_CUSTOM_ALLOCATOR;_HAS_STD_BYTE=0;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>Default</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <FxCompile>
       <ObjectFileOutput>$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
@@ -105,6 +112,9 @@ xcopy /y /d "$(SolutionDir)..\Libs\Assimp\dlls\" "$(SolutionDir)$(Configuration)
       <Command>xcopy /y /d "$(SolutionDir)..\Libs\PhysX\dlls\$(Configuration)\" "$(SolutionDir)$(Configuration)\"
 xcopy /y /d "$(SolutionDir)..\Libs\Assimp\dlls\" "$(SolutionDir)$(Configuration)\"</Command>
     </PostBuildEvent>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Character.h" />
