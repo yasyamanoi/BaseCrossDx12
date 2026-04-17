@@ -32,12 +32,6 @@ namespace basecross {
 				ptr2->SetToBefore();
 			}
 		}
-
-		////物理オブジェクトのフォースの初期化
-		//if (IsPhysicsActive()) {
-		//	pImpl->m_BasePhysics.InitForce();
-		//}
-
 		//配置オブジェクトの更新処理
 		for (auto& ptr : GetGameObjectVec()) {
 			if (ptr->IsUpdateActive()) {
@@ -49,10 +43,6 @@ namespace basecross {
 			OnUpdate(elapsedTime);
 		}
 
-		////物理オブジェクトの更新
-		//if (IsPhysicsActive()) {
-		//	pImpl->m_BasePhysics.Update(false);
-		//}
 
 		//配置オブジェクトのコンポーネント更新
 		for (auto& ptr : GetGameObjectVec()) {
