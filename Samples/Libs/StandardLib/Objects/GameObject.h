@@ -56,6 +56,7 @@ namespace basecross {
 	protected:
 		TransParam m_transParam;
 		GameObject(const std::shared_ptr<Stage>& stage) :
+			ObjectInterface(),
 			m_stage(stage),
 			m_updateActive(true),
 			m_drawActive(true),

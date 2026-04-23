@@ -19,6 +19,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\Collision.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\Component.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\Gravity.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\PCTParticleDraw.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\RigidBody.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\Shadowmap.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\SpStaticDraw.h" />
@@ -27,6 +28,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Constants.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\GameObject.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Particle.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Stage.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\StateMachine.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StandardInclude.h" />
@@ -39,11 +41,13 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Gravity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\RigidBody.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Shadowmap.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\PCTParticleDraw.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\SpStaticDraw.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\SteeringBehavior.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Transform.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\GameObject.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Particle.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Stage.cpp" />
   </ItemGroup>
   <ItemGroup>

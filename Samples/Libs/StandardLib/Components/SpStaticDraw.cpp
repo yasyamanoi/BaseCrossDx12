@@ -1,6 +1,6 @@
 /*!
-@file BcStaticDraw.cpp
-@brief ベイシックスタティック描画コンポーネント　実体
+@file SpStaticDraw.cpp
+@brief シンプルスタティック描画コンポーネント　実体
 */
 
 #include "stdafx.h"

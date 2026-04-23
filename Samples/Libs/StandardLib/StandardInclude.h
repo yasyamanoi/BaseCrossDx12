@@ -15,6 +15,8 @@
 #include "Objects/CollisionManager.h"
 #include "Objects/Stage.h"
 #include "Objects/StateMachine.h"
+#include "Objects/Particle.h"
+
 
 #include "Components/RigidBody.h"
 
@@ -22,5 +24,6 @@
 #include "Components/Shadowmap.h"
 #include "Components/BcStaticDraw.h"
 #include "Components/SpStaticDraw.h"
+#include "Components/PCTParticleDraw.h"
 #include "Components/BcBoneDraw.h"
 
