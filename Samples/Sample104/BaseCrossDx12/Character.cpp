@@ -43,14 +43,9 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	///	タイトルスプライト
 	//--------------------------------------------------------------------------------------
-	TitleSprite::TitleSprite(const std::shared_ptr<Stage>& StagePtr) :
-		GameObject(StagePtr)
-	{}
-
-	TitleSprite::~TitleSprite() {}
 	void TitleSprite::OnCreate() {
 		float HelfSize = 0.5f;
-		//頂点配列(縦横5個ずつ表示)
+		//頂点配列
 		std::vector<VertexPositionColorTexture> vertices = {
 			{ VertexPositionColorTexture(Vec3(-HelfSize, HelfSize, 0),Col4(1.0f,1.0f,1.0f,1.0f), Vec2(0.0f, 0.0f)) },
 			{ VertexPositionColorTexture(Vec3(HelfSize, HelfSize, 0), Col4(1.0f, 1.0f, 1.0f, 1.0f), Vec2(1.0f, 0.0f)) },
@@ -60,8 +55,8 @@ namespace basecross {
 		//インデックス配列
 		std::vector<uint32_t> indices = { 0, 1, 2, 1, 3, 2 };
 		auto ptrTransform = GetComponent<Transform>();
-		ptrTransform->SetScale(512.0f,112.0f, 1.0f);
-		ptrTransform->SetRotation(0, 0, 0);
+		ptrTransform->SetScale(256.0f,64.0f, 1.0f);
+		ptrTransform->SetRotation(0.0f, 0.0f, 0.0f);
 		ptrTransform->SetPosition(0.0f, 0.0f, 0.0f);
 		SetAlphaActive(true);
 		//頂点とインデックスを指定してスプライト作成

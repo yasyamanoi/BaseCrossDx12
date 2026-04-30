@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BaseCrossDx12ドキュメント</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous"><link href="css/style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<!-- container -->
+<div class="container bg-light">
+<h2>BaseCrossDx12ドキュメント</h2>
+<h4>【Sample104】スプライトとステージ推移</h4>
+
+　このサンプルは<strong>Samples/Sample104</strong>ディレクトリ内にあります。<br>VisualStdioで該当ソリューション（VS2022では<strong>BaseCrossDx12VS2022.sln</strong>、VS2026では<strong>BaseCrossDx12VS2026.sln</strong>）を開いてください。<br>ビルド後実行すると、以下の画面が現れます。
+<div class="py-3">
+<img src="img/104a.png" width="80%" />
+</div>
+　ここで、コントローラのBボタンを押すと、以下のようにいつものゲーム画面が現れます。
+<div class="py-3">
+<img src="img/104b.png" width="80%" />
+</div>
+　このサンプルでは<strong>スプライト</strong>と<strong>ステージ推移</strong>について実装しています。<br>
+<h5>タイトルステージ</h5>
+　最初の画面は<strong>タイトルステージ</strong>を意味しています。通常ゲームでは<strong>タイトル、ゲームクリア、残念画面</strong>など、ゲーム画面以外でもいろんな画面があります。<strong>BaseCrossDx12</strong>ではそういう画面を<strong>ステージ</strong>と呼んでいます。<br>
+　起動後すぐに表れる画面は<strong>タイトルステージ</strong>です。これは<strong>Scene::CreateAssetResources()関数</strong>によって作成されます。
+<pre class="my-3 p-3">
+	void Scene::CreateAssetResources(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList)
+	{
+		//中略
+
+		//ステージ作成
+		<span class="red">ResetActiveStage&lt;TitleStage>(pDevice);</span>
+	}
+</pre>
+　この<strong>TitleStage</strong>には<strong>Bでステージ切り替え</strong>という文言があり、ここでコントローラのBボタンを押すと、ステージが切り替わります。
+<h6>スプライト</h6>
+　<strong>TitleStage</strong>には<strong>スプライト</strong>が実装されています。すなわち<strong>Bでステージ切り替え</strong>という画像が張ってあるテクスチャですがこれを実装するためには<strong>ゲームオブジェクト</strong>を作成する必要があります。<br>
+　これは<strong>Character.h/cpp</strong>に記述があります。以下はヘッダ部です。
+<pre class="my-3 p-3">
+	//--------------------------------------------------------------------------------------
+	///	タイトルスプライト
+	//--------------------------------------------------------------------------------------
+	class TitleSprite : public GameObject {
+	public:
+		TitleSprite(const std::shared_ptr&lt;Stage>& StagePtr):
+			GameObject(StagePtr)
+		{}
+		//破棄
+		virtual ~TitleSprite() {}
+		//初期化
+		virtual void OnCreate() override;
+		//更新
+		virtual void OnUpdate(double elapsedTime)override {}
+	};
+</pre>
+　<strong>Character.cpp</strong>には、<strong>TitleSprite::OnCreate()関数</strong>のみ記述されています。
+<pre class="my-3 p-3">
+	void TitleSprite::OnCreate() {
+		float HelfSize = 0.5f;
+		//頂点配列
+		std::vector&lt;VertexPositionColorTexture> vertices = {
+			{ VertexPositionColorTexture(Vec3(-HelfSize, HelfSize, 0),Col4(1.0f,1.0f,1.0f,1.0f), Vec2(0.0f, 0.0f)) },
+			{ VertexPositionColorTexture(Vec3(HelfSize, HelfSize, 0), Col4(1.0f, 1.0f, 1.0f, 1.0f), Vec2(1.0f, 0.0f)) },
+			{ VertexPositionColorTexture(Vec3(-HelfSize, -HelfSize, 0), Col4(1.0f, 1.0f, 1.0f, 1.0f), Vec2(0.0f, 1.0f)) },
+			{ VertexPositionColorTexture(Vec3(HelfSize, -HelfSize, 0), Col4(1.0f, 1.0f, 1.0f, 1.0f), Vec2(1.0f, 1.0f)) },
+		};
+		//インデックス配列
+		std::vector&lt;uint32_t> indices = { 0, 1, 2, 1, 3, 2 };
+		auto ptrTransform = GetComponent&lt;Transform>();
+		ptrTransform->SetScale(256.0f,64.0f, 1.0f);
+		ptrTransform->SetRotation(0.0f, 0.0f, 0.0f);
+		ptrTransform->SetPosition(0.0f, 0.0f, 0.0f);
+		SetAlphaActive(true);
+		//頂点とインデックスを指定してスプライト作成
+		<span class="red">auto PtrDraw = AddComponent&lt;SpPCTSpriteDraw>(vertices, indices);</span>
+	}
+</pre>
+　ここでは、2次元の頂点とインデックスを作成して、それをパラメータに<strong>SpPCTSpriteDrawコンポーネント</strong>を実装しています。
+<h6>イベントの取得</h6>
+　コントローラの<strong>Bボタンが押された</strong>イベントは<strong>TitleStage::OnPushB()関数</strong>で受け取ります。<br>
+　しかし<strong>TitleStage::OnUpdate()関数</strong>でイベントハンドラーをチェックするのを忘れてはなりません。
+<pre class="my-3 p-3">
+	void TitleStage::OnUpdate(double elapsedTime) {
+		//コントローラチェックして入力があればコマンド呼び出し
+		m_InputHandler.PushHandle(GetThis&lt;TitleStage>());
+	}
+</pre>
+　すると以下のようにイベントを取り出せます
+<pre class="my-3 p-3">
+	void TitleStage::OnPushB() {
+		//ステージ推移
+		<span class="red">Scene::Get()->ResetActiveStage&lt;GameStage>(m_pDevice);</span>
+	}
+</pre>
+　このように<strong>Scene::CreateAssetResources()関数</strong>で記述したように<strong>ResetActiveStage()関数</strong>を<strong>GameStage</strong>をテンプレート引数で記述することで、<strong>GameStage</strong>に推移します。
+<footer class="py-3 my-4">
+<ul class="nav justify-content-center border-top pb-3 mb-3">
+<li class="nav-item"><a href="103.html" class="nav-link px-2 text-success">前へ</a></li>
+<li class="nav-item"><a href="index.html" class="nav-link px-2 text-primary">目次</a></li>
+</ul>
+<p class="text-center text-body-secondary">&copy; WiZ Tamura Hiroki,Yamanoi Yasushi MIT License.</p>
+</footer>
+</div>
+<!-- /container -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
+</body>
+</html>

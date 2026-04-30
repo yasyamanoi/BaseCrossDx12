@@ -12,13 +12,11 @@ namespace basecross {
 	// タイトルステージ
 	//--------------------------------------------------------------------------------------
 	void TitleStage::OnCreate() {
-		//カメラとライトの設定
+		//カメラとライトの設定（2次元しか使わなくても必要）
 		m_camera = ObjectFactory::Create<PerspecCamera>();
-//		m_camera = ObjectFactory::Create<OrthoCamera>();
-		
-		m_camera->SetEye(Vec3(0, 50, 0));
-		m_camera->SetAt(Vec3(0, 0, 0));
-		m_camera->SetUp(Vec3(0, 0, 1));
+		m_camera->SetEye(Vec3(0, -10, 0));
+		m_camera->SetAt(Vec3(0, 0, 0.0f));
+		m_camera->SetUp(Vec3(0, 1, 0));
 		m_lightSet = ObjectFactory::Create<LightSet>();
 		//スプライトオブジェクトの作成
 		CreateSprite();
@@ -39,9 +37,8 @@ namespace basecross {
 	}
 
 	void TitleStage::OnPushB() {
-		auto dev = BaseDevice::GetBaseDevice();
-		//ステージ作成
-		dev->GetScene()->ResetActiveStage<GameStage>(m_pDevice);
+		//ステージ推移
+		Scene::Get()->ResetActiveStage<GameStage>(m_pDevice);
 	}
 
 

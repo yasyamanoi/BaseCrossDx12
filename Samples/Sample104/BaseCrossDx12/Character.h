@@ -27,15 +27,11 @@ namespace basecross {
 	//--------------------------------------------------------------------------------------
 	class TitleSprite : public GameObject {
 	public:
-		//--------------------------------------------------------------------------------------
-		/*!
-		@brief コンストラクタ
-		@param[in]	StagePtr	ステージ
-		*/
-		//--------------------------------------------------------------------------------------
-		TitleSprite(const std::shared_ptr<Stage>& StagePtr);
+		TitleSprite(const std::shared_ptr<Stage>& StagePtr):
+			GameObject(StagePtr)
+		{}
 		//破棄
-		virtual ~TitleSprite();
+		virtual ~TitleSprite() {}
 		//初期化
 		virtual void OnCreate() override;
 		//更新
