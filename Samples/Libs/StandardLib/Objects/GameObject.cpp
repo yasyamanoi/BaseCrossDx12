@@ -94,6 +94,14 @@ namespace basecross {
 		transptr->OnDestroy();
 	}
 
+	void GameObject::Get2DDrawProjMatrix(Mat4x4& ProjMatrix) const {
+		auto viewport = Scene::Get()->GetViewport();
+		float w = static_cast<float>(viewport.Width);
+		float h = static_cast<float>(viewport.Height);
+		ProjMatrix = XMMatrixOrthographicLH(w, h, viewport.MinDepth, viewport.MaxDepth);
+	}
+
+
 	void GameObject::OnUpdateConstantBuffers() {
 		//ƒ}ƒbƒv‚ğŒŸØ‚µ‚ÄOnUpdateConstantBuffers
 		std::list<std::type_index>::iterator it = m_compOrder.begin();

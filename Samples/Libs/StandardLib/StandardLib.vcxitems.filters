@@ -70,10 +70,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\RigidBody.h">
       <Filter>Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Particle.h">
-      <Filter>Objects\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Components\PCTParticleDraw.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\SpSpriteDraw.h">
       <Filter>Components\Headers</Filter>
     </ClInclude>
   </ItemGroup>
@@ -117,10 +114,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\RigidBody.cpp">
       <Filter>Components\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Particle.cpp">
-      <Filter>Objects\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Components\PCTParticleDraw.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\SpSpriteDraw.cpp">
       <Filter>Components\Sources</Filter>
     </ClCompile>
   </ItemGroup>

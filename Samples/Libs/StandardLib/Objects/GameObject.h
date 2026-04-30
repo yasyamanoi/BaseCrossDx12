@@ -327,6 +327,7 @@ namespace basecross {
 		//--------------------------------------------------------------------------------------
 		virtual void OnCollisionExit(const CollisionPair& Pair) {}
 
+		void Get2DDrawProjMatrix(Mat4x4& ProjMatrix) const;
 		void ComponentUpdate();
 		void TransformInit();
 		void ComponentShadowmapRender();

@@ -34,13 +34,16 @@ namespace basecross {
 
 		//ƒRƒŠƒWƒ‡ƒ“ŠÇ—Ò
 		std::shared_ptr<CollisionManager> m_collisionManager;
+
+		bool m_destroyFlg;
 	protected:
 		ID3D12Device* m_pDevice;
 		//std::shared_ptr<Camera> m_camera;
 		//std::shared_ptr<LightSet> m_lightSet;
 		Stage(ID3D12Device* pDevice) :
 			m_pDevice(pDevice),
-			m_updateActive(true)
+			m_updateActive(true),
+			m_destroyFlg(false)
 		{
 		}
 		virtual ~Stage() {}

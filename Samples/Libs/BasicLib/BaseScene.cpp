@@ -40,7 +40,6 @@ namespace basecross {
 		m_pCurrentFrameResource(nullptr),
 		m_pPrimDevice(pPrimDevice),
 		m_srvSendIndex(m_srvStartIndex),
-		m_cbvUavSendIndex(m_cbvUavStartIndex),
 		m_samplerSendIndex(0)
 	{
 		s_baseScene = this;
@@ -69,15 +68,6 @@ namespace basecross {
 		return m_srvSendIndex++;
 	}
 
-	UINT BaseScene::GetCbvUavNextIndex() {
-		if (m_cbvUavSendIndex >= m_cbvUavMax) {
-			throw BaseException(
-				L"これ以上コンスタントバッファとUAVは増やせません。\n",
-				L"Scene::GetCbvUavNextIndex()"
-			);
-		}
-		return m_cbvUavSendIndex++;
-	}
 
 	UINT BaseScene::GetSamplerNextIndex() {
 		if (m_samplerSendIndex >= m_samplerMax) {
@@ -537,6 +527,7 @@ namespace basecross {
 			m_frameResources[i] = std::make_unique<FrameResource>(pDevice, pCommandQueue);
 		}
 	}
+
 
 	// Load resources that are dependent on the size of the main window.
 	void BaseScene::LoadSizeDependentResources(ID3D12Device* pDevice, ComPtr<ID3D12Resource>* ppRenderTargets, UINT width, UINT height)

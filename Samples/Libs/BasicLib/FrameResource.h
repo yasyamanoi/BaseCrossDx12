@@ -40,6 +40,8 @@ namespace basecross {
 		//BaseCross—p
 		std::vector<BaseConstantBufferSet> m_baseConstantBufferSetVec;
 
+
+
 	public:
 		FrameResource(ID3D12Device* pDevice, ID3D12CommandQueue* pCommandQueue);
 		virtual ~FrameResource();
@@ -56,6 +58,9 @@ namespace basecross {
 			ThrowIfFailed(cbSet.m_baseConstantBuffer->Map(0, &readRange, reinterpret_cast<void**>(&cbSet.m_pBaseConstantBufferWO)));
 			m_baseConstantBufferSetVec.push_back(cbSet);
 			return size;
+		}
+		void ClearBaseConstantBufferSet() {
+			m_baseConstantBufferSetVec.clear();
 		}
 
 	};

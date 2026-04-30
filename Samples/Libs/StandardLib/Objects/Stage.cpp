@@ -38,9 +38,15 @@ namespace basecross {
 				ptr->OnUpdate(elapsedTime);
 			}
 		}
+		if (m_destroyFlg) {
+			return;
+		}
 		//Ž©g‚ÌXVˆ—
 		if (IsUpdateActive()) {
 			OnUpdate(elapsedTime);
+		}
+		if (m_destroyFlg) {
+			return;
 		}
 
 
@@ -126,6 +132,7 @@ namespace basecross {
 		for (auto& v : m_gameObjectVec) {
 			v->OnDestroy();
 		}
+		m_destroyFlg = true;
 	}
 
 	void Stage::SetToBefore() {

@@ -131,8 +131,6 @@ namespace basecross {
 
 		//Srv(シェーダーリソースビュー)の次のインデックスの取得
 		UINT GetSrvNextIndex();
-		//Cbv(コンスタントバッファビュー)の次のインデックスの取得
-		UINT GetCbvUavNextIndex();
 		//サンプラーの次のインデックスの取得
 		UINT GetSamplerNextIndex();
 		//指定したサンプラーのインデックスの取得
@@ -181,6 +179,13 @@ namespace basecross {
 		std::shared_ptr<T> ResetActiveStage(Ts&&... params) {
 			auto actStagePtr = GetActiveStage(false);
 			if (actStagePtr) {
+				//フレームリソースのコンスタントバッファ配列のクリア
+				auto pBaseScene = BaseScene::Get();
+				auto& frameResources = pBaseScene->GetFrameResources();
+				auto pBaseDevice = BaseDevice::GetBaseDevice();
+				for (size_t i = 0; i < BaseDevice::FrameCount; i++) {
+					frameResources[i]->ClearBaseConstantBufferSet();
+				}
 				//破棄を伝える
 				actStagePtr->OnDestroy();
 				actStagePtr = nullptr;
@@ -321,12 +326,6 @@ namespace basecross {
 		const UINT m_srvMax = 1024;
 		//Srvの発行インデックス
 		UINT m_srvSendIndex;
-		//CbvUavの開始インデックス
-		const UINT m_cbvUavStartIndex = 1024;
-		//CbvUavの最大値
-		const UINT m_cbvUavMax = 2048;
-		//CbvUavの発行インデックス
-		UINT m_cbvUavSendIndex;
 		//sampler管理用
 		std::map<std::wstring, UINT> m_samplerMap;
 		const UINT m_samplerMax = 128;
