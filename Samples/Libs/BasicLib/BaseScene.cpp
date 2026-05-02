@@ -680,7 +680,7 @@ namespace basecross {
 				throw BaseException(
 					L"指定のキーのテクスチャがすでに存在します",
 					key,
-					L"BaseScene::AddTexture()"
+					L"BaseScene::RegisterTexture()"
 				);
 			}
 		}
@@ -704,6 +704,70 @@ namespace basecross {
 		}
 		return nullptr;
 	}
+
+
+	void BaseScene::RegisterAudio(const std::wstring& key, const std::shared_ptr<AudioResource>& audio, bool keyCheck) {
+		if (keyCheck) {
+			auto it = m_audioMap.find(key);
+			if (it != m_audioMap.end()) {
+				throw BaseException(
+					L"指定のキーのオーディオがすでに存在します",
+					key,
+					L"BaseScene::RegisterAudio()"
+				);
+			}
+		}
+		m_audioMap[key] = audio;
+	}
+
+	std::shared_ptr<AudioResource> BaseScene::GetAudio(const std::wstring& key) {
+		auto it = m_audioMap.find(key);
+		if (it != m_audioMap.end()) {
+			return it->second;
+		}
+		else {
+			throw BaseException(
+				L"指定のキーのオーディオが見つかりません",
+				key,
+				L"BaseScene::GetAudio()"
+			);
+		}
+		return nullptr;
+	}
+	bool BaseScene::CheckAudioResource(const std::wstring& Key) const
+	{
+		if (Key == L"") {
+			throw BaseException(
+				L"キーが空白です",
+				L"if(Key == L\"\")",
+				L"BaseScene::CheckAudioResource()"
+			);
+		}
+		std::map<std::wstring, std::shared_ptr<AudioResource> >::const_iterator it;
+		it = m_audioMap.find(Key);
+		if (it != m_audioMap.end()) {
+			//指定の名前が見つかった
+			return true;
+		}
+		return false;
+	}
+
+	//Wavの登録(同じキーのWavがなければファイル名で作成し、登録)
+	//同じ名前のWavがあればそのポインタを返す
+	std::shared_ptr<AudioResource> BaseScene::RegisterWav(const std::wstring& Key, const std::wstring& WavFileName) {
+		if (CheckAudioResource(Key)) {
+			return GetAudio(Key);
+		}
+		//
+		auto PtrWav = ObjectFactory::Create<AudioResource>(WavFileName);
+		RegisterAudio(Key, PtrWav);
+		return PtrWav;
+	}
+
+
+
+
+
 
 
 	// Render the scene.

@@ -90,6 +90,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Light.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Audio.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)App.cpp">
@@ -141,6 +144,9 @@
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Light.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Audio.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
   </ItemGroup>

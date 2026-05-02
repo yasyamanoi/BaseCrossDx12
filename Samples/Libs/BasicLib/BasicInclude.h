@@ -22,6 +22,17 @@
 #include <DirectXTex.h>
 #include <xinput.h>
 
+
+#include <xaudio2.h>	//サウンド
+#include <xaudio2fx.h>
+#include <mmreg.h>
+#include <mfidl.h>
+#include <mfapi.h>
+#include <mfreadwrite.h>
+#include <msxml6.h>
+
+
+
 //C
 #include <process.h>
 #include <wrl.h>
@@ -86,6 +97,7 @@ using namespace basecross::bsm;
 #include "Light.h"
 #include "BaseMesh.h"
 #include "BaseTexture.h"
+#include "Audio.h"
 #include "App.h"
 #include "PrimDevice.h"
 #include "StepTimer.h"
@@ -102,16 +114,21 @@ using namespace basecross::bsm;
 #pragma comment( lib, "d3dcompiler.lib" )
 #pragma comment( lib, "DirectXTex.lib" )
 #pragma comment( lib, "dxguid.lib" )
-#pragma comment( lib, "winmm.lib" )
 #pragma comment( lib, "comctl32.lib" )
 // XInput
 #pragma comment( lib, "XInput.lib" )
+
 //オーディオ
 #pragma comment( lib, "xaudio2.lib" )
 #pragma comment(lib, "Mfplat.lib")
 #pragma comment(lib, "Mfreadwrite.lib")
+#pragma comment(lib, "mfuuid.lib")
 //WinHTTP
 #pragma comment( lib, "Winhttp.lib" )
+
+
+
+
 
 //Dx11関連
 #pragma comment( lib, "d3d11.lib" )

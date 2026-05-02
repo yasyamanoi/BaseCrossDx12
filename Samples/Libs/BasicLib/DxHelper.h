@@ -60,6 +60,8 @@ inline void ThrowIfFailed(HRESULT hr)
 
 
 
+
+
 inline void GetAssetsPath(_Out_writes_(pathSize) WCHAR* path, UINT pathSize)
 {
 	if (path == nullptr)

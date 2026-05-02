@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)App.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Audio.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BaseCommon.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BaseDevice.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BaseHelper.h" />
@@ -44,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)App.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Audio.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BaseDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BaseHelper.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BaseMesh.cpp" />

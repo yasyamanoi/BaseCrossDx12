@@ -262,6 +262,61 @@ namespace basecross {
 			return s_elapsedTime;
 		}
 		float m_fogDensity;
+
+		std::shared_ptr<XAudio2Manager>& GetXAudio2Manager() {
+			try {
+				if (!m_xaudio2Manager) {
+					m_xaudio2Manager = ObjectFactory::Create<XAudio2Manager>();
+				}
+				return m_xaudio2Manager;
+			}
+			catch (...) {
+				throw;
+			}
+		}
+
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief オーディオリソースの確認
+		@tparam	T 確認するリソース型
+		@param[in]	Key リソースキー
+		@return	そのキーのリソースがあればtrue、無ければfalse（見つかっても指定の型でなければ例外）
+		*/
+		//--------------------------------------------------------------------------------------
+		bool CheckAudioResource(const std::wstring& Key) const;
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief Wavリソースの登録(同じキーのWavリソースがなければファイル名で作成し、登録)。<br />
+		同じ名前のWavリソースがあればそのポインタを返す
+		@param[in]	Key リソースキー
+		@param[in]	WavFileName テクスチャファイル名
+		@return	リソースのスマートポインタ
+		*/
+		//--------------------------------------------------------------------------------------
+		std::shared_ptr<AudioResource> RegisterWav(const std::wstring& Key, const std::wstring& WavFileName);
+
+
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief　オーディオをリソース登録する
+		@param[in]	key	リソースのキー
+		@param[in]	audio	オーディオ
+		@param[in]	keyCheck	キーの重複チェックするかどうか
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void RegisterAudio(const std::wstring& key, const std::shared_ptr<AudioResource>& audio, bool keyCheck = false);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	登録されているテクスチャを取得する
+		@param[in]	key	リソースのキー
+		@return	テクスチャ
+		*/
+		//--------------------------------------------------------------------------------------
+		std::shared_ptr<AudioResource> GetAudio(const std::wstring& key);
+
+
+
 	protected:
 		UINT m_frameCount;
 
@@ -307,6 +362,10 @@ namespace basecross {
 		//texture map
 		std::map<const std::wstring, std::shared_ptr<BaseTexture> > m_textureMap;
 
+		//audio map
+		std::map<const std::wstring, std::shared_ptr<AudioResource> > m_audioMap;
+		//XAudio2Manager
+		std::shared_ptr<XAudio2Manager> m_xaudio2Manager;
 
 		static const float s_clearColor[4];
 

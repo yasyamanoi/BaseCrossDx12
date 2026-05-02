@@ -151,6 +151,8 @@ namespace basecross {
 		static InputDevice& GetInputDevice() {
 			return m_inputDevice;
 		}
+
+
 	protected:
 		static LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	private:
@@ -168,6 +170,7 @@ namespace basecross {
 		static std::wstring m_wstrRelativeMediaDir;	///< 相対パスのメディアディレクトリ
 		static std::wstring m_wstrRelativeShadersDir;	///< 相対パスのシェーダディレクトリ
 		static std::wstring	m_wstrRelativeAssetsDir;	///< 相対パスのアセットディレクトリ
+
 
 		static void SetInitData();
 
