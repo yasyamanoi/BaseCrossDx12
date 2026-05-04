@@ -20,6 +20,7 @@ https://yasyamanoi.github.io/BaseCrossDx12/
 2025年9月10日　サンプル103実装  
 2025年12月20日　サンプル002実装。  
 2025年12月23日　VS2026対応。  
+2026年5月5日　サンプル104、サンプル105追加
   
 「BaseCrossDx12」のライセンスは「MITライセンス」となります。  
 改変など自由ですが、くれぐれもご自分の責任においてお使いください。  
@@ -33,4 +34,4 @@ https://github.com/assimp/assimp/tree/master?tab=License-1-ov-file#readme
 それでは末永くよろしくお願いします。  
   
   
-　　　　　　　　　　　　　　　　　　　　　2025年12月　山ノ井　靖（WiZゲーム科非常勤講師：C++担当）  
+　　　　　　　　　　　　　　　　　　　　　2026年5月　山ノ井　靖（WiZゲーム科非常勤講師：C++担当）  
