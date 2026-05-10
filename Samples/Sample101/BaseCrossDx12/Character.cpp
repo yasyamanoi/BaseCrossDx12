@@ -26,13 +26,13 @@ namespace basecross {
 		//影（シャドウマップ）をつける
 		auto ptrShadow = AddComponent<Shadowmap>();
 		//L"DEFAULT_CUBE"というメッシュをつける
-		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrShadow->SetBaseMesh(L"DEFAULT_CUBE");
 		//描画コンポーネントに、BcPNTStaticDraw、を指定する
 		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
 		//ここにもL"DEFAULT_CUBE"というメッシュをつける
-		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->SetBaseMesh(L"DEFAULT_CUBE");
 		//L"SKY_TX"というテクスチャをつける
-		ptrDraw->AddBaseTexture(L"SKY_TX");
+		ptrDraw->SetBaseTexture(L"SKY_TX");
 		//自分自身に影が移りこむようにする
 		ptrDraw->SetOwnShadowActive(true);
 	}
@@ -55,10 +55,10 @@ namespace basecross {
 		auto ptrGra = AddComponent<Gravity>();
 
 		auto ptrShadow = AddComponent<Shadowmap>();
-		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrShadow->SetBaseMesh(L"DEFAULT_CUBE");
 		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
-		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
-		ptrDraw->AddBaseTexture(L"WALL_TX");
+		ptrDraw->SetBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->SetBaseTexture(L"WALL_TX");
 		ptrDraw->SetOwnShadowActive(true);
 	}
 
@@ -124,12 +124,12 @@ namespace basecross {
 
 		//影をつける
 		auto ptrShadow = AddComponent<Shadowmap>();
-		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrShadow->SetBaseMesh(L"DEFAULT_CUBE");
 
 		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
 		ptrDraw->SetFogEnabled(true);
-		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
-		ptrDraw->AddBaseTexture(L"TRACE_TX");
+		ptrDraw->SetBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->SetBaseTexture(L"TRACE_TX");
 		//透明処理をする
 		SetAlphaActive(true);
 

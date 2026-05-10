@@ -20,12 +20,8 @@ namespace basecross {
 
 	protected:
 		std::weak_ptr<GameObject> m_gameObject;
-
-		std::vector<std::weak_ptr<BaseMesh>> m_meshVec;
-		std::vector<std::weak_ptr<BaseTexture>> m_textureVec;
-
-		//		std::map<std::wstring,std::weak_ptr<BaseMesh>> m_meshMap;
-		//		std::map<std::wstring, std::weak_ptr<BaseTexture>> m_textureMap;
+		std::weak_ptr<BaseMesh> m_mesh;
+		std::weak_ptr<BaseTexture> m_texture;
 
 		explicit Component(const std::shared_ptr<GameObject>& gameObjectPtr);
 		virtual ~Component() {}
@@ -49,74 +45,26 @@ namespace basecross {
 		}
 
 
-		size_t AddBaseMesh(const std::shared_ptr<BaseMesh>& mesh) {
-			size_t size = m_meshVec.size();
-			m_meshVec.push_back(mesh);
-			return size;
+		void SetBaseMesh(const std::shared_ptr<BaseMesh>& mesh) {
+			m_mesh = mesh;
 		}
-		size_t AddBaseMesh(const std::wstring& key) {
-			return AddBaseMesh(BaseScene::Get()->GetMesh(key));
+		void SetBaseMesh(const std::wstring& key) {
+			SetBaseMesh(BaseScene::Get()->GetMesh(key));
 		}
 
-		std::shared_ptr<BaseMesh> GetBaseMesh(size_t index) {
-			if (index >= m_meshVec.size()) {
-				throw BaseException(
-					L"指定のインデックスが範囲外です",
-					Util::SizeTToWStr(index),
-					L"BaseScene::GetBaseMesh()"
-				);
-			}
-			else {
-				auto shptr = m_meshVec[index].lock();
-				if (shptr) {
-					return shptr;
-				}
-				else {
-					throw BaseException(
-						L"指定のメッシュは有効ではありません",
-						Util::SizeTToWStr(index),
-						L"BaseScene::GetMesh()"
-					);
-
-				}
-			}
-			return nullptr;
+		std::shared_ptr<BaseMesh> GetBaseMesh()const {
+			return m_mesh.lock();
 		}
 
-		size_t AddBaseTexture(const std::shared_ptr<BaseTexture>& texture) {
-			size_t size = m_textureVec.size();
-			m_textureVec.push_back(texture);
-			return size;
+		void SetBaseTexture(const std::shared_ptr<BaseTexture>& texture) {
+			m_texture = texture;
 		}
-		size_t AddBaseTexture(const std::wstring& key) {
-			return AddBaseTexture(BaseScene::Get()->GetTexture(key));
+		void SetBaseTexture(const std::wstring& key) {
+			SetBaseTexture(BaseScene::Get()->GetTexture(key));
 		}
 
-		std::shared_ptr<BaseTexture> GetBaseTexture(size_t index) {
-			if (index >= m_textureVec.size()) {
-				return nullptr;
-				//throw BaseException(
-				//	L"指定のインデックスが範囲外です",
-				//	Util::SizeTToWStr(index),
-				//	L"BaseScene::GetBaseTexture()"
-				//);
-			}
-			else {
-				auto shptr = m_textureVec[index].lock();
-				if (shptr) {
-					return shptr;
-				}
-				else {
-					return nullptr;
-					//throw BaseException(
-					//	L"指定のテクスチャは有効ではありません",
-					//	Util::SizeTToWStr(index),
-					//	L"BaseScene::GetBaseTexture()"
-					//);
-
-				}
-			}
-			return nullptr;
+		std::shared_ptr<BaseTexture> GetBaseTexture() {
+			return m_texture.lock();
 		}
 
 

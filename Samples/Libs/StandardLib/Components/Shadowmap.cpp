@@ -146,7 +146,7 @@ namespace basecross {
 
 	void Shadowmap::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
 		//		ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
-		auto mesh = GetBaseMesh(0);
+		auto mesh = GetBaseMesh();
 		if (mesh) {
 			auto pBaseScene = BaseScene::Get();
 			auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();

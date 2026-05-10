@@ -200,7 +200,7 @@ namespace basecross {
 				m_simpleConstant.eyePos = myCamera->GetEye();
 				m_simpleConstant.eyePos.w = 1.0f;
 				//テクスチャがあった場合
-				if (m_textureVec.size() > 0) {
+				if (m_texture.lock() != nullptr) {
 					m_simpleConstant.activeFlg.x = 1;
 				}
 				//影用
@@ -244,8 +244,8 @@ namespace basecross {
 		auto depthGPUDsvs = pBaseScene->GetDepthSrvGpuHandles();
 
 		auto CbvSrvUavDescriptorHeap = pBaseScene->GetCbvSrvUavDescriptorHeap();
-		auto mesh = GetBaseMesh(0);
-		auto texture = GetBaseTexture(0);
+		auto mesh = GetBaseMesh();
+		auto texture = GetBaseTexture();
 		if (mesh && texture) {
 
 			ComPtr<ID3D12PipelineState> defaultPipelineState

@@ -219,7 +219,7 @@ namespace basecross {
 		@return	メッシュ
 		*/
 		//--------------------------------------------------------------------------------------
-		std::shared_ptr<BaseMesh> GetMesh(const std::wstring& key);
+		const std::shared_ptr<BaseMesh> GetMesh(const std::wstring& key);
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	テクスチャをリソース登録する

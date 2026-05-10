@@ -658,7 +658,7 @@ namespace basecross {
 		m_meshMap[key] = mesh;
 	}
 
-	std::shared_ptr<BaseMesh> BaseScene::GetMesh(const std::wstring& key) {
+	const std::shared_ptr<BaseMesh> BaseScene::GetMesh(const std::wstring& key) {
 		auto it = m_meshMap.find(key);
 		if (it != m_meshMap.end()) {
 			return it->second;

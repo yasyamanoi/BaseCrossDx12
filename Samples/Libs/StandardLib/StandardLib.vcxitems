@@ -28,6 +28,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Constants.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\GameObject.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Particle.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\ParticleManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Stage.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\StateMachine.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StandardInclude.h" />
@@ -46,6 +48,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Transform.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\CollisionManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\GameObject.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\ParticleManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\Stage.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -109,6 +112,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCTParticle.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCTSprite.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -162,6 +171,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPCTParticle.hlsl">
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPCTSprite.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>

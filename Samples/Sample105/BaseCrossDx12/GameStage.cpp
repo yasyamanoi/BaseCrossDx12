@@ -35,7 +35,7 @@ namespace basecross {
 		CreatePlayer();
 
 		auto XAPtr = Scene::Get()->GetXAudio2Manager();
-		m_BGM = XAPtr->Start(L"Nanika", XAUDIO2_LOOP_INFINITE, 0.1f);
+		m_BGM = XAPtr->Start(L"nanika", XAUDIO2_LOOP_INFINITE, 0.1f);
 
 	}
 

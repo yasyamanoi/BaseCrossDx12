@@ -30,10 +30,10 @@ namespace basecross {
 		AddComponent<RigidbodyStatic>(pxParam);
 
 		auto ptrShadow = AddComponent<Shadowmap>();
-		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrShadow->SetBaseMesh(L"DEFAULT_CUBE");
 		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
-		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
-		ptrDraw->AddBaseTexture(L"SKY_TX");
+		ptrDraw->SetBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->SetBaseTexture(L"SKY_TX");
 		ptrDraw->SetOwnShadowActive(true);
 	}
 
@@ -61,10 +61,10 @@ namespace basecross {
 		auto pRigDynamic = pRigDynamicComp->GetRigidDynamic();
 
 		auto ptrShadow = AddComponent<Shadowmap>();
-		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrShadow->SetBaseMesh(L"DEFAULT_CUBE");
 		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
-		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
-		ptrDraw->AddBaseTexture(L"WALL_TX");
+		ptrDraw->SetBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->SetBaseTexture(L"WALL_TX");
 		ptrDraw->SetOwnShadowActive(true);
 
 		//ƒWƒƒƒ“ƒv‚³‚¹‚é

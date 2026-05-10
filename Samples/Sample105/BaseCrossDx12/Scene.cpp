@@ -39,11 +39,11 @@ namespace basecross {
 		RegisterTexture(L"TRACE3_TX", texture);
 
 		//サウンド
-		std::wstring CursorWav = App::GetRelativeAssetsDir() + L"cursor.wav";
-		RegisterWav(L"cursor", CursorWav);
+		std::wstring cursorWav = App::GetRelativeAssetsDir() + L"cursor.wav";
+		RegisterWav(L"cursor", cursorWav);
 		//BGM
 		std::wstring nanikaWav = App::GetRelativeAssetsDir() + L"nanika.wav";
-		RegisterWav(L"Nanika", nanikaWav);
+		RegisterWav(L"nanika", nanikaWav);
 
 
 		//ステージ作成

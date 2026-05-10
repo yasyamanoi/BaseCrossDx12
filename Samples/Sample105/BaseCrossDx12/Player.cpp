@@ -90,15 +90,15 @@ namespace basecross {
 		GetStage()->SetSharedGameObject(L"Player", GetThis<Player>());
 
 		auto ptrShadow = AddComponent<Shadowmap>();
-		ptrShadow->AddBaseMesh(L"DEFAULT_SPHERE");
+		ptrShadow->SetBaseMesh(L"DEFAULT_SPHERE");
 		//CollisionSphereÕ“Ë”»’è‚ğ•t‚¯‚é
 		auto ptrColl = AddComponent<CollisionSphere>();
 		//d—Í‚ğ‚Â‚¯‚é
 		auto ptrGra = AddComponent<Gravity>();
 
 		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
-		ptrDraw->AddBaseMesh(L"DEFAULT_SPHERE");
-		ptrDraw->AddBaseTexture(L"TRACE_TX");
+		ptrDraw->SetBaseMesh(L"DEFAULT_SPHERE");
+		ptrDraw->SetBaseTexture(L"TRACE_TX");
 		//“§–¾ˆ—
 		SetAlphaActive(true);
 		//ƒJƒƒ‰‚ğ“¾‚é

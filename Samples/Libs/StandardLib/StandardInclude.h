@@ -12,18 +12,16 @@
 #include "Components/Gravity.h"
 #include "Components/SteeringBehavior.h"
 #include "Components/Collision.h"
+#include "Components/RigidBody.h"
+#include "Components/Shadowmap.h"
 #include "Objects/CollisionManager.h"
 #include "Objects/Stage.h"
 #include "Objects/StateMachine.h"
-
-
-#include "Components/RigidBody.h"
-
-
-#include "Components/Shadowmap.h"
 
 #include "Components/BcStaticDraw.h"
 #include "Components/SpStaticDraw.h"
 #include "Components/SpSpriteDraw.h"
 #include "Components/BcBoneDraw.h"
+#include "Objects/Particle.h"
+#include "Objects/ParticleManager.h"
 

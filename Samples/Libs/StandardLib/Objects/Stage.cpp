@@ -84,6 +84,8 @@ namespace basecross {
 	void Stage::OnPreCreate() {
 		//コリジョン管理者の作成
 		m_collisionManager = ObjectFactory::Create<CollisionManager>(GetThis<Stage>());
+		//パーティクル管理者の作成
+		m_particleManager = ObjectFactory::Create<ParticleManager>(GetThis<Stage>());
 	}
 
 	void Stage::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
@@ -126,12 +128,16 @@ namespace basecross {
 		for (auto& v : alphaVec) {
 			v->OnSceneDraw(pCommandList);
 		}
+		//パーティクルの描画
+		m_particleManager->OnSceneDraw(pCommandList);
+
 	}
 
 	void Stage::OnDestroy() {
 		for (auto& v : m_gameObjectVec) {
 			v->OnDestroy();
 		}
+		m_particleManager->OnDestroy();
 		m_destroyFlg = true;
 	}
 

@@ -26,13 +26,13 @@ namespace basecross {
 		//影（シャドウマップ）をつける
 		auto ptrShadow = AddComponent<Shadowmap>();
 		//L"DEFAULT_CUBE"というメッシュをつける
-		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrShadow->SetBaseMesh(L"DEFAULT_CUBE");
 		//描画コンポーネントに、BcPNTStaticDraw、を指定する
 		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
 		//ここにもL"DEFAULT_CUBE"というメッシュをつける
-		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->SetBaseMesh(L"DEFAULT_CUBE");
 		//L"SKY_TX"というテクスチャをつける
-		ptrDraw->AddBaseTexture(L"SKY_TX");
+		ptrDraw->SetBaseTexture(L"SKY_TX");
 		//自分自身に影が移りこむようにする
 		ptrDraw->SetOwnShadowActive(true);
 	}

@@ -10,6 +10,8 @@
 
 namespace basecross {
 
+	class ParticleManager;
+
 	//--------------------------------------------------------------------------------------
 	// 親ステージクラス
 	//--------------------------------------------------------------------------------------
@@ -31,10 +33,12 @@ namespace basecross {
 		std::map<const std::wstring, std::weak_ptr<GameObject> > m_SharedMap;
 		//シェアグループのポインタのマップ
 		std::map<const std::wstring, std::shared_ptr<GameObjectGroup> >  m_SharedGroupMap;
-
 		//コリジョン管理者
 		std::shared_ptr<CollisionManager> m_collisionManager;
+		//パーティクル管理者
+		std::shared_ptr<ParticleManager> m_particleManager;
 
+		//破棄されたかどうか（ステージ推移時に重要）
 		bool m_destroyFlg;
 	protected:
 		ID3D12Device* m_pDevice;
@@ -101,6 +105,10 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		virtual void UpdateCameraLight(double elapsedTime) = 0;
+		bool IsDestroyFlg() const {
+			return m_destroyFlg;
+		}
+
 		//--------------------------------------------------------------------------------------
 		/*!
 		@brief	更新処理が有効かどうかを得る

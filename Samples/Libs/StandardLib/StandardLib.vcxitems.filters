@@ -73,6 +73,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\SpSpriteDraw.h">
       <Filter>Components\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\ParticleManager.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Objects\Particle.h">
+      <Filter>Objects\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Objects\GameObject.cpp">
@@ -116,6 +122,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\SpSpriteDraw.cpp">
       <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Objects\ParticleManager.cpp">
+      <Filter>Objects\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -221,6 +230,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\VSShadowmap.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCTParticle.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpVSPCTParticle.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

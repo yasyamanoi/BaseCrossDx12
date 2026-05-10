@@ -26,10 +26,10 @@ namespace basecross {
 		//タグをつける
 		AddTag(L"FixedBox");
 		auto ptrShadow = AddComponent<Shadowmap>();
-		ptrShadow->AddBaseMesh(L"DEFAULT_CUBE");
+		ptrShadow->SetBaseMesh(L"DEFAULT_CUBE");
 		auto ptrDraw = AddComponent<BcPNTStaticDraw>();
-		ptrDraw->AddBaseMesh(L"DEFAULT_CUBE");
-		ptrDraw->AddBaseTexture(L"SKY_TX");
+		ptrDraw->SetBaseMesh(L"DEFAULT_CUBE");
+		ptrDraw->SetBaseTexture(L"SKY_TX");
 		ptrDraw->SetOwnShadowActive(true);
 	}
 
@@ -56,10 +56,10 @@ namespace basecross {
 		);
 		//シャドウマップをつける
 		auto ptrShadow = AddComponent<Shadowmap>();
-		ptrShadow->AddBaseMesh(m_baseMesh);
+		ptrShadow->SetBaseMesh(m_baseMesh);
 		//BcPNTBoneDraw描画コンポーネントをつける
 		auto ptrDraw = AddComponent<BcPNTBoneDraw>();
-		ptrDraw->AddBaseMesh(m_baseMesh);
+		ptrDraw->SetBaseMesh(m_baseMesh);
 	}
 
 	void BoneModel::OnUpdate(double elapsedTime) {

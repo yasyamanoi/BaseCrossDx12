@@ -1,5 +1,5 @@
 /*!
-@file SpPCTSpriteDraw.h
+@file SpPCTSpriteDraw.cpp
 @brief 標準的なスプライトコンポーネント　実体
 */
 

@@ -124,7 +124,7 @@ namespace basecross {
 	bool BcPNTBoneDraw::UpdateAnimation(double animeTime) {
 
 		//アニメーション
-		auto mesh = GetBaseMesh(0);
+		auto mesh = GetBaseMesh();
 		auto ptrBaseAssimp = mesh->GetBaseAssimp();
 		m_BoneTransforms.clear();
 		ptrBaseAssimp->GetBoneTransforms((float)animeTime, m_BoneTransforms);
@@ -168,7 +168,7 @@ namespace basecross {
 
 				//初期化
 				m_constantBuffer = {};
-				if (GetBaseTexture(0)) {
+				if (GetBaseTexture()) {
 					m_constantBuffer.activeFlg.y = 1;
 				}
 				else {
@@ -313,8 +313,8 @@ namespace basecross {
 		auto depthGPUDsvs = pBaseScene->GetDepthSrvGpuHandles();
 
 		auto CbvSrvUavDescriptorHeap = pBaseScene->GetCbvSrvUavDescriptorHeap();
-		auto mesh = GetBaseMesh(0);
-		auto texture = GetBaseTexture(0);
+		auto mesh = GetBaseMesh();
+		auto texture = GetBaseTexture();
 		if (!texture) {
 			int a = 0;
 		}
