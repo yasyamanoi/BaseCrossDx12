@@ -150,6 +150,8 @@ namespace basecross {
 		if (mesh) {
 			auto pBaseScene = BaseScene::Get();
 			auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
+			//静的メッシュ用のパイプラインステートに明示的に切り替える（ボーン用の影など、ほかの影の後でも正しく描くため）
+			pCommandList->SetPipelineState(PipelineStatePool::GetPipelineState(L"PNTShadowmap", true).Get());
 			//Cbv
 			// Set shadow constant buffer.
 			pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
@@ -159,6 +161,104 @@ namespace basecross {
 			pCommandList->IASetIndexBuffer(&mesh->GetIndexBufferView());
 			pCommandList->DrawIndexedInstanced(mesh->GetNumIndices(), 1, 0, 0, 0);
 		}
+	}
+
+	//--------------------------------------------------------------------------------------
+	///	ShadowmapBone
+	//--------------------------------------------------------------------------------------
+	IMPLEMENT_DX12SHADER(PNTBoneShadowmap, App::GetShadersDir() + L"VSShadowmapBone.cso")
+
+	ShadowmapBone::ShadowmapBone(const std::shared_ptr<GameObject>& gameObjectPtr) :
+		Shadowmap(gameObjectPtr)
+	{
+	}
+
+	void ShadowmapBone::OnCreate() {
+		//定数バッファと、静的メッシュ用のパイプラインステートは親クラスで作る
+		Shadowmap::OnCreate();
+		auto pBaseDevice = BaseDevice::GetBaseDevice();
+		ComPtr<ID3D12PipelineState> boneShadowPipelineState
+			= PipelineStatePool::GetPipelineState(L"PNTBoneShadowmap");
+		if (!boneShadowPipelineState) {
+			auto rootSignature = RootSignaturePool::GetRootSignature(L"BaseCrossDefault", true);
+			CD3DX12_DEPTH_STENCIL_DESC depthStencilDesc(D3D12_DEFAULT);
+			depthStencilDesc.DepthEnable = TRUE;
+			depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+			depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+			depthStencilDesc.StencilEnable = FALSE;
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+			psoDesc.InputLayout = { VertexPositionNormalTextureSkinning::GetVertexElement(), VertexPositionNormalTextureSkinning::GetNumElements() };
+			psoDesc.pRootSignature = rootSignature.Get();
+			psoDesc.VS =
+			{
+				reinterpret_cast<UINT8*>(PNTBoneShadowmap::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				PNTBoneShadowmap::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+			psoDesc.PS =
+			{
+				CD3DX12_SHADER_BYTECODE(0, 0)
+			};
+			psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+			psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+			psoDesc.DepthStencilState = depthStencilDesc;
+			psoDesc.SampleMask = UINT_MAX;
+			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			psoDesc.NumRenderTargets = 0;
+			psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+			psoDesc.SampleDesc.Count = 1;
+			ThrowIfFailed(pBaseDevice->GetD3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&boneShadowPipelineState)));
+			NAME_D3D12_OBJECT(boneShadowPipelineState);
+			PipelineStatePool::AddPipelineState(L"PNTBoneShadowmap", boneShadowPipelineState);
+		}
+	}
+
+	void ShadowmapBone::OnUpdateConstantBuffers() {
+		//ワールド・ビュー・射影は親クラスで作る
+		Shadowmap::OnUpdateConstantBuffers();
+		auto gameObject = m_gameObject.lock();
+		if (!gameObject) {
+			return;
+		}
+		//ボーン行列：Animatorを優先して、無ければボーン描画コンポーネントのもの
+		const std::vector<Mat4x4>* bones = nullptr;
+		auto animator = gameObject->GetComponent<Animator>(false);
+		if (animator) {
+			bones = &animator->GetBoneTransforms();
+		}
+		else {
+			auto draw = gameObject->GetComponent<BcPNTBoneDraw>(false);
+			if (draw) {
+				bones = &draw->GetBoneTransforms();
+			}
+		}
+		if (bones) {
+			const size_t count = (std::min)(bones->size(), static_cast<size_t>(MAX_BONES));
+			for (size_t i = 0; i < count; i++) {
+				const XMMATRIX mat = (XMMATRIX)(*bones)[i];
+				m_shadowConstantBuffer.bones[i * 3] = mat.r[0];
+				m_shadowConstantBuffer.bones[i * 3 + 1] = mat.r[1];
+				m_shadowConstantBuffer.bones[i * 3 + 2] = mat.r[2];
+			}
+		}
+	}
+
+	void ShadowmapBone::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
+		auto mesh = GetBaseMesh();
+		if (!mesh) {
+			return;
+		}
+		auto pBaseScene = BaseScene::Get();
+		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
+		//ボーン用のパイプラインステート
+		pCommandList->SetPipelineState(PipelineStatePool::GetPipelineState(L"PNTBoneShadowmap", true).Get());
+		pCommandList->SetGraphicsRootConstantBufferView(pBaseScene->GetGpuSlotID(L"b0"),
+			pCurrentFrameResource->m_baseConstantBufferSetVec[m_shadowConstantBufferIndex].m_baseConstantBuffer->GetGPUVirtualAddress());
+		pCommandList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+		pCommandList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+		pCommandList->DrawIndexedInstanced(mesh->GetNumIndices(), 1, 0, 0, 0);
+		//静的メッシュ用に戻す
+		pCommandList->SetPipelineState(PipelineStatePool::GetPipelineState(L"PNTShadowmap", true).Get());
 	}
 
 }

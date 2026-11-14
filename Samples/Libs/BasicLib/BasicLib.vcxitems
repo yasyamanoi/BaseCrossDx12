@@ -23,7 +23,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)BaseMathInc.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BaseMesh.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BaseScene.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseModel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BaseTexture.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ModelLoader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BasicInclude.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BlendState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Camera.h" />
@@ -50,6 +52,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)BaseHelper.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BaseMesh.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BaseScene.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BaseModel.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BaseTexture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BlendState.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Camera.cpp" />

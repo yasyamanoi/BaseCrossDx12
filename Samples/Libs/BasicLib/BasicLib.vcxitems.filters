@@ -36,6 +36,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)BaseTexture.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)BaseModel.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ModelLoader.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)BlendState.h">
       <Filter>Headers</Filter>
     </ClInclude>
@@ -111,6 +117,9 @@
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)BaseTexture.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)BaseModel.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)BlendState.cpp">

@@ -97,6 +97,8 @@ using namespace basecross::bsm;
 #include "Light.h"
 #include "BaseMesh.h"
 #include "BaseTexture.h"
+#include "ModelLoader.h"
+#include "BaseModel.h"
 #include "Audio.h"
 #include "App.h"
 #include "PrimDevice.h"

@@ -82,6 +82,12 @@ namespace basecross {
 				L"\nBaseTexture::CreateBaseTexture()"
 			);
 		}
+		return CreateFromLoadedImagePrim(pCommandList, ptrTexture, matadata, fileName, mapHandle);
+	}
+
+	std::shared_ptr<BaseTexture> BaseTexture::CreateFromLoadedImagePrim(ID3D12GraphicsCommandList* pCommandList,
+		const std::shared_ptr<BaseTexture>& ptrTexture, const DirectX::TexMetadata& matadata,
+		const std::wstring& fileName, const CD3DX12_CPU_DESCRIPTOR_HANDLE& mapHandle) {
 		//デバイスの取得
 		auto device = App::GetID3D12Device();
 		ThrowIfFailedEx(
@@ -126,6 +132,102 @@ namespace basecross {
 		ptrTexture->UpdateSRAndCreateSRV(pCommandList);
 
 		return ptrTexture;
+	}
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE BaseTexture::NewSrvHandle(UINT& srvIndex) {
+		//シーンの取得
+		auto& sceneBase = BaseDevice::GetScene();
+		//シェーダリソースハンドルを作成
+		srvIndex = sceneBase->GetSrvNextIndex();
+		return CD3DX12_CPU_DESCRIPTOR_HANDLE(
+			sceneBase->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
+			srvIndex,
+			sceneBase->GetCbvSrvUavDescriptorHandleIncrementSize()
+		);
+	}
+
+	std::shared_ptr<BaseTexture> BaseTexture::CreateTextureFromMemory(ID3D12GraphicsCommandList* pCommandList,
+		const void* pData, size_t dataSize, const std::wstring& formatHint, const std::wstring& name) {
+		if (!pData || dataSize == 0) {
+			throw BaseException(
+				L"画像データがありません\n",
+				name,
+				L"\nBaseTexture::CreateTextureFromMemory()"
+			);
+		}
+		std::wstring hint = formatHint;
+		for (auto& c : hint) {
+			c = static_cast<wchar_t>(towlower(c));
+		}
+		const uint8_t* pBytes = static_cast<const uint8_t*>(pData);
+		std::shared_ptr<BaseTexture> ptrTexture = std::shared_ptr<BaseTexture>(new BaseTexture());
+		TexMetadata matadata;
+		if (hint == L"dds") {
+			ThrowIfFailedEx(
+				DirectX::LoadFromDDSMemory(pBytes, dataSize, DDS_FLAGS_NONE, &matadata, ptrTexture->m_image),
+				L"テクスチャの読み込みに失敗しました\n",
+				name,
+				L"\nBaseTexture::CreateTextureFromMemory()"
+			);
+		}
+		else if (hint == L"tga") {
+			ThrowIfFailedEx(
+				DirectX::LoadFromTGAMemory(pBytes, dataSize, &matadata, ptrTexture->m_image),
+				L"テクスチャの読み込みに失敗しました\n",
+				name,
+				L"\nBaseTexture::CreateTextureFromMemory()"
+			);
+		}
+		else if (hint == L"hdr") {
+			ThrowIfFailedEx(
+				DirectX::LoadFromHDRMemory(pBytes, dataSize, &matadata, ptrTexture->m_image),
+				L"テクスチャの読み込みに失敗しました\n",
+				name,
+				L"\nBaseTexture::CreateTextureFromMemory()"
+			);
+		}
+		else {
+			ThrowIfFailedEx(
+				DirectX::LoadFromWICMemory(pBytes, dataSize, WIC_FLAGS_NONE, &matadata, ptrTexture->m_image),
+				L"テクスチャの読み込みに失敗しました\n",
+				name,
+				L"\nBaseTexture::CreateTextureFromMemory()"
+			);
+		}
+		UINT srvIndex = 0;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle = NewSrvHandle(srvIndex);
+		auto texture = CreateFromLoadedImagePrim(pCommandList, ptrTexture, matadata, name, srvHandle);
+		texture->SetSrvIndex(srvIndex);
+		return texture;
+	}
+
+	std::shared_ptr<BaseTexture> BaseTexture::CreateTextureFromPixels(ID3D12GraphicsCommandList* pCommandList,
+		UINT width, UINT height, DXGI_FORMAT format, const void* pPixels, size_t rowPitch) {
+		const std::wstring name = L"(pixels)";
+		if (!pPixels || width == 0 || height == 0) {
+			throw BaseException(
+				L"ピクセルデータがありません\n",
+				name,
+				L"\nBaseTexture::CreateTextureFromPixels()"
+			);
+		}
+		std::shared_ptr<BaseTexture> ptrTexture = std::shared_ptr<BaseTexture>(new BaseTexture());
+		ThrowIfFailedEx(
+			ptrTexture->m_image.Initialize2D(format, width, height, 1, 1),
+			L"イメージの作成に失敗しました\n",
+			name,
+			L"\nBaseTexture::CreateTextureFromPixels()"
+		);
+		const DirectX::Image* pImage = ptrTexture->m_image.GetImage(0, 0, 0);
+		const size_t copyBytes = (std::min)(rowPitch, pImage->rowPitch);
+		for (UINT y = 0; y < height; y++) {
+			memcpy(pImage->pixels + pImage->rowPitch * y, static_cast<const uint8_t*>(pPixels) + rowPitch * y, copyBytes);
+		}
+		UINT srvIndex = 0;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle = NewSrvHandle(srvIndex);
+		auto texture = CreateFromLoadedImagePrim(pCommandList, ptrTexture, ptrTexture->m_image.GetMetadata(), name, srvHandle);
+		texture->SetSrvIndex(srvIndex);
+		return texture;
 	}
 
 	std::shared_ptr<BaseTexture> BaseTexture::CreateTextureFlomFile(ID3D12GraphicsCommandList* pCommandList, const std::wstring& falsename) {

@@ -22,6 +22,8 @@
 #include "Components/SpStaticDraw.h"
 #include "Components/SpSpriteDraw.h"
 #include "Components/BcBoneDraw.h"
+#include "Components/Animator.h"
+#include "Components/BcModelDraw.h"
 #include "Objects/Particle.h"
 #include "Objects/ParticleManager.h"
 

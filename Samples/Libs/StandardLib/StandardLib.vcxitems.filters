@@ -61,6 +61,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\BcBoneDraw.h">
       <Filter>Components\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Animator.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\BcModelDraw.h">
+      <Filter>Components\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Objects\StateMachine.h">
       <Filter>Objects\Headers</Filter>
     </ClInclude>
@@ -112,6 +118,12 @@
       <Filter>Components\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\BcBoneDraw.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Animator.cpp">
+      <Filter>Components\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\BcModelDraw.cpp">
       <Filter>Components\Sources</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\SteeringBehavior.cpp">
@@ -230,6 +242,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\VSShadowmap.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\VSShadowmapBone.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\SpPSPCTParticle.hlsl">

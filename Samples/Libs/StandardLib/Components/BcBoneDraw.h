@@ -36,6 +36,16 @@ namespace basecross {
 
 		std::vector<Mat4x4>  m_BoneTransforms;
 
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	シーン描画の共通の状態（パイプラインステート、シャドウマップ、サンプラー）を設定する
+		@param[in]	pCommandList	コマンドリスト
+		@param[in]	alpha	透明で描くか
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void SetCommonDrawState(ID3D12GraphicsCommandList* pCommandList, bool alpha);
+
 	public:
 		bool IsOwnShadowActive()const {
 			return m_ownShadowActive;
@@ -48,6 +58,15 @@ namespace basecross {
 		}
 		void SetFogEnabled(bool b) {
 			m_fogEnabled = b;
+		}
+		//ボーン行列を設定する（外部で計算した行列、たとえばAnimatorの行列を使うとき）
+		//Assimpの行列のまま（行ごとにシェーダーのBonesに渡す形）
+		void SetBoneTransforms(const std::vector<Mat4x4>& transforms) {
+			m_BoneTransforms = transforms;
+		}
+		//ボーン行列を得る
+		const std::vector<Mat4x4>& GetBoneTransforms() const {
+			return m_BoneTransforms;
 		}
 
 

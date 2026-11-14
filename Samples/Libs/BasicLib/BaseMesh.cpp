@@ -350,8 +350,11 @@ Assimp::Importer importer;
 	void BaseAssimp::GetBoneTransforms(float TimeInSeconds, std::vector<Mat4x4>& Transforms, unsigned int AnimationIndex)
 	{
 		if (AnimationIndex >= m_pScene->mNumAnimations) {
-			printf("Invalid animation index %d, max is %d\n", AnimationIndex, m_pScene->mNumAnimations);
-			assert(0);
+			//アニメーションが無い（またはインデックスが範囲外）ときは、初期姿勢（単位行列）を返す
+			Mat4x4 identityMat;
+			identityMat.identity();
+			Transforms.assign(m_BoneInfo.size(), identityMat);
+			return;
 		}
 
 		Mat4x4 Identity;

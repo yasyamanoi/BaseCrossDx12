@@ -46,7 +46,7 @@ namespace basecross {
 			ComPtr<ID3D12PipelineState> defaultShadowPipelineState
 				= PipelineStatePool::GetPipelineState(L"BcPNTBoneShadow");
 			ComPtr<ID3D12PipelineState> alphaPipelineState
-				= PipelineStatePool::GetPipelineState(L"BcPNTBonecAlpha");
+				= PipelineStatePool::GetPipelineState(L"BcPNTBoneAlpha");
 			ComPtr<ID3D12PipelineState> alphaShadowPipelineState
 				= PipelineStatePool::GetPipelineState(L"BcPNTBoneAlphaShadow");
 
@@ -119,6 +119,73 @@ namespace basecross {
 			}
 
 		}
+	}
+
+	void BcPNTBoneDraw::SetCommonDrawState(ID3D12GraphicsCommandList* pCommandList, bool alpha) {
+		auto pBaseScene = BaseScene::Get();
+		auto depthGPUDsvs = pBaseScene->GetDepthSrvGpuHandles();
+		auto CbvSrvUavDescriptorHeap = pBaseScene->GetCbvSrvUavDescriptorHeap();
+		ComPtr<ID3D12PipelineState> defaultPipelineState
+			= PipelineStatePool::GetPipelineState(L"BcPNTBone", true);
+		ComPtr<ID3D12PipelineState> defaultShadowPipelineState
+			= PipelineStatePool::GetPipelineState(L"BcPNTBoneShadow", true);
+		ComPtr<ID3D12PipelineState> alphaPipelineState
+			= PipelineStatePool::GetPipelineState(L"BcPNTBoneAlpha", true);
+		ComPtr<ID3D12PipelineState> alphaShadowPipelineState
+			= PipelineStatePool::GetPipelineState(L"BcPNTBoneAlphaShadow", true);
+		//null rv
+		CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvGpuNullHandle(CbvSrvUavDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+
+		// set PipelineState and GetGpuSlotID(L"t0")
+		if (alpha) {
+			if (IsOwnShadowActive()) {
+				pCommandList->SetPipelineState(alphaShadowPipelineState.Get());
+				pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), depthGPUDsvs[SceneEnums::DepthGenPass::Shadow]);        // Set the shadow texture as an SRV.
+			}
+			else {
+				pCommandList->SetPipelineState(alphaPipelineState.Get());
+				pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), cbvSrvGpuNullHandle);        // Set the shadow texture as an SRV.
+			}
+		}
+		else {
+			if (IsOwnShadowActive()) {
+				pCommandList->SetPipelineState(defaultShadowPipelineState.Get());
+				pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), depthGPUDsvs[SceneEnums::DepthGenPass::Shadow]);        // Set the shadow texture as an SRV.
+			}
+			else {
+				pCommandList->SetPipelineState(defaultPipelineState.Get());
+				pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), cbvSrvGpuNullHandle);        // Set the shadow texture as an SRV.
+			}
+
+		}
+		//Sampler
+		UINT index = pBaseScene->GetSamplerIndex(L"LinearClamp");
+		if (index == UINT_MAX) {
+			throw BaseException(
+				L"LinearClampサンプラーが特定できません。",
+				L"Scene::ScenePass()"
+			);
+		}
+		CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle(
+			pBaseScene->GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
+			index,
+			pBaseScene->GetSamplerDescriptorHandleIncrementSize()
+		);
+		pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"s0"), samplerHandle);
+
+		index = pBaseScene->GetSamplerIndex(L"ComparisonLinear");
+		if (index == UINT_MAX) {
+			throw BaseException(
+				L"ComparisonLinearサンプラーが特定できません。",
+				L"Scene::ScenePass()"
+			);
+		}
+		CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle2(
+			pBaseScene->GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
+			index,
+			pBaseScene->GetSamplerDescriptorHandleIncrementSize()
+		);
+		pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"s1"), samplerHandle2);
 	}
 
 	bool BcPNTBoneDraw::UpdateAnimation(double animeTime) {
@@ -319,67 +386,7 @@ namespace basecross {
 			int a = 0;
 		}
 		if (mesh) {
-			ComPtr<ID3D12PipelineState> defaultPipelineState
-				= PipelineStatePool::GetPipelineState(L"BcPNTBone", true);
-			ComPtr<ID3D12PipelineState> defaultShadowPipelineState
-				= PipelineStatePool::GetPipelineState(L"BcPNTBoneShadow", true);
-			ComPtr<ID3D12PipelineState> alphaPipelineState
-				= PipelineStatePool::GetPipelineState(L"BcPNTBoneAlpha", true);
-			ComPtr<ID3D12PipelineState> alphaShadowPipelineState
-				= PipelineStatePool::GetPipelineState(L"BcPNTBoneAlphaShadow", true);
-			//null rv
-			CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvGpuNullHandle(CbvSrvUavDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-
-			// set PipelineState and GetGpuSlotID(L"t0")
-			if (GetGameObject()->IsAlphaActive()) {
-				if (IsOwnShadowActive()) {
-					pCommandList->SetPipelineState(alphaShadowPipelineState.Get());
-					pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), depthGPUDsvs[SceneEnums::DepthGenPass::Shadow]);        // Set the shadow texture as an SRV.
-				}
-				else {
-					pCommandList->SetPipelineState(alphaPipelineState.Get());
-					pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), cbvSrvGpuNullHandle);        // Set the shadow texture as an SRV.
-				}
-			}
-			else {
-				if (IsOwnShadowActive()) {
-					pCommandList->SetPipelineState(defaultShadowPipelineState.Get());
-					pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), depthGPUDsvs[SceneEnums::DepthGenPass::Shadow]);        // Set the shadow texture as an SRV.
-				}
-				else {
-					pCommandList->SetPipelineState(defaultPipelineState.Get());
-					pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), cbvSrvGpuNullHandle);        // Set the shadow texture as an SRV.
-				}
-
-			}
-			//Sampler
-			UINT index = pBaseScene->GetSamplerIndex(L"LinearClamp");
-			if (index == UINT_MAX) {
-				throw BaseException(
-					L"LinearClampサンプラーが特定できません。",
-					L"Scene::ScenePass()"
-				);
-			}
-			CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle(
-				pBaseScene->GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
-				index,
-				pBaseScene->GetSamplerDescriptorHandleIncrementSize()
-			);
-			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"s0"), samplerHandle);
-
-			index = pBaseScene->GetSamplerIndex(L"ComparisonLinear");
-			if (index == UINT_MAX) {
-				throw BaseException(
-					L"ComparisonLinearサンプラーが特定できません。",
-					L"Scene::ScenePass()"
-				);
-			}
-			CD3DX12_GPU_DESCRIPTOR_HANDLE samplerHandle2(
-				pBaseScene->GetSamplerDescriptorHeap()->GetGPUDescriptorHandleForHeapStart(),
-				index,
-				pBaseScene->GetSamplerDescriptorHandleIncrementSize()
-			);
-			pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"s1"), samplerHandle2);
+			SetCommonDrawState(pCommandList, GetGameObject()->IsAlphaActive());
 			//シェーダリソース（テクスチャ）のハンドルの設定
 			if (texture) {
 				CD3DX12_GPU_DESCRIPTOR_HANDLE srvHandle(

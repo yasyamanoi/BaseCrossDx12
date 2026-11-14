@@ -178,6 +178,26 @@ namespace basecross {
 		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override;
 	};
 
+	//--------------------------------------------------------------------------------------
+	///	ボーン（スキニング）対応のShadowmap描画
+	//--------------------------------------------------------------------------------------
+	DECLARE_DX12SHADER(PNTBoneShadowmap)
+
+	//--------------------------------------------------------------------------------------
+	///	ボーン対応のシャドウマップコンポーネント。
+	///	メッシュはVertexPositionNormalTextureSkinningのもの（BaseModelのメッシュなど）。
+	///	ボーン行列は、同じオブジェクトのAnimator、無ければBcPNTBoneDraw（BcPNTModelDrawを含む）のものを使う。
+	///	影がアニメーションの姿勢に追従する
+	//--------------------------------------------------------------------------------------
+	class ShadowmapBone : public Shadowmap {
+	public:
+		ShadowmapBone(const std::shared_ptr<GameObject>& gameObjectPtr);
+		virtual ~ShadowmapBone() {}
+		virtual void OnCreate()override;
+		virtual void OnUpdateConstantBuffers()override;
+		virtual void OnShadowDraw(ID3D12GraphicsCommandList* pCommandList)override;
+	};
+
 }
 // end namespace basecross
 
