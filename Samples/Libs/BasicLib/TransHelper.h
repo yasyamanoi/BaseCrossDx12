@@ -3783,7 +3783,7 @@ namespace basecross {
 		SPHERE sp_bottom, sp_top;
 		sp_bottom.m_Center = m_PointBottom;
 		sp_bottom.m_Radius = m_Radius;
-		sp_top.m_Center = m_PointBottom;
+		sp_top.m_Center = m_PointTop;
 		sp_top.m_Radius = m_Radius;
 		return HitTest::AABB_OR_AABB(sp_bottom.GetWrappedAABB(), sp_top.GetWrappedAABB());
 	}

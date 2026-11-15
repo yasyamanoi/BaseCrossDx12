@@ -19,7 +19,8 @@ namespace basecross {
 		m_SleepCheckWorldMatrix(),
 		m_SleepCheckTimer(0.0f),
 		m_SleepTime(2.0f),
-		m_IsSleep(false)
+		m_IsSleep(false),
+		m_CenterOffset(0)
 	{
 	}
 	Collision::~Collision() {}
@@ -39,6 +40,24 @@ namespace basecross {
 	}
 	void Collision::SetAfterCollision(AfterCollision a) {
 		m_AfterCollision = a;
+	}
+
+	const Vec3& Collision::GetCenterOffset() const {
+		return m_CenterOffset;
+	}
+	void Collision::SetCenterOffset(const Vec3& offset) {
+		m_CenterOffset = offset;
+	}
+
+	Mat4x4 Collision::ApplyCenterOffset(const Mat4x4& WorldMatrix) const {
+		//ずれが無いときは、行列を一切計算しない(従来と同じ値になる)
+		if (m_CenterOffset == Vec3(0)) {
+			return WorldMatrix;
+		}
+		//ローカルな位置 m_CenterOffset を通ってからワールド行列に入る
+		Mat4x4 OffsetMat;
+		OffsetMat.translation(m_CenterOffset);
+		return OffsetMat * WorldMatrix;
 	}
 
 	Vec3 Collision::GetVelocity() const {
@@ -249,7 +268,7 @@ namespace basecross {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
 		Mat4x4 MatBase;
 		MatBase.scale(Vec3(m_MakedDiameter, m_MakedDiameter, m_MakedDiameter));
-		MatBase *= TransPtr->GetWorldMatrix();
+		MatBase *= ApplyCenterOffset(TransPtr->GetWorldMatrix());
 		//このオブジェクトのSPHEREを作成
 		SPHERE Ret(MatBase.transInMatrix(), MatBase.scaleInMatrix().x * 0.5f);
 		switch (m_CalcScaling) {
@@ -273,7 +292,7 @@ namespace basecross {
 		auto TransPtr = GetGameObject()->GetComponent<Transform>();
 		Mat4x4 MatBase;
 		MatBase.scale(Vec3(m_MakedDiameter, m_MakedDiameter, m_MakedDiameter));
-		MatBase *= TransPtr->GetBeforeWorldMatrix();
+		MatBase *= ApplyCenterOffset(TransPtr->GetBeforeWorldMatrix());
 		//このオブジェクトのSPHEREを作成
 		SPHERE Ret(MatBase.transInMatrix(), MatBase.scaleInMatrix().x * 0.5f);
 		switch (m_CalcScaling) {
@@ -578,7 +597,7 @@ namespace basecross {
 			m_MakedDiameter * 0.5f,
 			Vec3(0, m_MakedHeight * -0.5f, 0),
 			Vec3(0, m_MakedHeight * 0.5f, 0),
-			WorldMatrix);
+			ApplyCenterOffset(WorldMatrix));
 		return WorldCapsule;
 	}
 
@@ -590,7 +609,7 @@ namespace basecross {
 			m_MakedDiameter * 0.5f,
 			Vec3(0, m_MakedHeight * -0.5f, 0),
 			Vec3(0, m_MakedHeight * 0.5f, 0),
-			BeforeWorldMatrix);
+			ApplyCenterOffset(BeforeWorldMatrix));
 		return BeforeWorldCapsule;
 	}
 
@@ -878,7 +897,7 @@ namespace basecross {
 		auto WorldMatrix = TransPtr->GetWorldMatrix();
 		Mat4x4 MatBase;
 		MatBase.scale(Vec3(m_Size, m_Size, m_Size));
-		MatBase *= WorldMatrix;
+		MatBase *= ApplyCenterOffset(WorldMatrix);
 		auto WorldObb = OBB(Vec3(m_Size, m_Size, m_Size), MatBase);
 		return WorldObb;
 	}
@@ -889,7 +908,7 @@ namespace basecross {
 		auto BeforeWorldMatrix = TransPtr->GetBeforeWorldMatrix();
 		Mat4x4 MatBase;
 		MatBase.scale(Vec3(m_Size, m_Size, m_Size));
-		MatBase *= BeforeWorldMatrix;
+		MatBase *= ApplyCenterOffset(BeforeWorldMatrix);
 		auto BeforeWorldObb = OBB(Vec3(m_Size, m_Size, m_Size), MatBase);
 		return BeforeWorldObb;
 	}
@@ -1185,13 +1204,13 @@ namespace basecross {
 
 	COLRECT CollisionRect::GetColRect() const {
 		auto TrasnsPtr = GetGameObject()->GetComponent<Transform>();
-		COLRECT rect(GetMakedSize(), GetMakedSize(), TrasnsPtr->GetWorldMatrix());
+		COLRECT rect(GetMakedSize(), GetMakedSize(), ApplyCenterOffset(TrasnsPtr->GetWorldMatrix()));
 		return rect;
 	}
 
 	COLRECT CollisionRect::GetBeforeColRect() const {
 		auto TrasnsPtr = GetGameObject()->GetComponent<Transform>();
-		COLRECT rect(GetMakedSize(), GetMakedSize(), TrasnsPtr->GetBeforeWorldMatrix());
+		COLRECT rect(GetMakedSize(), GetMakedSize(), ApplyCenterOffset(TrasnsPtr->GetBeforeWorldMatrix()));
 		return rect;
 	}
 

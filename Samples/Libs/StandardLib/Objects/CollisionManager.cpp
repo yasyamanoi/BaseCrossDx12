@@ -12,6 +12,7 @@ namespace basecross {
 		CollisionPiece* m_Children[4];
 		AABB m_AABB;
 		std::vector<std::shared_ptr<GameObject>> m_ObjVec;
+		std::vector<AABB> m_AABBVec;	//m_ObjVec と同じ順の各オブジェクトのAABB(登録のたびに求め直さないため)
 		CollisionPiece() :
 			m_AABB()
 		{
@@ -31,6 +32,7 @@ namespace basecross {
 				m_Children[i] = nullptr;
 			}
 			m_ObjVec.clear();
+			m_AABBVec.clear();
 			m_AABB = AABB();
 		}
 	};
@@ -59,14 +61,12 @@ namespace basecross {
 			g_NextPoolIndex = 0;
 		}
 
-		void SetCollisionBlockSub(CollisionPiece& tgt, const std::shared_ptr<GameObject>& Obj) {
-			auto Col = Obj->GetComponent<Collision>();
-			auto colAABB = Col->GetWrappedAABB();
+		void SetCollisionBlockSub(CollisionPiece& tgt, const std::shared_ptr<GameObject>& Obj, const AABB& colAABB) {
 			if (HitTest::AABB_AABB(tgt.m_AABB, colAABB)) {
 				if (tgt.m_Children[0]) {
 					//子供ピースがあったら
 					for (int i = 0; i < 4; i++) {
-						SetCollisionBlockSub(*tgt.m_Children[i], Obj);
+						SetCollisionBlockSub(*tgt.m_Children[i], Obj, colAABB);
 					}
 				}
 				else {
@@ -74,12 +74,14 @@ namespace basecross {
 					//AABBが小さい場合はこれ以上増やさない
 					if (tgt.m_AABB.GetWidth() < 0.125f) {
 						tgt.m_ObjVec.push_back(Obj);
+						tgt.m_AABBVec.push_back(colAABB);
 					}
 					else {
 						if (tgt.m_ObjVec.size() < 5) {
 							//AABBの幅が定数未満か
 							//あるいはまだ余裕がある
 							tgt.m_ObjVec.push_back(Obj);
+							tgt.m_AABBVec.push_back(colAABB);
 						}
 						else {
 							//余裕がない子供ブロックの作成
@@ -117,20 +119,21 @@ namespace basecross {
 							}
 							//子供作成終了
 							//オブジェクトを子供に振り分ける
-							for (auto& v : tgt.m_ObjVec) {
-								auto objCol = v->GetComponent<Collision>();
-								auto objColAABB = objCol->GetWrappedAABB();
+							for (size_t k = 0; k < tgt.m_ObjVec.size(); k++) {
+								const AABB& objColAABB = tgt.m_AABBVec[k];
 								for (int i = 0; i < 4; i++) {
 									if (HitTest::AABB_AABB(tgt.m_Children[i]->m_AABB, objColAABB)) {
-										tgt.m_Children[i]->m_ObjVec.push_back(v);
+										tgt.m_Children[i]->m_ObjVec.push_back(tgt.m_ObjVec[k]);
+										tgt.m_Children[i]->m_AABBVec.push_back(objColAABB);
 									}
 								}
 							}
 							//振り分けが終わったので配列はクリア
 							tgt.m_ObjVec.clear();
+							tgt.m_AABBVec.clear();
 							//子供ピースができたので、そこに調査
 							for (int i = 0; i < 4; i++) {
-								SetCollisionBlockSub(*tgt.m_Children[i], Obj);
+								SetCollisionBlockSub(*tgt.m_Children[i], Obj, colAABB);
 							}
 						}
 					}
@@ -145,7 +148,7 @@ namespace basecross {
 					if (!Col->IsUpdateActive()) {
 						return;
 					}
-					SetCollisionBlockSub(m_RootPiece, Obj);
+					SetCollisionBlockSub(m_RootPiece, Obj, Col->GetWrappedAABB());
 				}
 			}
 		}
@@ -169,7 +172,11 @@ namespace basecross {
 		void SetNewCollisionSub(CollisionPiece& tgt, const std::shared_ptr<CollisionManager>& manager) {
 			if (tgt.m_ObjVec.size() > 1) {
 				for (auto& v : tgt.m_ObjVec) {
-					SetNewCollisionSubSub(v, tgt, manager);
+					//Fixed は Src になれない(EnableedCollisionPair が false を返す)ので、組み合わせを調べない
+					auto SrcColl = v->GetComponent<Collision>(false);
+					if (SrcColl && !SrcColl->IsFixed()) {
+						SetNewCollisionSubSub(v, tgt, manager);
+					}
 				}
 			}
 			else {
@@ -319,6 +326,16 @@ namespace basecross {
 		m_CollisionPairVec[m_NewIndex].push_back(NewPair);
 	}
 
+	//形の中心を CenterNew に動かすために、Transform を動かす先を返す。
+	//CenterOffset が 0 のときは CenterNew そのもの(従来と同じ)
+	static Vec3 GetEscapeTransformPosition(const std::shared_ptr<Collision>& Coll, const Vec3& CenterOld, const Vec3& CenterNew) {
+		if (Coll->GetCenterOffset() == Vec3(0)) {
+			return CenterNew;
+		}
+		auto TransPos = Coll->GetGameObject()->GetComponent<Transform>()->GetWorldPosition();
+		return CenterNew + (TransPos - CenterOld);
+	}
+
 	void CollisionManager::EscapeCollisionPair(CollisionPair& Pair) {
 		auto ShSrc = Pair.m_Src.lock();
 		auto ShDest = Pair.m_Dest.lock();
@@ -327,6 +344,8 @@ namespace basecross {
 		}
 		Vec3 SrcCenter = ShSrc->GetCenterPosition();
 		Vec3 DestCenter = ShDest->GetCenterPosition();
+		const Vec3 SrcCenterOld = SrcCenter;
+		const Vec3 DestCenterOld = DestCenter;
 		Vec3 DestMoveVec = DestCenter - Pair.m_DestCalcHitCenter;
 		Vec3 SrcLocalVec = SrcCenter - Pair.m_SrcCalcHitCenter - DestMoveVec;
 		float SrcV = bsmUtil::dot(SrcLocalVec, Pair.m_SrcHitNormal);
@@ -345,13 +364,13 @@ namespace basecross {
 			SrcCenter.floor(GetEscapeFloor());
 			auto PtrSrcTransform = ShSrc->GetGameObject()->GetComponent<Transform>();
 			//Srcのエスケープ
-			PtrSrcTransform->SetWorldPosition(SrcCenter);
+			PtrSrcTransform->SetWorldPosition(GetEscapeTransformPosition(ShSrc, SrcCenterOld, SrcCenter));
 			if (!ShDest->IsFixed()) {
 				DestCenter.floor(GetEscapeFloor());
 				ShDest->WakeUp();
 				auto PtrDestTransform = ShDest->GetGameObject()->GetComponent<Transform>();
 				//Destのエスケープ
-				PtrDestTransform->SetWorldPosition(DestCenter);
+				PtrDestTransform->SetWorldPosition(GetEscapeTransformPosition(ShDest, DestCenterOld, DestCenter));
 			}
 		}
 	}
