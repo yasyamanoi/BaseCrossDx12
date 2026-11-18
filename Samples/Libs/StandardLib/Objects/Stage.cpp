@@ -90,6 +90,10 @@ namespace basecross {
 
 	void Stage::OnShadowDraw(ID3D12GraphicsCommandList* pCommandList) {
 		for (auto& v : m_gameObjectVec) {
+			//描画が無効のオブジェクトは、影も描かない
+			if (!v->IsDrawActive()) {
+				continue;
+			}
 			v->OnShadowDraw(pCommandList);
 		}
 	}
@@ -97,6 +101,10 @@ namespace basecross {
 		std::vector<std::shared_ptr<GameObject>> alphaVec;
 		std::vector<std::shared_ptr<GameObject>> normalVec;
 		for (auto& v : m_gameObjectVec) {
+			//描画が無効のオブジェクトは描かない
+			if (!v->IsDrawActive()) {
+				continue;
+			}
 			if (v->IsAlphaActive()) {
 				alphaVec.push_back(v);
 			}
