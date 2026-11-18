@@ -56,7 +56,9 @@ namespace basecross {
 		std::shared_ptr<T> AddGameObject(Ts&&... params) {
 			try {
 				auto ptr = ObjectFactory::Create<T>(GetThis<Stage>(), params...);
-				m_gameObjectVec.push_back(ptr);
+				//ステージの構築後(実行中)に追加したものは、追加待ちの一覧に入れ、次のフレームの最初に一覧へ移す。
+				//更新のループの最中に一覧へ直接追加すると、配列の作り直しで落ちることがあるため
+				PushBackGameObject(ptr);
 				return ptr;
 			}
 			catch (...) {
