@@ -238,6 +238,25 @@ namespace basecross {
 		*/
 		//--------------------------------------------------------------------------------------
 		std::shared_ptr<BaseTexture> GetTexture(const std::wstring& key);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	モデルをリソース登録する。
+		モデルのメッシュは「key#MESH」、テクスチャは「key#TX0」「key#TX1」…のキーで、メッシュとテクスチャの表にも登録する
+		@param[in]	key	リソースのキー
+		@param[in]	model	モデル
+		@param[in]	keyCheck	キーの重複チェックするかどうか
+		@return	なし
+		*/
+		//--------------------------------------------------------------------------------------
+		void RegisterModel(const std::wstring& key, const std::shared_ptr<BaseModel>& model, bool keyCheck = false);
+		//--------------------------------------------------------------------------------------
+		/*!
+		@brief	登録されているモデルを取得する
+		@param[in]	key	リソースのキー
+		@return	モデル。無ければ例外
+		*/
+		//--------------------------------------------------------------------------------------
+		std::shared_ptr<BaseModel> GetModel(const std::wstring& key);
 
 		//--------------------------------------------------------------------------------------
 		/*!
@@ -361,6 +380,8 @@ namespace basecross {
 		std::map<const std::wstring, std::shared_ptr<BaseMesh> > m_meshMap;
 		//texture map
 		std::map<const std::wstring, std::shared_ptr<BaseTexture> > m_textureMap;
+		//model map
+		std::map<const std::wstring, std::shared_ptr<BaseModel> > m_modelMap;
 
 		//audio map
 		std::map<const std::wstring, std::shared_ptr<AudioResource> > m_audioMap;

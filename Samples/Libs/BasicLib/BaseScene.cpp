@@ -706,6 +706,50 @@ namespace basecross {
 	}
 
 
+	void BaseScene::RegisterModel(const std::wstring& key, const std::shared_ptr<BaseModel>& model, bool keyCheck) {
+		if (!model) {
+			throw BaseException(
+				L"モデルがnullです",
+				key,
+				L"BaseScene::RegisterModel()"
+			);
+		}
+		if (keyCheck) {
+			auto it = m_modelMap.find(key);
+			if (it != m_modelMap.end()) {
+				throw BaseException(
+					L"指定のキーのモデルがすでに存在します",
+					key,
+					L"BaseScene::RegisterModel()"
+				);
+			}
+		}
+		m_modelMap[key] = model;
+		//メッシュとテクスチャも、自動のキーで登録する
+		RegisterMesh(key + L"#MESH", model->GetMesh());
+		const auto& textures = model->GetTextures();
+		for (size_t i = 0; i < textures.size(); i++) {
+			if (textures[i]) {
+				RegisterTexture(key + L"#TX" + std::to_wstring(i), textures[i]);
+			}
+		}
+	}
+
+	std::shared_ptr<BaseModel> BaseScene::GetModel(const std::wstring& key) {
+		auto it = m_modelMap.find(key);
+		if (it != m_modelMap.end()) {
+			return it->second;
+		}
+		else {
+			throw BaseException(
+				L"指定のキーのモデルが見つかりません",
+				key,
+				L"BaseScene::GetModel()"
+			);
+		}
+		return nullptr;
+	}
+
 	void BaseScene::RegisterAudio(const std::wstring& key, const std::shared_ptr<AudioResource>& audio, bool keyCheck) {
 		if (keyCheck) {
 			auto it = m_audioMap.find(key);

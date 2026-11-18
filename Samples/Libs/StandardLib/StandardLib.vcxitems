@@ -14,7 +14,9 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\Animator.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\BcBoneDraw.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Components\BcModelDraw.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\BcStaticDraw.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\Collision.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Components\Component.h" />
@@ -35,7 +37,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)StandardInclude.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\Animator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\BcBoneDraw.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Components\BcModelDraw.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\BcStaticDraw.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Collision.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Components\Component.cpp" />
@@ -215,6 +219,12 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\VSShadowmap.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)media\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)Shaders\VSShadowmapBone.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
