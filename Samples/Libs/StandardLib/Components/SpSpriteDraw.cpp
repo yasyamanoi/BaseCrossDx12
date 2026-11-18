@@ -14,16 +14,115 @@ namespace basecross {
 	SpPCTSpriteDraw::SpPCTSpriteDraw(const std::shared_ptr<GameObject>& gameObjectPtr,
 		std::vector<VertexPositionColorTexture>& vertices, std::vector<uint32_t>& indices):
 		Component(gameObjectPtr),
-		m_alphaActive(true)
+		m_diffuse(1.0f, 1.0f, 1.0f, 1.0f),
+		m_alphaActive(true),
+		m_vertices(vertices),
+		m_pVertexBufferWOs{},
+		m_vertexBufferViews{},
+		m_indexBufferView{},
+		m_numIndices(0)
 	{
 		try {
-			ID3D12GraphicsCommandList* pCommandList = BaseScene::Get()->m_pTgtCommandList;
-			m_mesh = BaseMesh::CreateBaseMesh(pCommandList, vertices, indices);
+			if (vertices.empty() || indices.empty()) {
+				throw BaseException(
+					L"頂点またはインデックスが空です。",
+					L"if (vertices.empty() || indices.empty())",
+					L"SpPCTSpriteDraw::SpPCTSpriteDraw()"
+				);
+			}
+			//コマンドリストは使わず、UPLOADヒープに直接書く（ゲームの途中でも作れる）
+			auto device = App::GetD3D12Device();
+			CD3DX12_HEAP_PROPERTIES heapProp(D3D12_HEAP_TYPE_UPLOAD);
+			CD3DX12_RANGE readRange(0, 0);
+			//頂点バッファ（フレームの数だけ作る）
+			UINT vertexBufferSize = static_cast<UINT>(sizeof(VertexPositionColorTexture) * vertices.size());
+			CD3DX12_RESOURCE_DESC vertexDesc = CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize);
+			for (UINT i = 0; i < BaseDevice::FrameCount; i++) {
+				ThrowIfFailedEx(device->CreateCommittedResource(
+					&heapProp,
+					D3D12_HEAP_FLAG_NONE,
+					&vertexDesc,
+					D3D12_RESOURCE_STATE_GENERIC_READ,
+					nullptr,
+					IID_PPV_ARGS(&m_vertexBuffers[i])),
+					L"頂点バッファ作成に失敗しました。",
+					L"if(FAILED(device->CreateCommittedResource())",
+					L"SpPCTSpriteDraw::SpPCTSpriteDraw()"
+				);
+				//Mapしたままにする（書き込み専用として使う）
+				ThrowIfFailedEx(m_vertexBuffers[i]->Map(0, &readRange,
+					reinterpret_cast<void**>(&m_pVertexBufferWOs[i])),
+					L"頂点バッファのMapに失敗しました。",
+					L"if(FAILED(m_vertexBuffers[i]->Map())",
+					L"SpPCTSpriteDraw::SpPCTSpriteDraw()"
+				);
+				//作成直後の描画に備えて、最初の頂点を写しておく
+				memcpy(m_pVertexBufferWOs[i], vertices.data(), vertexBufferSize);
+				m_vertexBufferViews[i].BufferLocation = m_vertexBuffers[i]->GetGPUVirtualAddress();
+				m_vertexBufferViews[i].StrideInBytes = static_cast<UINT>(sizeof(VertexPositionColorTexture));
+				m_vertexBufferViews[i].SizeInBytes = vertexBufferSize;
+			}
+			//インデックスバッファ（1つだけ作り、1回だけ書く）
+			UINT indexBufferSize = static_cast<UINT>(sizeof(uint32_t) * indices.size());
+			CD3DX12_RESOURCE_DESC indexDesc = CD3DX12_RESOURCE_DESC::Buffer(indexBufferSize);
+			ThrowIfFailedEx(device->CreateCommittedResource(
+				&heapProp,
+				D3D12_HEAP_FLAG_NONE,
+				&indexDesc,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&m_indexBuffer)),
+				L"インデックスバッファ作成に失敗しました。",
+				L"if(FAILED(device->CreateCommittedResource())",
+				L"SpPCTSpriteDraw::SpPCTSpriteDraw()"
+			);
+			UINT8* pIndexData = nullptr;
+			ThrowIfFailedEx(m_indexBuffer->Map(0, &readRange, reinterpret_cast<void**>(&pIndexData)),
+				L"インデックスバッファのMapに失敗しました。",
+				L"if(FAILED(m_indexBuffer->Map())",
+				L"SpPCTSpriteDraw::SpPCTSpriteDraw()"
+			);
+			memcpy(pIndexData, indices.data(), indexBufferSize);
+			m_indexBuffer->Unmap(0, nullptr);
+			m_indexBufferView.BufferLocation = m_indexBuffer->GetGPUVirtualAddress();
+			m_indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+			m_indexBufferView.SizeInBytes = indexBufferSize;
+			m_numIndices = static_cast<UINT>(indices.size());
 		}
 		catch (...) {
 			throw;
 		}
 
+	}
+
+	//現在のフレームの番号（フレームリソースの並びの中での位置）
+	size_t SpPCTSpriteDraw::GetCurrentFrameIndex()const {
+		auto pBaseScene = BaseScene::Get();
+		auto pCurrentFrameResource = pBaseScene->GetCurrentFrameResource();
+		auto& frameResources = pBaseScene->GetFrameResources();
+		for (size_t i = 0; i < BaseDevice::FrameCount; i++) {
+			if (frameResources[i].get() == pCurrentFrameResource) {
+				return i;
+			}
+		}
+		throw BaseException(
+			L"現在のフレームリソースが見つかりません。",
+			L"if (frameResources[i].get() == pCurrentFrameResource)",
+			L"SpPCTSpriteDraw::GetCurrentFrameIndex()"
+		);
+		return 0;
+	}
+
+	//頂点の設定（数が違うときは例外）
+	void SpPCTSpriteDraw::SetVertices(const std::vector<VertexPositionColorTexture>& vertices) {
+		if (vertices.size() != m_vertices.size()) {
+			throw BaseException(
+				L"頂点の数が作成時と違います。",
+				L"if (vertices.size() != m_vertices.size())",
+				L"SpPCTSpriteDraw::SetVertices()"
+			);
+		}
+		m_vertices = vertices;
 	}
 
 	void SpPCTSpriteDraw::OnCreate() {
@@ -111,7 +210,8 @@ namespace basecross {
 				m_spriteConstant.world = world;
 				//エミッシブ
 				m_spriteConstant.emissive = GetEmissive();
-				//デフィーズはすべて通す
+				//ディフューズ
+				m_spriteConstant.diffuse = GetDiffuse();
 			}
 		}
 	}
@@ -122,6 +222,9 @@ namespace basecross {
 		//シーン
 		memcpy(pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantIndex].m_pBaseConstantBufferWO,
 			&m_spriteConstant, sizeof(m_spriteConstant));
+		//頂点を現在のフレームのバッファへ写す（毎フレーム）
+		memcpy(m_pVertexBufferWOs[GetCurrentFrameIndex()], m_vertices.data(),
+			sizeof(VertexPositionColorTexture) * m_vertices.size());
 	}
 
 	void SpPCTSpriteDraw::OnSceneDraw(ID3D12GraphicsCommandList* pCommandList) {
@@ -136,9 +239,12 @@ namespace basecross {
 		auto depthGPUDsvs = pBaseScene->GetDepthSrvGpuHandles();
 
 		auto CbvSrvUavDescriptorHeap = pBaseScene->GetCbvSrvUavDescriptorHeap();
-		auto mesh = m_mesh;;
-		auto texture = pBaseScene->GetTexture(L"MESSAGE_TX");
-		if (mesh && texture) {
+		//テクスチャは部品に指定されたものを使う。無ければMESSAGE_TX
+		auto texture = GetBaseTexture();
+		if (!texture) {
+			texture = pBaseScene->GetTexture(L"MESSAGE_TX");
+		}
+		if (texture) {
 			ComPtr<ID3D12PipelineState> alphaPipelineState
 				= PipelineStatePool::GetPipelineState(L"SpPCTSpriteAlpha", true);
 			//null rv
@@ -175,9 +281,11 @@ namespace basecross {
 				pCurrentFrameResource->m_baseConstantBufferSetVec[m_constantIndex].m_baseConstantBuffer->GetGPUVirtualAddress());
 			//Draw
 			pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			pCommandList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-			pCommandList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-			pCommandList->DrawIndexedInstanced(mesh->GetNumIndices(), 1, 0, 0, 0);
+			//現在のフレームの頂点バッファビューを使う
+			size_t frameIndex = GetCurrentFrameIndex();
+			pCommandList->IASetVertexBuffers(0, 1, &m_vertexBufferViews[frameIndex]);
+			pCommandList->IASetIndexBuffer(&m_indexBufferView);
+			pCommandList->DrawIndexedInstanced(m_numIndices, 1, 0, 0, 0);
 		}
 
 	}
