@@ -30,6 +30,8 @@ namespace basecross {
 				= PipelineStatePool::GetPipelineState(L"SpPNTStaticAlpha");
 			ComPtr<ID3D12PipelineState> alphaShadowPipelineState
 				= PipelineStatePool::GetPipelineState(L"SpPNTStaticAlphaShadow");
+			ComPtr<ID3D12PipelineState> additivePipelineState
+				= PipelineStatePool::GetPipelineState(L"SpPNTStaticAdditive");
 
 			CD3DX12_RASTERIZER_DESC rasterizerStateDesc(D3D12_DEFAULT);
 			//ÉJÉäÉìÉO
@@ -114,7 +116,25 @@ namespace basecross {
 			if (!alphaShadowPipelineState) {
 				ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&alphaShadowPipelineState)));
 				NAME_D3D12_OBJECT(alphaShadowPipelineState);
-				PipelineStatePool::AddPipelineState(L"SpPNTStaticAlphaShadow", alphaPipelineState);
+				PipelineStatePool::AddPipelineState(L"SpPNTStaticAlphaShadow", alphaShadowPipelineState);
+			}
+			//â¡éZ(âeÇ»Çµ)ÅBê[ìxÉeÉXÉgÇÕÇ∑ÇÈÇ™ÅAê[ìxÇÕèëÇ´çûÇ‹Ç»Ç¢
+			psoDesc.VS =
+			{
+				reinterpret_cast<UINT8*>(SpVSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				SpVSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+			psoDesc.PS =
+			{
+				reinterpret_cast<UINT8*>(SpPSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferPointer()),
+				SpPSPNTStatic::GetPtr()->GetShaderComPtr()->GetBufferSize()
+			};
+			psoDesc.BlendState = BlendState::GetAdditiveBlend();
+			psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+			if (!additivePipelineState) {
+				ThrowIfFailed(App::GetID3D12Device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&additivePipelineState)));
+				NAME_D3D12_OBJECT(additivePipelineState);
+				PipelineStatePool::AddPipelineState(L"SpPNTStaticAdditive", additivePipelineState);
 			}
 		}
 	}
@@ -256,11 +276,18 @@ namespace basecross {
 				= PipelineStatePool::GetPipelineState(L"SpPNTStaticAlpha", true);
 			ComPtr<ID3D12PipelineState> alphaShadowPipelineState
 				= PipelineStatePool::GetPipelineState(L"SpPNTStaticAlphaShadow", true);
+			ComPtr<ID3D12PipelineState> additivePipelineState
+				= PipelineStatePool::GetPipelineState(L"SpPNTStaticAdditive", true);
 			//null rv
 			CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvGpuNullHandle(CbvSrvUavDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 			// set PipelineState and GetGpuSlotID(L"t0")
-			if (GetGameObject()->IsAlphaActive()) {
+			if (IsBlendAdditive()) {
+				//â¡éZÇÕâeÇéÛÇØÇ»Ç¢
+				pCommandList->SetPipelineState(additivePipelineState.Get());
+				pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), cbvSrvGpuNullHandle);
+			}
+			else if (GetGameObject()->IsAlphaActive()) {
 				if (IsOwnShadowActive()) {
 					pCommandList->SetPipelineState(alphaShadowPipelineState.Get());
 					pCommandList->SetGraphicsRootDescriptorTable(pBaseScene->GetGpuSlotID(L"t0"), depthGPUDsvs[SceneEnums::DepthGenPass::Shadow]);        // Set the shadow texture as an SRV.
