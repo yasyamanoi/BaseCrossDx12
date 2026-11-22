@@ -388,6 +388,8 @@ namespace basecross {
 		m_timer.Tick();
 		CalculateFrameStats();
 		m_scene->Update(m_timer.GetElapsedSeconds());
+		//–Â‚èI‚í‚Á‚½‰¹‚Ì•Ð•t‚¯
+		m_scene->UpdateAudio(m_timer.GetElapsedSeconds());
 		if (m_enableUI)
 		{
 			UpdateUI();
