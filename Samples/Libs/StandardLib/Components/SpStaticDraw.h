@@ -21,6 +21,8 @@ namespace basecross {
 		Col4 m_specular;
 		//©•ª©g‚É‰e‚ğ•`‰æ‚·‚é‚©‚Ç‚¤‚©
 		bool m_ownShadowActive;
+		//‰ÁZ‡¬‚Å•`‰æ‚·‚é‚©‚Ç‚¤‚©
+		bool m_blendAdditive;
 	protected:
 		SimpleConstant m_simpleConstant;
 		size_t m_constantIndex;
@@ -31,7 +33,8 @@ namespace basecross {
 			m_emissive(0.0f),
 			m_diffuse(1.0f),
 			m_specular(0.0f),
-			m_ownShadowActive(false)
+			m_ownShadowActive(false),
+			m_blendAdditive(false)
 		{
 		}
 		virtual ~SpStaticDraw() {}
@@ -59,6 +62,13 @@ namespace basecross {
 		}
 		void SetOwnShadowActive(bool b) {
 			m_ownShadowActive = b;
+		}
+		//‰ÁZ‡¬‚Å•`‰æ‚·‚é‚©(true ‚ÌŠÔ‚ÍA•s“§–¾E”¼“§–¾‚Ìw’è‚æ‚è—Dæ‚³‚ê‚éB‰e‚Í•t‚©‚È‚¢)
+		bool IsBlendAdditive()const {
+			return m_blendAdditive;
+		}
+		void SetBlendAdditive(bool b) {
+			m_blendAdditive = b;
 		}
 		virtual void OnCreate()override;
 	};
