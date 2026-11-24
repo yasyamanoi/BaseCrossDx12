@@ -183,11 +183,15 @@ namespace basecross {
 				auto pBaseScene = BaseScene::Get();
 				auto& frameResources = pBaseScene->GetFrameResources();
 				auto pBaseDevice = BaseDevice::GetBaseDevice();
+				//GPUがまだ使っているかもしれないコンスタントバッファを消さないよう、GPUの完了を待つ
+				pBaseDevice->WaitForGpuIdle();
 				for (size_t i = 0; i < BaseDevice::FrameCount; i++) {
 					frameResources[i]->ClearBaseConstantBufferSet();
 				}
 				//破棄を伝える
 				actStagePtr->OnDestroy();
+				//更新の途中で呼ばれても古いステージが解放されないよう、そのフレームの更新が終わるまで持っておく
+				m_retiredStageVec.push_back(actStagePtr);
 				actStagePtr = nullptr;
 			}
 			auto ptr = ObjectFactory::Create<T>(params...);
@@ -281,6 +285,11 @@ namespace basecross {
 			return s_elapsedTime;
 		}
 		float m_fogDensity;
+
+		//フレームごとに、シーンの更新のあとに呼ぶ。ResetActiveStageで入れ替えた古いステージを手放す
+		void ReleaseRetiredStages() {
+			m_retiredStageVec.clear();
+		}
 
 		//フレームごとに呼ぶ。鳴り終わった音を片付ける（XAudio2Managerを使っていないときは何もしない）
 		void UpdateAudio(double elapsedTime) {
@@ -383,6 +392,8 @@ namespace basecross {
 		PrimDevice* m_pPrimDevice;
 		//Stage
 		std::shared_ptr<Stage> m_activeStage;
+		//ResetActiveStageで入れ替えた古いステージ（そのフレームの更新が終わるまで持つ）
+		std::vector<std::shared_ptr<Stage>> m_retiredStageVec;
 		//mesh map
 		std::map<const std::wstring, std::shared_ptr<BaseMesh> > m_meshMap;
 		//texture map

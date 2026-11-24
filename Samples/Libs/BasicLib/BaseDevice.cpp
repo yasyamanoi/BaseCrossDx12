@@ -388,6 +388,8 @@ namespace basecross {
 		m_timer.Tick();
 		CalculateFrameStats();
 		m_scene->Update(m_timer.GetElapsedSeconds());
+		//更新の途中で入れ替えた古いステージを手放す
+		m_scene->ReleaseRetiredStages();
 		//鳴り終わった音の片付け
 		m_scene->UpdateAudio(m_timer.GetElapsedSeconds());
 		if (m_enableUI)
@@ -668,6 +670,12 @@ namespace basecross {
 				SetCustomWindowText(windowText.c_str());
 			}
 		}
+	}
+
+	// Wait for all pending GPU work (on the main command queue) to complete.
+	void BaseDevice::WaitForGpuIdle()
+	{
+		WaitForGpu(m_commandQueue.Get());
 	}
 
 	// Wait for pending GPU work to complete.
