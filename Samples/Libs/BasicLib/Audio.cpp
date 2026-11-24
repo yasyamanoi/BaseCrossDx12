@@ -368,7 +368,9 @@ namespace basecross {
 					done = true;
 				}
 			}
-			int a = 10;
+			// 読み込んだ大きさへ切り詰める。確保した大きさは「丸め上げ」で 1 バイト多くなることがあり、
+			// そのままだと XAudio2 にブロック境界の合わないバッファとして拒否される
+			pImpl->m_SoundData.resize(static_cast<size_t>(positionInData));
 		}
 		catch (...) {
 			throw;

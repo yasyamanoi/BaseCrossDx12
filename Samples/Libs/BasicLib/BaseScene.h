@@ -282,6 +282,13 @@ namespace basecross {
 		}
 		float m_fogDensity;
 
+		//フレームごとに呼ぶ。鳴り終わった音を片付ける（XAudio2Managerを使っていないときは何もしない）
+		void UpdateAudio(double elapsedTime) {
+			if (m_xaudio2Manager) {
+				m_xaudio2Manager->OnUpdate(elapsedTime);
+			}
+		}
+
 		std::shared_ptr<XAudio2Manager>& GetXAudio2Manager() {
 			try {
 				if (!m_xaudio2Manager) {
